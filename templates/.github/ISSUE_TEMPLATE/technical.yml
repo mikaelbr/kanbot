@@ -1,0 +1,15 @@
+name: Technical task
+description: Refactoring, tooling, infrastructure or other work without a direct user-facing story.
+labels: [technical]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this is done, and who benefits?
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes, constraints, links

@@ -1,0 +1,5 @@
+node_modules/
+.autogh/state.json
+.autogh/logs/
+.autogh/worktrees/
+.DS_Store

@@ -1,0 +1,23 @@
+# Starter CI. Agents read failing checks and fix them, so keep this meaningful:
+# replace the steps with your stack's install, lint and test commands.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        if: hashFiles('package.json') != ''
+      - name: Install
+        if: hashFiles('package.json') != ''
+        run: bun install
+      - name: Lint
+        if: hashFiles('package.json') != ''
+        run: bun run --if-present lint
+      - name: Test
+        if: hashFiles('package.json') != ''
+        run: bun run --if-present test

@@ -1,0 +1,190 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { defineCommand } from "citty";
+import { loadAgents } from "../agents/load.ts";
+import { sync } from "../agents/sync.ts";
+import { loadConfig } from "../config.ts";
+import { git } from "../daemon/git.ts";
+import { Gh, run } from "../github/gh.ts";
+import { loadBoard, missingColumns } from "../github/project.ts";
+import { REPO_LABELS } from "./board.ts";
+
+type Check = { name: string; ok: boolean; detail?: string; fix?: string };
+
+async function cmd(args: string[]) {
+	const p = Bun.spawn(args, { stdout: "pipe", stderr: "pipe" });
+	const [out, err, code] = await Promise.all([
+		new Response(p.stdout).text(),
+		new Response(p.stderr).text(),
+		p.exited,
+	]);
+	return { ok: code === 0, out: `${out}${err}`.trim() };
+}
+
+export default defineCommand({
+	meta: {
+		name: "doctor",
+		description: "Check that everything autogh needs is in place",
+	},
+	async run() {
+		const root = process.cwd();
+		const checks: Check[] = [];
+		const add = (c: Check) => {
+			checks.push(c);
+			console.log(
+				`${c.ok ? "✔" : "✖"} ${c.name}${c.detail ? ` — ${c.detail}` : ""}${!c.ok && c.fix ? `\n    fix: ${c.fix}` : ""}`,
+			);
+		};
+
+		const auth = await cmd(["gh", "auth", "status"]);
+		add({ name: "gh logged in", ok: auth.ok, fix: "gh auth login" });
+		add({
+			name: "gh token has project scope",
+			ok: /'project'/.test(auth.out),
+			fix: "gh auth refresh -s project",
+		});
+
+		let config: Awaited<ReturnType<typeof loadConfig>>;
+		try {
+			config = await loadConfig(root);
+			add({
+				name: "config",
+				ok: true,
+				detail: `${config.repo}, provider ${config.provider}`,
+			});
+		} catch (e) {
+			add({ name: "config", ok: false, detail: String(e), fix: "autogh init" });
+			return process.exit(1);
+		}
+
+		if (config.provider === "claude") {
+			const s = await cmd(["claude", "auth", "status"]);
+			const sub = /"authMethod":\s*"claude\.ai"/.test(s.out);
+			add({
+				name: "claude CLI logged in with a subscription",
+				ok: s.ok && sub,
+				detail: sub
+					? undefined
+					: "not using a claude.ai login (would bill API usage)",
+				fix: "claude auth login",
+			});
+		} else {
+			const s = await cmd(["codex", "login", "status"]);
+			add({
+				name: "codex CLI logged in with ChatGPT",
+				ok: s.ok && /ChatGPT/i.test(s.out),
+				detail: s.out.split("\n")[0],
+				fix: "codex login",
+			});
+		}
+
+		try {
+			const agents = await loadAgents(root);
+			add({
+				name: "agents",
+				ok: true,
+				detail: `${agents.filter((a) => a.tier === "column").length} column, ${agents.filter((a) => a.tier === "sub").length} sub`,
+			});
+			const needed = [
+				"planner",
+				"reviewer-code",
+				"reviewer-spec",
+				"fixer",
+				...Object.values(config.implementers),
+			];
+			const missing = [...new Set(needed)].filter(
+				(n) => !agents.some((a) => a.name === n),
+			);
+			add({
+				name: "agents referenced by config exist",
+				ok: !missing.length,
+				detail: missing.join(", ") || undefined,
+			});
+			const stale = await sync(root, agents, { check: true });
+			add({
+				name: "generated agent files up to date",
+				ok: !stale.length,
+				detail: stale.join(", ") || undefined,
+				fix: "autogh sync",
+			});
+		} catch (e) {
+			add({ name: "agents", ok: false, detail: String(e) });
+		}
+
+		await git(root, "fetch", "origin", config.baseBranch).catch(() => {});
+		const tree = await git(
+			root,
+			"ls-tree",
+			"-r",
+			"--name-only",
+			`origin/${config.baseBranch}`,
+		).catch(() => "");
+		for (const path of [
+			".agents/skills/",
+			".claude/agents/",
+			".codex/agents/",
+			"AGENTS.md",
+		]) {
+			add({
+				name: `${path} committed on origin/${config.baseBranch}`,
+				ok: tree.split("\n").some((f) => f.startsWith(path)),
+				detail: "worktrees are created from the base branch",
+				fix: "commit and push the autogh files",
+			});
+		}
+		add({
+			name: ".github/workflows/autogh-merged.yml",
+			ok: existsSync(join(root, ".github/workflows/autogh-merged.yml")),
+		});
+
+		const gh = new Gh(config.repo);
+		try {
+			const board = await loadBoard(gh, config);
+			const missing = missingColumns(board);
+			add({
+				name: "project board",
+				ok: !missing.length,
+				detail: missing.length
+					? `missing columns: ${missing.join(", ")}`
+					: board.url,
+				fix: "autogh board create",
+			});
+		} catch (e) {
+			add({
+				name: "project board",
+				ok: false,
+				detail: String(e),
+				fix: "autogh board create",
+			});
+		}
+
+		const labels = (
+			JSON.parse(
+				await run([
+					"label",
+					"list",
+					"--repo",
+					config.repo,
+					"--limit",
+					"200",
+					"--json",
+					"name",
+				]),
+			) as { name: string }[]
+		).map((l) => l.name);
+		const missingLabels = REPO_LABELS.map(([n]) => n).filter(
+			(n) => !labels.includes(n),
+		);
+		add({
+			name: "labels",
+			ok: !missingLabels.length,
+			detail: missingLabels.join(", ") || undefined,
+			fix: "autogh board create",
+		});
+
+		console.log(
+			"\nCan't be checked via the API — verify in Project → Workflows: 'Item closed' and 'Pull request merged' set Status to Done; 'Auto-add to project' is on.",
+		);
+		if (checks.some((c) => !c.ok)) process.exit(1);
+	},
+});

@@ -1,0 +1,15 @@
+name: User need
+description: Something a user needs. The planner agent turns it into a user story and plan.
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Who needs what, and why?
+      description: Describe the user, what they are trying to do, and what gets in the way today. Don't prescribe the solution.
+      placeholder: As a returning customer I lose my cart when I switch devices, so I give up…
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes, constraints, links
