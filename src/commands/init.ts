@@ -20,8 +20,9 @@ export default defineCommand({
 	},
 	args: {
 		provider: {
-			type: "string",
-			description: "claude | codex",
+			type: "enum",
+			options: ["claude", "codex"],
+			description: "Agent provider",
 			default: "claude",
 		},
 		force: {

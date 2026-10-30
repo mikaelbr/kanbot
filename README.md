@@ -57,6 +57,15 @@ Use `autogh run --once --dry-run` to see what it would do. Run one daemon per re
 - `.autogh/agents/*.md`: agent definitions. Run `autogh sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
 - `.agents/skills/`: skills shared by agents. Fill in `project-conventions` first.
 
+## Shell completion
+
+```sh
+echo 'source <(autogh completion)' >> ~/.zshrc     # or ~/.bashrc
+autogh completion --shell fish > ~/.config/fish/completions/autogh.fish
+```
+
+The shell is detected from `$SHELL`; pass `--shell zsh|bash|fish` to override. For zsh, `compinit` must run first.
+
 ## Operating
 
 - `autogh status` shows the board, daemon and failures.

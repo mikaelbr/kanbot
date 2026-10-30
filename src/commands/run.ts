@@ -15,7 +15,12 @@ export default defineCommand({
 			description: "Print what would happen; change nothing",
 			default: false,
 		},
-		verbose: { type: "boolean", alias: "v", default: false },
+		verbose: {
+			type: "boolean",
+			alias: "v",
+			description: "Verbose logging",
+			default: false,
+		},
 	},
 	async run({ args }) {
 		log.verbose = args.verbose;
