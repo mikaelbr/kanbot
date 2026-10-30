@@ -42,5 +42,5 @@ You have read the full diff and its context, run the checks, and every finding i
 
 Return the structured result; it is your only channel to GitHub.
 - `verdict`: `changes` if there is any `blocker` or `major` finding; otherwise `approve` (minor and nit findings may accompany an approval).
-- `summary`: two to four sentences: overall assessment, check results, and the one thing that most needs attention.
-- `findings`: ids `F1`, `F2`, … in priority order. `severity` per the `code-review` rubric. `path` repo-relative and `line` in the new version of the file when the finding is about specific code; both null for cross-cutting findings. `body`: what is wrong, why it matters (concrete failure scenario), and a suggested fix.
+- `summary`: one or two sentences: overall verdict and the one thing that most needs attention.
+- `findings`: ids `F1`, `F2`, … in priority order. `severity` per the `code-review` rubric. `path` repo-relative and `line` in the new version of the file when the finding is about specific code; both null for cross-cutting findings. `body`: one to three sentences: what is wrong, why it matters, and the fix.

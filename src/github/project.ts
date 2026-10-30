@@ -96,12 +96,17 @@ export async function createBoard(gh: Gh, config: Config, title: string) {
 		{ owner: gh.owner, name: gh.name },
 	);
 	const created = await gh.mutate<{
-		createProjectV2: { projectV2: RawProject & { number: number } };
+		createProjectV2: {
+			projectV2: RawProject & {
+				number: number;
+				views: { nodes: { id: string }[] };
+			};
+		};
 	}>(
 		`create project "${title}"`,
 		`mutation($ownerId: ID!, $repositoryId: ID!, $title: String!) {
 			createProjectV2(input: { ownerId: $ownerId, repositoryId: $repositoryId, title: $title }) {
-				projectV2 { number ${PROJECT_FIELDS} }
+				projectV2 { number views(first: 1) { nodes { id } } ${PROJECT_FIELDS} }
 			}
 		}`,
 		{
@@ -129,6 +134,19 @@ export async function createBoard(gh: Gh, config: Config, title: string) {
 			})),
 		},
 	);
+	// New projects open as a table; make the default view a board (grouped by Status).
+	const view = project.views.nodes[0];
+	if (view) {
+		await gh.mutate(
+			"make default view a board",
+			`mutation($v: ID!) {
+				updateProjectV2View(input: { viewId: $v, name: "Board", layout: BOARD_LAYOUT }) {
+					projectV2View { id }
+				}
+			}`,
+			{ v: view.id },
+		);
+	}
 	return {
 		owner: repo.repository.owner.login,
 		number: project.number,
@@ -244,4 +262,17 @@ export async function addToBoard(
 		{ p: board.id, c: contentId },
 	);
 	if (res) await moveItem(gh, board, res.addProjectV2ItemById.item.id, column);
+}
+
+/** Built-in board workflows; they can be read but not enabled via the API. */
+export async function boardWorkflows(gh: Gh, board: Board) {
+	const data = await gh.query<{
+		node: { workflows: { nodes: { name: string; enabled: boolean }[] } };
+	}>(
+		`query($id: ID!) {
+			node(id: $id) { ... on ProjectV2 { workflows(first: 50) { nodes { name enabled } } } }
+		}`,
+		{ id: board.id },
+	);
+	return data.node.workflows.nodes;
 }

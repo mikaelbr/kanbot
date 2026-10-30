@@ -28,6 +28,7 @@ export async function git(cwd: string, ...args: string[]): Promise<string> {
  */
 export class Worktrees {
 	readonly dir: string;
+	private queue: Promise<unknown> = Promise.resolve();
 
 	constructor(
 		readonly root: string,
@@ -38,12 +39,22 @@ export class Worktrees {
 		this.dir = join(homedir(), ".autogh", "worktrees", repo.replace("/", "__"));
 	}
 
+	/**
+	 * Run git operations that touch the shared repo (.git/config, refs, the
+	 * worktree list) one at a time; parallel jobs otherwise race on its locks.
+	 */
+	private serial<T>(fn: () => Promise<T>): Promise<T> {
+		const run = this.queue.then(fn, fn);
+		this.queue = run.catch(() => {});
+		return run;
+	}
+
 	private path(name: string) {
 		return join(this.dir, name.replace(/[^a-zA-Z0-9._-]/g, "_"));
 	}
 
-	async fetch() {
-		await git(this.root, "fetch", "--prune", "origin");
+	fetch() {
+		return this.serial(() => git(this.root, "fetch", "--prune", "origin"));
 	}
 
 	async remoteHas(branch: string) {
@@ -57,7 +68,11 @@ export class Worktrees {
 	 * Check out `branch` in its own worktree. Starts from origin/<branch> when it
 	 * exists remotely (resuming), otherwise from origin/<base>.
 	 */
-	async checkout(name: string, branch: string): Promise<string> {
+	checkout(name: string, branch: string): Promise<string> {
+		return this.serial(() => this.checkoutNow(name, branch));
+	}
+
+	private async checkoutNow(name: string, branch: string) {
 		const path = this.path(name);
 		const from = (await this.remoteHas(branch))
 			? `origin/${branch}`
@@ -69,13 +84,14 @@ export class Worktrees {
 				"worktree",
 				"add",
 				"--force",
+				"--no-track",
 				"-B",
 				branch,
 				path,
 				from,
 			);
 		} else {
-			await git(path, "checkout", "--force", "-B", branch, from);
+			await git(path, "checkout", "--force", "--no-track", "-B", branch, from);
 			await git(path, "reset", "--hard", from);
 			// Keep ignored files (node_modules) so installs stay warm.
 			await git(path, "clean", "-fd");
@@ -84,7 +100,11 @@ export class Worktrees {
 	}
 
 	/** Read-only snapshot of the base branch for planning. */
-	async detached(name: string): Promise<string> {
+	detached(name: string): Promise<string> {
+		return this.serial(() => this.detachedNow(name));
+	}
+
+	private async detachedNow(name: string) {
 		const path = this.path(name);
 		await mkdir(this.dir, { recursive: true });
 		const ref = `origin/${this.base}`;
@@ -114,13 +134,14 @@ export class Worktrees {
 
 	async push(path: string, branch: string) {
 		if (this.dryRun) return log.info(`[dry-run] push ${branch}`);
-		await git(
-			path,
-			"push",
-			"--force-with-lease",
-			"-u",
-			"origin",
-			`HEAD:refs/heads/${branch}`,
+		await this.serial(() =>
+			git(
+				path,
+				"push",
+				"--force-with-lease",
+				"origin",
+				`HEAD:refs/heads/${branch}`,
+			),
 		);
 	}
 
@@ -128,12 +149,8 @@ export class Worktrees {
 		if (!existsSync(this.dir)) return;
 		for (const name of await readdir(this.dir)) {
 			if (!name.startsWith(prefix)) continue;
-			await git(
-				this.root,
-				"worktree",
-				"remove",
-				"--force",
-				join(this.dir, name),
+			await this.serial(() =>
+				git(this.root, "worktree", "remove", "--force", join(this.dir, name)),
 			).catch((e) => log.warn(String(e)));
 		}
 	}

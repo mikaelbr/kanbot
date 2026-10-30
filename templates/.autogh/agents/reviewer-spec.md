@@ -45,5 +45,5 @@ Every acceptance criterion has a verdict with evidence, UI states have been look
 
 Return the structured result; it is your only channel to GitHub.
 - `verdict`: `changes` if any acceptance criterion is unmet or any `blocker`/`major` finding exists; otherwise `approve`.
-- `summary`: start with the criteria tally (e.g. "5/6 acceptance criteria met"), then the main gap, if any, in plain language a product owner can read.
-- `findings`: ids `F1`, `F2`, … in priority order, at most ~10. Unmet acceptance criterion = `blocker`. Broken or confusing user flow, missing state, WCAG AA failure = `major`. Copy and polish = `minor`/`nit`. Scope creep = `major` if risky, else `minor`. `path`/`line` when you can point at the code, else null. `body`: quote the criterion or plan line, state what you observed and the evidence, and say what would satisfy it.
+- `summary`: start with the criteria tally (e.g. "5/6 acceptance criteria met"), then the main gap, if any, in one plain sentence.
+- `findings`: ids `F1`, `F2`, … in priority order, at most ~10. Unmet acceptance criterion = `blocker`. Broken or confusing user flow, missing state, WCAG AA failure = `major`. Copy and polish = `minor`/`nit`. Scope creep = `major` if risky, else `minor`. `path`/`line` when you can point at the code, else null. `body`: one to three sentences: the criterion, what you observed, and what would satisfy it.

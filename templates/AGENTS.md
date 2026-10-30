@@ -25,6 +25,7 @@ Board flow:
 6. **Run tests before finishing.** Narrowest tests while working, then the full suite, lint and typecheck. Never weaken or skip a test to make it pass. Report what you ran.
 7. **Leave the worktree clean.** Everything meant for review is committed; no stray files, no running processes.
 8. **No secrets** in code, logs, fixtures, screenshots or commit messages.
+9. **Write short.** Plans, PR descriptions, replies and findings carry only what a human or agent needs to act or understand. One line per bullet; no restating, no process narration.
 
 ## Where things live
 

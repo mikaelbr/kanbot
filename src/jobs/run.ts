@@ -11,6 +11,7 @@ import {
 	type Job,
 	type PlanJob,
 	type ReviewJob,
+	variantOf,
 } from "../daemon/derive.ts";
 import type { Worktrees } from "../daemon/git.ts";
 import type { Notifier } from "../daemon/notify.ts";
@@ -28,9 +29,15 @@ import {
 	replyToThread,
 	resolveThread,
 	updateIssueBody,
+	updatePRBody,
 } from "../github/api.ts";
 import type { Gh } from "../github/gh.ts";
-import { embedJson, marker, withPlan } from "../github/markers.ts";
+import {
+	embedJson,
+	marker,
+	withDescription,
+	withPlan,
+} from "../github/markers.ts";
 import { addToBoard, type Board, moveItem } from "../github/project.ts";
 import { log } from "../log.ts";
 import type { Provider } from "../providers/types.ts";
@@ -105,7 +112,11 @@ async function runAgent<N extends ResultSchemaName>(
 	>;
 }
 
-const wt = (job: Job) => {
+/**
+ * One worktree per branch, not per job: git refuses to check out a branch that
+ * another worktree holds, and derive never runs two jobs on one branch at once.
+ */
+export function worktreeName(job: Job) {
 	const n = job.item.issue.number;
 	switch (job.kind) {
 		case "plan":
@@ -113,9 +124,9 @@ const wt = (job: Job) => {
 		case "implement":
 			return `i${n}-v${job.variant ?? 1}`;
 		default:
-			return `i${n}-pr${job.pr.number}`;
+			return `i${n}-v${variantOf(job.pr.headRefName) ?? 1}`;
 	}
-};
+}
 
 export function runJob(job: Job, deps: JobDeps): Promise<void> {
 	switch (job.kind) {
@@ -136,7 +147,7 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	const { gh } = deps;
 	const { issue } = job.item;
 	await Promise.all(job.comments.map((c) => react(gh, c.id, "EYES")));
-	const cwd = await deps.worktrees.detached(wt(job));
+	const cwd = await deps.worktrees.detached(worktreeName(job));
 	const result = await runAgent(
 		deps,
 		job,
@@ -180,8 +191,7 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	for (const c of job.comments) {
 		const reply =
 			replyFor.get(c.id) ?? "Noted; reflected in the plan where relevant.";
-		const excerpt = c.body.trim().split("\n")[0]?.slice(0, 120) ?? "";
-		lines.push(`> ${excerpt}\n\n${reply}`);
+		lines.push(`> ${excerpt(c.body)}\n\n${reply}`);
 	}
 	if (created.length) lines.push(`Created ${created.join(", ")}.`);
 	if (result.questions.length) {
@@ -210,7 +220,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 	}
 
 	const resumed = await worktrees.remoteHas(job.branch);
-	const cwd = await worktrees.checkout(wt(job), job.branch);
+	const cwd = await worktrees.checkout(worktreeName(job), job.branch);
 	let result: z.infer<typeof ImplementResult> | null = null;
 	if (!resumed) {
 		const typeLabel = issue.labels
@@ -261,14 +271,17 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 	const variant =
 		job.variant === null ? "" : ` [approach ${job.variant}/${job.variants}]`;
 	const body = [
-		result
-			? absoluteImages(result.prBody, config.repo, job.branch)
-			: `Implements #${issue.number}.`,
+		withDescription(
+			"",
+			result
+				? absoluteImages(result.prBody, config.repo, job.branch)
+				: `Implements #${issue.number}.`,
+		),
 		result?.risks.length
 			? `### Risks\n${result.risks.map((r) => `- ${r}`).join("\n")}`
 			: "",
 		result?.testsRun.length
-			? `### Checks run by agent\n${result.testsRun.map((t) => `- ${t}`).join("\n")}`
+			? `### Checks\n${result.testsRun.map((t) => `- ${t}`).join("\n")}`
 			: "",
 		job.variant === null
 			? ""
@@ -295,6 +308,15 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 	}
 }
 
+/** First line of a comment, cut at a word boundary, for quoting in replies. */
+export function excerpt(body: string, max = 120) {
+	const line = body.trim().split("\n")[0] ?? "";
+	if (line.length <= max) return line;
+	const cut = line.slice(0, max);
+	const space = cut.lastIndexOf(" ");
+	return `${(space > max / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
 /** PR bodies don't render repo-relative images; point them at the branch. */
 export function absoluteImages(md: string, repo: string, branch: string) {
 	return md.replace(
@@ -310,7 +332,10 @@ const PASS_AGENT = { 1: "reviewer-code", 2: "reviewer-spec" } as const;
 const PASS_NAME = { 1: "code", 2: "spec" } as const;
 
 async function review(job: ReviewJob, deps: JobDeps) {
-	const cwd = await deps.worktrees.checkout(wt(job), job.pr.headRefName);
+	const cwd = await deps.worktrees.checkout(
+		worktreeName(job),
+		job.pr.headRefName,
+	);
 	const result = await runAgent(
 		deps,
 		job,
@@ -336,7 +361,7 @@ async function review(job: ReviewJob, deps: JobDeps) {
 async function fix(job: FixJob, deps: JobDeps) {
 	const { gh, worktrees, config } = deps;
 	const { pr } = job;
-	const cwd = await worktrees.checkout(wt(job), pr.headRefName);
+	const cwd = await worktrees.checkout(worktreeName(job), pr.headRefName);
 	const before = await worktrees.head(cwd);
 	const logs =
 		job.reason.type === "ci"
@@ -358,6 +383,10 @@ async function fix(job: FixJob, deps: JobDeps) {
 	);
 	const changed = (await worktrees.head(cwd)) !== before;
 	if (changed) await worktrees.push(cwd, pr.headRefName);
+	if (result.prBody) {
+		const desc = absoluteImages(result.prBody, config.repo, pr.headRefName);
+		await updatePRBody(gh, pr.number, withDescription(pr.body, desc));
+	}
 	const by = new Map(result.addressed.map((a) => [a.ref, a]));
 	const pushed = changed ? "Pushed fixes." : "No code changes.";
 
@@ -403,7 +432,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 		const lines = r.comments.map((c) => {
 			const a = by.get(c.id);
 			if (!a?.resolved) open++;
-			return `> ${c.body.trim().split("\n")[0]?.slice(0, 120)}\n\n${a?.reply ?? "Noted."}`;
+			return `> ${excerpt(c.body)}\n\n${a?.reply ?? "Noted."}`;
 		});
 		await postComment(
 			gh,

@@ -16,9 +16,10 @@ import {
 	isAutogh,
 	readJson,
 	stripPlan,
+	withDescription,
 	withPlan,
 } from "../src/github/markers.ts";
-import { absoluteImages } from "../src/jobs/run.ts";
+import { absoluteImages, excerpt } from "../src/jobs/run.ts";
 import { jsonSchema, RESULT_SCHEMAS } from "../src/schemas/results.ts";
 
 const TEMPLATES = join(import.meta.dir, "..", "templates");
@@ -127,6 +128,22 @@ describe("markers", () => {
 		expect(updated.match(/autogh:plan:start/g)).toHaveLength(1);
 	});
 
+	test("PR description block is replaced, the daemon's tail is kept", () => {
+		const body = `${withDescription("", "v1 text")}\n\nCloses #1\n<!-- autogh:pr:1 -->`;
+		const updated = withDescription(body, "v2 text");
+		expect(updated).toContain("v2 text");
+		expect(updated).not.toContain("v1 text");
+		expect(updated).toContain("Closes #1");
+		expect(updated.match(/autogh:desc:start/g)).toHaveLength(1);
+	});
+
+	test("PR bodies without a description block get one prepended", () => {
+		const updated = withDescription("Old body\n\nCloses #1", "new");
+		expect(updated.startsWith("<!-- autogh:desc:start -->")).toBe(true);
+		expect(updated).toContain("Closes #1");
+		expect(updated).not.toContain("Old body");
+	});
+
 	test("embedded json survives markdown", () => {
 		const data = [{ id: "F1", body: "uses `-->` and émoji 🎉" }];
 		expect(
@@ -160,4 +177,13 @@ test("relative screenshots become branch URLs", () => {
 	).toBe(
 		"![home](https://github.com/acme/app/blob/autogh/1/.autogh/screenshots/a.png?raw=true) ![x](https://e.com/b.png)",
 	);
+});
+
+test("comment excerpts cut at a word and mark the cut", () => {
+	expect(excerpt("Short one\nsecond line")).toBe("Short one");
+	const long = `${"word ".repeat(40)}end`;
+	const out = excerpt(long);
+	expect(out.endsWith("…")).toBe(true);
+	expect(out.length).toBeLessThanOrEqual(121);
+	expect(out).not.toMatch(/wor…$/);
 });

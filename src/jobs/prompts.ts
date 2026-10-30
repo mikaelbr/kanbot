@@ -4,7 +4,7 @@ import type {
 	PlanJob,
 	ReviewJob,
 } from "../daemon/derive.ts";
-import type { Comment, Issue } from "../daemon/types.ts";
+import type { Comment, Issue, PR } from "../daemon/types.ts";
 import { extractPlan, isAutogh, stripPlan } from "../github/markers.ts";
 import type { Finding } from "../schemas/results.ts";
 
@@ -16,7 +16,8 @@ import type { Finding } from "../schemas/results.ts";
 const RULES = `## Ground rules
 - You are running headless inside a git worktree. Nobody will answer questions mid-run.
 - Never use \`gh\`, never \`git push\`, never contact GitHub. autogh applies your output.
-- Your final answer must be the structured JSON result. Put everything the human should see in it.`;
+- Your final answer must be the structured JSON result. Put everything the human should see in it.
+- Write short and plain: only what the reader needs to act or understand. Don't restate the input or narrate your process.`;
 
 function quote(text: string) {
 	return text.trim() ? text.trim() : "_(empty)_";
@@ -35,6 +36,30 @@ function conversation(comments: Comment[], limit = 30) {
 
 function stripMarkers(body: string) {
 	return body.replace(/<!--\s*autogh[^>]*-->/g, "").trim();
+}
+
+/**
+ * Earlier human feedback on the PR, resolved or not. Without it, review and fix
+ * agents see only the plan and "correct" decisions the human made on the PR.
+ */
+function humanDecisions(pr: PR) {
+	const threads = pr.threads.filter((t) =>
+		t.comments.some((c) => !isAutogh(c.body)),
+	);
+	const comments = [...pr.comments, ...pr.reviews].filter(
+		(c) => !isAutogh(c.body),
+	);
+	if (!threads.length && !comments.length) return null;
+	const parts = [
+		"## Human decisions on this PR\nFeedback the human already gave on this PR. It outranks the plan and acceptance criteria where they conflict; do not undo or flag these changes.",
+		...threads.map(
+			(t) =>
+				`### Review thread on ${t.path ?? "?"}${t.line ? `:${t.line}` : ""}${t.isResolved ? " (resolved)" : ""}\n${conversation(t.comments, 10)}`,
+		),
+	];
+	if (comments.length)
+		parts.push(`### PR comments\n${conversation(comments, 10)}`);
+	return parts.join("\n\n");
 }
 
 function issueHeader(issue: Issue) {
@@ -105,9 +130,12 @@ export function reviewPrompt(job: ReviewJob, base: string) {
 		issueHeader(issue),
 		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
 		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`. CI status: ${pr.checks ?? "none"}.\n\n### PR description\n${quote(stripMarkers(pr.body))}`,
+		humanDecisions(pr),
 		`## Review pass ${job.pass} of 2\nYou only review. Do not edit files or commit.`,
 		RULES,
-	].join("\n\n");
+	]
+		.filter(Boolean)
+		.join("\n\n");
 }
 
 export function fixPrompt(job: FixJob, base: string, ciLogs: string | null) {
@@ -116,9 +144,11 @@ export function fixPrompt(job: FixJob, base: string, ciLogs: string | null) {
 	const parts = [
 		issueHeader(issue),
 		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
-		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`.`,
+		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`.\n\n### Current PR description\n${quote(stripMarkers(pr.body))}`,
 	];
 	const r = job.reason;
+	const decisions = r.type === "feedback" ? null : humanDecisions(pr);
+	if (decisions) parts.push(decisions);
 	if (r.type === "review") {
 		parts.push(
 			`## Agent review pass ${r.pass} findings\nAddress each finding (use its id as \`ref\`). Nits are optional. If you disagree with a finding, leave the code and explain in \`reply\` with \`resolved: false\`.\n\n${findingsList(r.findings)}`,

@@ -18,7 +18,7 @@ You critique a draft plan as a demanding product lead and tech lead would. Your 
 3. **Acceptance criteria.** Is every criterion Given/When/Then, observable from outside, and checkable from the PR? Flag vague words: "fast", "intuitive", "properly", "support", "handle". Are unhappy paths covered (empty, error, invalid input, no permission)?
 4. **Design notes.** For UI work: are loading, empty, error and success states described? Mobile? Keyboard and screen-reader use?
 5. **Implementation steps.** Small, ordered, each leaving the code working? Do they name files? Is there a step that hides a large unknown (spike needed)?
-6. **Test plan.** Does each criterion map to a test or a screenshot?
+6. **Length.** Is anything repeated, padded or not needed to build and verify this? Under ~30 lines?
 7. **Scope.** Anything that belongs in `## Out of scope`? Anything out of scope that a criterion silently requires?
 8. **Approaches** (only with `explore:N`). Exactly N? Genuinely different on a real axis, or cosmetic variants? Each with honest tradeoffs?
 9. **Assumptions.** Unstated assumptions that should be questions for the human.

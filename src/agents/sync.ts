@@ -31,6 +31,12 @@ export const CLAUDE_DENY = [
 	"Bash(git config *)",
 ];
 
+/** Agents act as the human's account: no Claude co-author trailers or PR footers. */
+export const CLAUDE_ATTRIBUTION = {
+	attribution: { commit: "", pr: "" },
+	includeCoAuthoredBy: false,
+};
+
 export function claudeTools(agent: AgentDef): string[] {
 	const tools = agent.tools.flatMap((t) => CLAUDE_TOOLS[t] ?? []);
 	if (agent.skills.length) tools.push("Skill");
@@ -56,6 +62,7 @@ export function renderClaudeSettings(agents: AgentDef[]): string {
 		{
 			$comment: GENERATED,
 			permissions: { allow, deny: CLAUDE_DENY },
+			...CLAUDE_ATTRIBUTION,
 		},
 		null,
 		2,

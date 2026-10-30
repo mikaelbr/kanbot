@@ -6,7 +6,11 @@ import { sync } from "../agents/sync.ts";
 import { loadConfig } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { Gh, run } from "../github/gh.ts";
-import { loadBoard, missingColumns } from "../github/project.ts";
+import {
+	boardWorkflows,
+	loadBoard,
+	missingColumns,
+} from "../github/project.ts";
 import { REPO_LABELS } from "./board.ts";
 
 type Check = { name: string; ok: boolean; detail?: string; fix?: string };
@@ -149,6 +153,19 @@ export default defineCommand({
 					: board.url,
 				fix: "autogh board create",
 			});
+			// Moving cards to Done on close/merge and adding new issues are left to GitHub.
+			const workflows = await boardWorkflows(gh, board);
+			for (const name of [
+				"Item closed",
+				"Pull request merged",
+				"Auto-add to project",
+			]) {
+				add({
+					name: `board workflow "${name}" enabled`,
+					ok: workflows.some((w) => w.name === name && w.enabled),
+					fix: `enable it in ${board.url} → ⋯ → Workflows`,
+				});
+			}
 		} catch (e) {
 			add({
 				name: "project board",
@@ -182,9 +199,6 @@ export default defineCommand({
 			fix: "autogh board create",
 		});
 
-		console.log(
-			"\nCan't be checked via the API — verify in Project → Workflows: 'Item closed' and 'Pull request merged' set Status to Done; 'Auto-add to project' is on.",
-		);
 		if (checks.some((c) => !c.ok)) process.exit(1);
 	},
 });

@@ -2,7 +2,12 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentDef } from "../agents/load.ts";
-import { agentInstructions, CLAUDE_DENY, claudeTools } from "../agents/sync.ts";
+import {
+	agentInstructions,
+	CLAUDE_ATTRIBUTION,
+	CLAUDE_DENY,
+	claudeTools,
+} from "../agents/sync.ts";
 import {
 	looksRateLimited,
 	type Provider,
@@ -49,6 +54,13 @@ export const claude: Provider = {
 			"--disallowedTools",
 			...CLAUDE_DENY,
 			"--no-session-persistence",
+			// Isolate from the user's own setup: no user-level plugins, skills or
+			// MCP servers, so workers only see the repo's agents and skills.
+			"--setting-sources",
+			"project,local",
+			"--strict-mcp-config",
+			"--settings",
+			JSON.stringify(CLAUDE_ATTRIBUTION),
 		];
 		if (agent.models.claude) cmd.push("--model", agent.models.claude);
 		if (agent.effort) cmd.push("--effort", agent.effort);

@@ -22,7 +22,7 @@ so that <the outcome they care about>.
 
 ## Find the need first
 
-Before writing the story, answer these in the plan's `## Problem / user need`:
+Before writing the story, answer these for yourself; put the essence in the plan's one-line `Need:`:
 
 1. Who is struggling, and in what situation does it happen?
 2. What are they trying to get done (the job)? Use the Jobs-to-be-done lens: _When <situation>, I want to <motivation>, so I can <expected outcome>._
@@ -79,4 +79,4 @@ Do not use `technical` to dodge user framing. If users will notice the change, i
 
 ## New issues you propose
 
-Bodies of new issues follow the same format: the story, two to four sentences of need, and draft acceptance criteria. Mark anything you assumed with "Assumption:".
+Bodies of new issues follow the same format: the story, a one-line need, and draft acceptance criteria. Mark anything you assumed with "Assumption:".

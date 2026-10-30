@@ -179,6 +179,15 @@ export function createPR(
 	);
 }
 
+export function updatePRBody(gh: Gh, number: number, body: string) {
+	return gh.restWrite(
+		`update body of PR #${number}`,
+		"PATCH",
+		gh.r(`/pulls/${number}`),
+		{ body },
+	);
+}
+
 export function closePR(gh: Gh, number: number) {
 	return gh.restWrite(
 		`close PR #${number}`,

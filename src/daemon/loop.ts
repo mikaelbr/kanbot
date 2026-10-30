@@ -91,8 +91,12 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			}
 			if (opts.once) break;
 			await new Promise<void>((resolve) => {
-				wake = resolve;
-				setTimeout(resolve, config.pollSeconds * 1000);
+				// Clear the timer on wake so Ctrl-C doesn't wait out the poll interval.
+				const timer = setTimeout(resolve, config.pollSeconds * 1000);
+				wake = () => {
+					clearTimeout(timer);
+					resolve();
+				};
 			});
 		}
 		await Promise.allSettled(running.values());

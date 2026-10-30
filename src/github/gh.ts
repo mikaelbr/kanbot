@@ -21,10 +21,21 @@ export class Gh {
 		query: string,
 		variables: Record<string, unknown> = {},
 	): Promise<T> {
-		const out = await run(
-			["api", "graphql", "--input", "-"],
-			JSON.stringify({ query, variables }),
-		);
+		const input = JSON.stringify({ query, variables });
+		// Projects mutations sometimes fail with "temporary conflict … try again"
+		// when a board workflow (e.g. Auto-add) touches the same item.
+		for (let attempt = 1; ; attempt++) {
+			try {
+				return await this.queryOnce<T>(input);
+			} catch (e) {
+				if (attempt >= 3 || !/try again/i.test(String(e))) throw e;
+				await Bun.sleep(1000 * attempt);
+			}
+		}
+	}
+
+	private async queryOnce<T>(input: string): Promise<T> {
+		const out = await run(["api", "graphql", "--input", "-"], input);
 		const json = JSON.parse(out) as { data: T; errors?: { message: string }[] };
 		if (json.errors?.length) {
 			throw new Error(

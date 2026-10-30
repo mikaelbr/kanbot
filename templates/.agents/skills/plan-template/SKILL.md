@@ -6,42 +6,32 @@ description: The exact markdown structure for an autogh issue plan, with an exam
 
 # Plan template
 
-The plan is stored in the issue body and is the contract for the implementer and both reviewers. Write it so an agent that cannot ask questions builds the right thing. Use these headings, in this order, with these exact names. Omit `## Approaches` unless the issue has an `explore:N` label. Never omit the others; write "None." if a section is empty.
+The plan lives in the issue body. It is the contract for the implementer and both reviewers, and a human approves it by reading it. Keep it short: the reader should grasp it in one minute. Say what and why; the implementer decides how.
 
 ```markdown
 ## User story
 
 As a <user in context>, I want <capability>, so that <outcome>.
-<!-- For issues labelled `technical`, use "## Technical goal" instead, naming who benefits. -->
-
-## Problem / user need
-
-<What hurts today, for whom, in which situation. The current workaround and its cost. How we will know it worked. 3-6 sentences. Mark assumptions with "Assumption:".>
+Need: <one or two sentences: what hurts today and how we'll know it worked.>
+<!-- `technical` issues: "## Technical goal" instead, naming who benefits. -->
 
 ## Acceptance criteria
 
 - [ ] Given <context>, when <action>, then <observable result>.
-- [ ] …  <!-- 3-7 items; happy path, empty, error, invalid input, permissions -->
+<!-- 2-6 items. Cover the happy path plus the edge cases that matter. -->
 
 ## Out of scope
 
-- <Things a reader might expect but this slice does not do, and where they went (new issue / later).>
+- <Only what a reader would otherwise expect. Omit the section if nothing.>
 
 ## Design notes
 
-<For UI: the flow step by step, where it lives in the app, copy for key labels and messages, and every state: loading, empty, error, success, disabled, long content, mobile (390px) and desktop. Keyboard and screen-reader behaviour.
-For non-UI: API shape (request/response examples), data model changes, error responses, compatibility.>
+<UI: placement, key copy, states that differ from the obvious. Non-UI: API or data shape. 1-4 lines. Omit if nothing beyond the criteria.>
 
 ## Implementation steps
 
-1. <Small atomic step that leaves the code working.> Files: `path/a.ts`, `path/b.test.ts`
-2. …
-<!-- 3-8 steps. Each one could be its own commit. Tests come with or before the code they cover. -->
-
-## Test plan
-
-- <Which tests cover which criterion (unit / integration / e2e), and what is checked by screenshot.>
-- Commands: `<narrow test command>`, `<full suite>`
+1. <Atomic step, with its test.> Files: `path/a.ts`
+<!-- 1-5 steps. -->
 
 ## Approaches
 
@@ -49,59 +39,47 @@ For non-UI: API shape (request/response examples), data model changes, error res
 
 ## Open questions
 
-- <Only questions the human must answer; each also listed in the output `questions`. The plan states the default it assumes until answered.>
+- <Only what blocks the human's approval, with the default you assume. Omit if none.>
 ```
 
 ## Rules
 
-- Acceptance criteria are shared by all approaches. Approach-specific implementation steps go inside each `### Approach k` section; the top-level `## Implementation steps` then holds only steps common to all approaches, or "See each approach."
-- File paths in steps come from actually reading the code (via `explorer`), not guesses. Mark new files as "(new)".
-- No code blocks longer than ~10 lines; the plan is about what and why, the implementer decides the code.
-- Keep the whole plan under ~120 lines (excluding approaches). Longer means split.
+- Required: User story (or Technical goal), Acceptance criteria, Implementation steps. Omit other sections when empty; don't write "None."
+- One line per bullet. No prose paragraphs, no repeating the issue text.
+- Acceptance criteria are shared by all approaches. Approach-specific steps go inside each `### Approach k`.
+- File paths come from reading the code, not guesses. Mark new files "(new)".
+- No code blocks. Aim for under 30 lines (excluding approaches); much longer means split the issue.
 
 ## Example
 
 ```markdown
 ## User story
 
-As a freelancer sending invoices at the end of the month, I want to see which time entries have no project, so that I can fix them before invoicing instead of finding gaps after the invoice is sent.
-
-## Problem / user need
-
-Entries without a project are silently excluded from invoices. Users discover this when a client questions a low invoice. Today they scroll the whole month looking for blank project cells, which takes 10+ minutes and misses entries. Success: users fix missing projects before generating invoices; support tickets about "missing hours" drop.
-Assumption: only the current user's own entries are shown.
+As a freelancer invoicing at month end, I want to see time entries with no project, so that I fix them before invoicing.
+Need: entries without a project silently drop off invoices; users find out when clients complain.
 
 ## Acceptance criteria
 
-- [ ] Given I have entries this month without a project, when I open the month view, then a "Needs a project" section lists them with date, duration and description, newest first.
-- [ ] Given I assign a project to an entry in that section, when the save succeeds, then the entry leaves the section and the count updates without a page reload.
-- [ ] Given all entries have a project, when I open the month view, then the section is not shown.
-- [ ] Given loading entries fails, when I open the month view, then the section shows "Couldn't load entries" with a "Try again" button.
+- [ ] Given entries this month have no project, when I open the month view, then a "Needs a project" list shows them, newest first.
+- [ ] Given I assign a project in that list, when it saves, then the entry leaves the list without a reload.
+- [ ] Given every entry has a project, when I open the month view, then the list is hidden.
+- [ ] Given loading fails, when I open the month view, then the list shows "Couldn't load entries" and "Try again".
 
 ## Out of scope
 
-- Bulk-assigning a project to several entries (proposed as a new issue).
-- Warning on the invoice screen (separate idea).
+- Bulk-assigning projects (new issue).
 
 ## Design notes
 
-Section sits above the calendar grid, collapsed to 5 rows with "Show all (12)". Each row has a project picker (reuse `ProjectSelect`). Loading: 3 skeleton rows. Error: inline message plus retry, rest of the page still usable. Mobile: rows stack date over description; picker full width. Picker is keyboard operable; count change announced via a polite live region.
+List sits above the calendar, collapsed to 5 rows with "Show all (n)". Reuse `ProjectSelect` per row.
 
 ## Implementation steps
 
-1. Add `GET /entries?month=&missingProject=true` filter with tests. Files: `api/entries/routes.ts`, `api/entries/routes.test.ts`
-2. Add `useEntriesMissingProject(month)` hook. Files: `web/entries/hooks.ts`
-3. Build `MissingProjectSection` with loading/empty/error states and tests. Files: `web/entries/MissingProjectSection.tsx` (new), `…test.tsx` (new)
-4. Mount it in the month view and wire project assignment to refresh the list. Files: `web/month/MonthView.tsx`
-
-## Test plan
-
-- API filter: integration test (criteria 1, 3).
-- Section states and assignment: component tests (criteria 1-4).
-- Screenshots at 390/1280: with entries, empty (hidden), error.
-- Commands: `bun test web/entries`, `bun test`
+1. Add `missingProject` filter to `GET /entries`, with tests. Files: `api/entries/routes.ts`
+2. Add `MissingProjectSection` with its states and tests. Files: `web/entries/MissingProjectSection.tsx` (new)
+3. Mount it in the month view and refresh after assignment. Files: `web/month/MonthView.tsx`
 
 ## Open questions
 
-- Should entries from previous months show too? Default: current month only.
+- Include earlier months? Default: current month only.
 ```

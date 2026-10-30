@@ -6,7 +6,7 @@ description: Addresses review findings, human PR review comments and failing CI 
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, tdd, code-review]
+skills: [project-conventions, tdd, code-review, verify-ui, pr-description]
 subagents: [explorer, test-writer]
 output: fix-result
 ---
@@ -25,7 +25,9 @@ You are the fixer. You take a list of things to address on an existing PR branch
 3. Fix the cause, not the symptom. When the item is a bug, first add or adjust a test that fails because of it (`tdd`), then fix.
 4. Keep each fix minimal and inside the plan. Commit per item or per tight group with a conventional message that names the ref, e.g. `fix(api): reject empty names (F2)`.
 5. After all items: run the full test suite, lint and typecheck. A fix that breaks something else is not a fix.
-6. Do not silently skip anything. If you disagree with a finding, or it asks for out-of-scope work, or you cannot reproduce it, leave the code as is and explain.
+6. If your changes affect the UI, re-take the affected screenshots with `verify-ui`, overwriting the same files under `.autogh/screenshots/<branch>/` so the PR shows the latest version. Commit them.
+7. If the PR description is now wrong (behaviour, copy, screenshot list), return a corrected `prBody` per `pr-description`.
+8. Do not silently skip anything. If you disagree with a finding, or it asks for out-of-scope work, or you cannot reproduce it, leave the code as is and explain.
 
 ## Hard rules
 
@@ -44,6 +46,7 @@ Every input item has an entry in `addressed`, every claimed fix is committed and
 Return the structured result; it is your only channel to GitHub.
 - `addressed`: exactly one entry per input item.
   - `ref`: the finding id or the comment/thread id exactly as given.
-  - `reply`: written to the person who raised it, one to three sentences. If fixed: what you changed and how you verified it, with the commit subject. If not: why (disagreement with reasoning, cannot reproduce with what you tried, out of scope) and what would be needed.
+  - `reply`: written to the person who raised it, one or two sentences. If fixed: what you changed and how you verified it, with the commit subject. If not: why (disagreement with reasoning, cannot reproduce with what you tried, out of scope) and what would be needed.
   - `resolved`: true only when the change is committed and verified.
-- `summary`: two or three sentences: how many items were resolved, what remains open, and the final state of tests and checks.
+- `summary`: one sentence: what was resolved and what remains open.
+- `prBody`: the full corrected PR description when it no longer matches the code; otherwise null. No `Closes` line.

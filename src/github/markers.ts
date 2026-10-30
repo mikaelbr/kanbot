@@ -49,6 +49,25 @@ export function withPlan(body: string, plan: string): string {
 	return human ? `${human}\n\n---\n\n${block}` : block;
 }
 
+const DESC_START = "<!-- autogh:desc:start -->";
+const DESC_END = "<!-- autogh:desc:end -->";
+/** Where the daemon's own PR body sections begin, for bodies without a desc block. */
+const PR_TAIL = /^(### Risks|### Checks|> Exploratory|Closes #)/m;
+
+/**
+ * Put the agent-written PR description in a marked block, replacing the
+ * previous one and keeping the daemon's sections (risks, checks, Closes #n).
+ */
+export function withDescription(body: string, description: string): string {
+	const block = `${DESC_START}\n\n${description.trim()}\n\n${DESC_END}`;
+	const start = body.indexOf(DESC_START);
+	const end = body.indexOf(DESC_END);
+	if (start !== -1 && end > start)
+		return body.slice(0, start) + block + body.slice(end + DESC_END.length);
+	const tail = body.search(PR_TAIL);
+	return tail === -1 ? block : `${block}\n\n${body.slice(tail)}`;
+}
+
 /** Embed machine-readable data in a comment. */
 export function embedJson(kind: string, data: unknown) {
 	return `<!-- autogh-data:${kind} ${Buffer.from(JSON.stringify(data)).toString("base64")} -->`;

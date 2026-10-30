@@ -24,7 +24,7 @@ Ideas ──► Planning ──► Ready ──► In Progress ──► Review 
 
 - **The orchestrator is deterministic code, not an LLM.** A Bun daemon polls the board, decides what to do in a pure function (`src/daemon/derive.ts`) and runs one headless CLI process per job (`claude -p` / `codex exec`).
 - **GitHub is the state.** Columns, labels, and hidden `<!-- autogh:… -->` markers in comments. You can kill and restart the daemon at any time. The only local state is failure counts.
-- **Agents never touch GitHub.** Workers get no token, and `gh` and `git push` are denied. They return validated JSON (`--json-schema` / `--output-schema`), and the daemon applies every comment, label, push and PR. This keeps runs auditable, idempotent and harder to hijack through prompt injection.
+- **Agents never touch GitHub.** Workers get no GitHub token in their environment, and `gh` and `git push` are denied. They return validated JSON (`--json-schema` / `--output-schema`), and the daemon applies every comment, label, push and PR. This keeps runs auditable, idempotent and harder to hijack through prompt injection.
 - **Only collaborators with write access can steer agents.** Comments from anyone else are ignored.
 - **Agents act as your gh account.** So:
   - Everything autogh posts carries a marker, which is how it tells your comments from its own.
@@ -59,7 +59,7 @@ gh auth refresh -s project           # Projects v2 access
 cd your-product-repo
 bunx autogh init --provider claude   # or: --provider codex
 autogh board create                  # project board + labels
-#   then enable the board's built-in workflows it prints (Item closed → Done, PR merged → Done, Auto-add)
+#   then enable the board's built-in workflows it prints (Item closed → Done, PR merged → Done, Auto-add); doctor checks them
 git add -A && git commit -m "chore: add autogh" && git push
 autogh doctor
 autogh run --once --dry-run          # see what it would do
@@ -147,6 +147,7 @@ pnpm typecheck
 
 ## Known limitations
 
-- Ready-column priority follows the order the Projects API returns items in. Check that it matches your manual board order.
-- The board's built-in workflows can't be configured through the API; `autogh board create` prints the steps.
+- Ready-column priority is the project's manual item order (what you get by dragging cards). A sort set on a board view changes only what you see, not what autogh picks first.
+- The board's built-in workflows (Item closed, Pull request merged, Auto-add) can't be enabled through the API. `autogh board create` prints the steps and `autogh doctor` checks they are on.
 - In-progress work doesn't survive a daemon crash. The job reruns from scratch, but pushed work is reused.
+- Workers run on your machine as your user. `gh` and `git push` are blocked by command patterns, not by missing credentials, so a determined prompt injection could still find a way around them.

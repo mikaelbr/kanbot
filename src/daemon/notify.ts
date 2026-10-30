@@ -1,3 +1,4 @@
+import notifier from "node-notifier";
 import type { Config } from "../config.ts";
 import { log } from "../log.ts";
 
@@ -10,7 +11,10 @@ export class Notifier {
 
 	send(title: string, message: string, url?: string) {
 		log.info(`🔔 ${title} — ${message}${url ? ` ${url}` : ""}`);
-		if (this.config.desktop) desktop(title, message).catch(() => {});
+		if (this.config.desktop)
+			desktop(title, message, url).catch((e) =>
+				log.warn(`desktop notification failed: ${e}`),
+			);
 		if (this.config.webhook) {
 			fetch(this.config.webhook, {
 				method: "POST",
@@ -25,15 +29,16 @@ export class Notifier {
 	}
 }
 
-async function desktop(title: string, message: string) {
-	const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-	const cmd =
-		process.platform === "darwin"
-			? [
-					"osascript",
-					"-e",
-					`display notification "${esc(message)}" with title "autogh" subtitle "${esc(title)}"`,
-				]
-			: ["notify-send", `autogh: ${title}`, message];
-	await Bun.spawn(cmd, { stdout: "ignore", stderr: "ignore" }).exited;
+function desktop(title: string, message: string, url?: string) {
+	return new Promise<void>((resolve, reject) =>
+		notifier.notify(
+			{
+				title: "autogh",
+				subtitle: title,
+				message,
+				...(url ? { open: url } : {}),
+			},
+			(err) => (err ? reject(err) : resolve()),
+		),
+	);
 }
