@@ -12,6 +12,8 @@ flowchart LR
   Review --> Done["Done<br/><i>you merge</i>"]
 ```
 
+Full docs: [docs/](./docs/00-index.md).
+
 ## How it works
 
 | Column          | What happens                                                                                                                 |
