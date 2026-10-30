@@ -4,7 +4,7 @@ import { dirname, join, relative } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { configPath, saveConfig } from "../config.ts";
+import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
 import { run } from "../github/gh.ts";
 import { log } from "../log.ts";
 
@@ -70,6 +70,8 @@ export default defineCommand({
 
 		await appendGitignore(root);
 		const changed = await sync(root, await loadAgents(root));
+		if (await writeConfigSchema(root))
+			changed.push(".autogh/config.schema.json");
 		for (const f of changed) log.info(`~ ${f} (generated)`);
 
 		console.log(`

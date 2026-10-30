@@ -1,13 +1,14 @@
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
+import { writeConfigSchema } from "../config.ts";
 import { log } from "../log.ts";
 
 export default defineCommand({
 	meta: {
 		name: "sync",
 		description:
-			"Generate .claude/agents, .codex/agents and permissions from .autogh/agents",
+			"Generate .claude/agents, .codex/agents, permissions and the config schema",
 	},
 	args: {
 		check: {
@@ -21,8 +22,9 @@ export default defineCommand({
 		const changed = await sync(root, await loadAgents(root), {
 			check: args.check,
 		});
-		if (!changed.length)
-			return log.info("Generated agent files are up to date.");
+		if (await writeConfigSchema(root, { check: args.check }))
+			changed.push(".autogh/config.schema.json");
+		if (!changed.length) return log.info("Generated files are up to date.");
 		for (const f of changed) log.info(`${args.check ? "stale" : "wrote"} ${f}`);
 		if (args.check) process.exit(1);
 	},

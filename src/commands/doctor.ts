@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { loadConfig } from "../config.ts";
+import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { Gh, run } from "../github/gh.ts";
 import {
@@ -109,6 +109,11 @@ export default defineCommand({
 				name: "generated agent files up to date",
 				ok: !stale.length,
 				detail: stale.join(", ") || undefined,
+				fix: "autogh sync",
+			});
+			add({
+				name: "config schema up to date",
+				ok: !(await writeConfigSchema(root, { check: true })),
 				fix: "autogh sync",
 			});
 		} catch (e) {

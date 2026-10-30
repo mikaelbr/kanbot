@@ -9,7 +9,8 @@
 	},
 	"files": [
 		"src",
-		"templates"
+		"templates",
+		"schema"
 	],
 	"engines": {
 		"bun": ">=1.3"
@@ -19,7 +20,8 @@
 		"test": "bun test",
 		"check": "biome check .",
 		"fix": "biome check --write .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"schema": "bun -e \"await Bun.write('schema/config.schema.json', (await import('./src/config.ts')).renderConfigSchema())\""
 	},
 	"dependencies": {
 		"citty": "^0.2.2",

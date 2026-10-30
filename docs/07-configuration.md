@@ -9,9 +9,10 @@ slug: configuration
 
 ## Config file
 
-`.autogh/config.yml` is created by `init` and `board create`. All fields except `repo` have defaults.
+`.autogh/config.yml` is created by `init` and `board create`. All fields except `repo` have defaults. autogh keeps your comments when it updates the file.
 
 ```yaml
+# yaml-language-server: $schema=./config.schema.json
 provider: claude # claude | codex
 repo: owner/name
 baseBranch: main
@@ -52,6 +53,12 @@ notify:
 ```
 
 Restart the daemon after changes.
+
+### Schema
+
+`init` and `sync` write `.autogh/config.schema.json`, matching your autogh version. The header line above points editors at it (VS Code needs the YAML extension), giving autocomplete, docs on hover and errors. `doctor` reports a stale schema.
+
+The schema also ships in the package as `schema/config.schema.json`, e.g. `https://unpkg.com/autogh/schema/config.schema.json`.
 
 ### Columns
 

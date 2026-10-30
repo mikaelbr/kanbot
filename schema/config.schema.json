@@ -1,0 +1,183 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"provider": {
+			"default": "claude",
+			"description": "Agent CLI that runs workers.",
+			"type": "string",
+			"enum": ["claude", "codex"]
+		},
+		"repo": {
+			"type": "string",
+			"pattern": "^[^/]+\\/[^/]+$",
+			"description": "GitHub repo as owner/name."
+		},
+		"baseBranch": {
+			"default": "main",
+			"description": "Branch agents work from.",
+			"type": "string"
+		},
+		"project": {
+			"default": null,
+			"description": "GitHub Project board. Set by `autogh board create`.",
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"owner": {
+							"type": "string"
+						},
+						"number": {
+							"type": "integer",
+							"minimum": -9007199254740991,
+							"maximum": 9007199254740991
+						}
+					},
+					"required": ["owner", "number"]
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"columns": {
+			"description": "Names of the board's Status options.",
+			"default": {},
+			"type": "object",
+			"properties": {
+				"ideas": {
+					"default": "Ideas",
+					"type": "string"
+				},
+				"planning": {
+					"default": "Planning",
+					"type": "string"
+				},
+				"ready": {
+					"default": "Ready",
+					"type": "string"
+				},
+				"inProgress": {
+					"default": "In Progress",
+					"type": "string"
+				},
+				"review": {
+					"default": "Review",
+					"type": "string"
+				},
+				"done": {
+					"default": "Done",
+					"type": "string"
+				}
+			}
+		},
+		"concurrency": {
+			"default": 3,
+			"description": "Max concurrent agent workers. Each exploratory variant is one worker.",
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 9007199254740991
+		},
+		"pollSeconds": {
+			"default": 60,
+			"description": "Seconds between board polls.",
+			"type": "integer",
+			"minimum": 10,
+			"maximum": 9007199254740991
+		},
+		"priority": {
+			"default": ["fix", "review", "plan", "implement"],
+			"description": "Order in which waiting jobs get free slots.",
+			"type": "array",
+			"items": {
+				"type": "string",
+				"enum": ["fix", "review", "plan", "implement"]
+			}
+		},
+		"maxAttempts": {
+			"default": 2,
+			"description": "Attempts per job before the issue is labeled needs-human.",
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 9007199254740991
+		},
+		"timeoutMinutes": {
+			"description": "Per-job timeout in minutes.",
+			"default": {},
+			"type": "object",
+			"properties": {
+				"plan": {
+					"default": 20,
+					"type": "number"
+				},
+				"implement": {
+					"default": 90,
+					"type": "number"
+				},
+				"review": {
+					"default": 30,
+					"type": "number"
+				},
+				"fix": {
+					"default": 45,
+					"type": "number"
+				}
+			}
+		},
+		"implementers": {
+			"default": {
+				"frontend": "implementer-frontend",
+				"backend": "implementer-backend",
+				"docs": "implementer-docs",
+				"infra": "implementer-technical",
+				"default": "implementer-backend"
+			},
+			"description": "Maps a type:<key> label to an agent. `default` is the fallback.",
+			"type": "object",
+			"propertyNames": {
+				"type": "string"
+			},
+			"additionalProperties": {
+				"type": "string"
+			}
+		},
+		"codex": {
+			"default": {},
+			"type": "object",
+			"properties": {
+				"networkAccess": {
+					"default": false,
+					"description": "Let codex workers reach the network (package installs).",
+					"type": "boolean"
+				}
+			}
+		},
+		"notify": {
+			"default": {},
+			"type": "object",
+			"properties": {
+				"desktop": {
+					"default": true,
+					"description": "Show desktop notifications.",
+					"type": "boolean"
+				},
+				"webhook": {
+					"default": null,
+					"description": "POSTs {title, message, url} as JSON, e.g. an ntfy.sh topic URL.",
+					"anyOf": [
+						{
+							"type": "string",
+							"format": "uri"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		}
+	},
+	"required": ["repo"],
+	"title": "autogh config"
+}
