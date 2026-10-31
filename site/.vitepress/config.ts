@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { defineConfig } from "vitepress";
+import { defineConfig, type HeadConfig, type PageData } from "vitepress";
 import { type Doc, docsDir, linkRewriter, loadDocs } from "./docs";
 
 const repo = "https://github.com/mikaelbr/kanbot";
@@ -20,7 +20,75 @@ const docs = loadDocs();
 const rewriteLink = linkRewriter(docs);
 const index = docs.find((d) => d.slug === "index");
 
-// Raw markdown per page plus llms.txt, for agents. Path -> content.
+// Social cards need absolute URLs. Source: site/og-image.svg.
+const ogImage = `${siteUrl}/og-image.png`;
+const ogImageAlt =
+	"kanbot: an autonomous dev team on your GitHub Project board.";
+const website = {
+	"@type": "WebSite",
+	"@id": `${siteUrl}/#website`,
+	name: "kanbot",
+	url: `${siteUrl}/`,
+	description: index?.description,
+};
+
+// Canonical URL, page-level Open Graph and JSON-LD.
+function pageHead(page: PageData): HeadConfig[] {
+	const path = page.relativePath.replace(/(^|\/)index\.md$/, "$1");
+	const url = `${siteUrl}/${path.replace(/\.md$/, "")}`;
+	const isIndex = path === "";
+	const jsonLd = isIndex
+		? [
+				website,
+				{
+					"@type": "SoftwareApplication",
+					name: "kanbot",
+					description: page.description,
+					url,
+					applicationCategory: "DeveloperApplication",
+					operatingSystem: "macOS, Linux",
+					license: "https://opensource.org/licenses/MIT",
+					offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
+					sameAs: [repo],
+				},
+			]
+		: [
+				{
+					"@type": "TechArticle",
+					headline: page.title,
+					description: page.description,
+					url,
+					image: ogImage,
+					dateModified: page.lastUpdated
+						? new Date(page.lastUpdated).toISOString()
+						: undefined,
+					isPartOf: { "@id": website["@id"] },
+				},
+			];
+	const ld = JSON.stringify({
+		"@context": "https://schema.org",
+		"@graph": jsonLd,
+	});
+	return [
+		["link", { rel: "canonical", href: url }],
+		[
+			"link",
+			{
+				rel: "alternate",
+				type: "text/markdown",
+				href: `${siteUrl}/${page.relativePath}`,
+			},
+		],
+		["meta", { property: "og:url", content: url }],
+		["meta", { property: "og:type", content: isIndex ? "website" : "article" }],
+		["meta", { property: "og:title", content: page.title }],
+		["meta", { property: "og:description", content: page.description }],
+		// Escape < so content can't close the script tag.
+		["script", { type: "application/ld+json" }, ld.replace(/</g, "\\u003c")],
+	];
+}
+
+// Raw markdown per page, llms.txt and robots.txt. Path -> content.
 function agentFiles(docs: Doc[], url = siteUrl): Record<string, string> {
 	const rewriteLink = linkRewriter(docs);
 	const files: Record<string, string> = {};
@@ -35,6 +103,8 @@ function agentFiles(docs: Doc[], url = siteUrl): Record<string, string> {
 	}
 	files["llms.txt"] = llmsTxt(docs, url);
 	files["llms-full.txt"] = bodies.join("\n\n---\n\n");
+	files["robots.txt"] =
+		`User-agent: *\nAllow: /\n\nSitemap: ${url}/sitemap.xml\n`;
 	return files;
 }
 
@@ -59,10 +129,12 @@ function llmsTxt(docs: Doc[], url: string): string {
 export default defineConfig({
 	title: "kanbot",
 	description: index?.description,
+	lang: "en-US",
 	srcDir: docsDir,
 	base,
 	cleanUrls: true,
 	lastUpdated: true,
+	sitemap: { hostname: siteUrl },
 	head: [
 		[
 			"link",
@@ -70,7 +142,19 @@ export default defineConfig({
 		],
 		["link", { rel: "icon", href: `${base}favicon.ico`, sizes: "32x32" }],
 		["link", { rel: "apple-touch-icon", href: `${base}apple-touch-icon.png` }],
+		["link", { rel: "manifest", href: `${base}site.webmanifest` }],
+		["meta", { name: "theme-color", content: "#1e1e2e" }],
+		["meta", { property: "og:site_name", content: "kanbot" }],
+		["meta", { property: "og:locale", content: "en_US" }],
+		["meta", { property: "og:image", content: ogImage }],
+		["meta", { property: "og:image:type", content: "image/png" }],
+		["meta", { property: "og:image:width", content: "1200" }],
+		["meta", { property: "og:image:height", content: "630" }],
+		["meta", { property: "og:image:alt", content: ogImageAlt }],
+		["meta", { name: "twitter:card", content: "summary_large_image" }],
+		["meta", { name: "twitter:image:alt", content: ogImageAlt }],
 	],
+	transformHead: ({ pageData }) => pageHead(pageData),
 	// 01-getting-started.md -> getting-started.md
 	rewrites: Object.fromEntries(docs.map((d) => [d.file, `${d.slug}.md`])),
 	markdown: {
