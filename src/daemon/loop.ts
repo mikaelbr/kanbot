@@ -1,6 +1,7 @@
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { type Config, loadConfig } from "../config.ts";
+import { UserError } from "../errors.ts";
 import { Gh } from "../github/gh.ts";
 import { loadBoard, missingColumns } from "../github/project.ts";
 import { Trust } from "../github/trust.ts";
@@ -45,7 +46,11 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	const board = await loadBoard(gh, config);
 	const missing = missingColumns(board);
 	if (missing.length)
-		throw new Error(`Board is missing columns: ${missing.join(", ")}`);
+		throw new UserError("The project board is missing columns.", {
+			why: `No Status option for: ${missing.map((k) => config.columns[k]).join(", ")}.`,
+			fix: "kanbot board create adds them. Or match `columns` in .kanbot/config.yml to your board.",
+			docs: "configuration#columns",
+		});
 
 	const release = opts.dryRun ? () => {} : await acquireLock(root);
 	const state = await new State(root).load();

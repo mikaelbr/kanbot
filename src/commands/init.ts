@@ -4,6 +4,7 @@ import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
+import { UserError } from "../errors.ts";
 import { run } from "../github/gh.ts";
 import { log } from "../log.ts";
 import { applyUpgrade, NEW_SUFFIX, planUpgrade } from "../templates.ts";
@@ -32,9 +33,31 @@ export default defineCommand({
 	async run({ args }) {
 		const root = process.cwd();
 		if (!existsSync(join(root, ".git")))
-			throw new Error("Run inside a git repository.");
+			throw new UserError("Not a git repository.", {
+				why: `No .git in ${root}. Run init from the repo root.`,
+				fix: "cd into your repo's root, or run `git init`.",
+				docs: "getting-started#set-up-a-repository",
+				more: "",
+			});
 		if (!["claude", "codex"].includes(args.provider))
-			throw new Error("--provider must be claude or codex");
+			throw new UserError(`Unknown provider "${args.provider}".`, {
+				fix: "kanbot init --provider claude|codex",
+				docs: "providers#choose-a-provider",
+				more: "",
+			});
+
+		// Fail on gh or remote problems before writing anything.
+		const repo =
+			!existsSync(configPath(root)) || args.force
+				? (JSON.parse(
+						await run([
+							"repo",
+							"view",
+							"--json",
+							"nameWithOwner,defaultBranchRef",
+						]),
+					) as { nameWithOwner: string; defaultBranchRef: { name: string } })
+				: null;
 
 		const plan = await planUpgrade(root, { force: args.force });
 		await applyUpgrade(root, plan);
@@ -47,13 +70,7 @@ export default defineCommand({
 		}
 		log.info("+ .kanbot/manifest.json");
 
-		if (!existsSync(configPath(root)) || args.force) {
-			const repo = JSON.parse(
-				await run(["repo", "view", "--json", "nameWithOwner,defaultBranchRef"]),
-			) as {
-				nameWithOwner: string;
-				defaultBranchRef: { name: string };
-			};
+		if (repo) {
 			await saveConfig(root, {
 				provider: args.provider as "claude" | "codex",
 				repo: repo.nameWithOwner,

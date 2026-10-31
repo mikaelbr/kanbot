@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { COLUMN_KEYS, LABELS, loadConfig } from "../config.ts";
 import { State } from "../daemon/state.ts";
-import { Gh } from "../github/gh.ts";
+import { Gh, run } from "../github/gh.ts";
 import { listItems, loadBoard } from "../github/project.ts";
 
 export default defineCommand({
@@ -38,7 +38,16 @@ export default defineCommand({
 		}
 
 		const needsHuman = JSON.parse(
-			await Bun.$`gh issue list --repo ${config.repo} --label ${LABELS.needsHuman} --json number,title`.text(),
+			await run([
+				"issue",
+				"list",
+				"--repo",
+				config.repo,
+				"--label",
+				LABELS.needsHuman,
+				"--json",
+				"number,title",
+			]),
 		) as { number: number; title: string }[];
 		if (needsHuman.length) {
 			console.log(

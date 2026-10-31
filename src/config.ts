@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { parse, parseDocument } from "yaml";
 import { z } from "zod";
+import { UserError } from "./errors.ts";
 
 export const COLUMN_KEYS = [
 	"ideas",
@@ -197,9 +198,35 @@ export async function writeConfigSchema(
 export async function loadConfig(root: string): Promise<Config> {
 	const path = configPath(root);
 	if (!existsSync(path)) {
-		throw new Error(`No ${path}. Run \`kanbot init\` first.`);
+		throw new UserError("kanbot is not set up in this repo.", {
+			why: "No .kanbot/config.yml in this directory.",
+			fix: "kanbot init",
+			docs: "getting-started#set-up-a-repository",
+		});
 	}
-	return ConfigSchema.parse(parse(await Bun.file(path).text()) ?? {});
+	let raw: unknown;
+	try {
+		raw = parse(await Bun.file(path).text());
+	} catch (e) {
+		throw new UserError(
+			".kanbot/config.yml is not valid YAML.",
+			{
+				why: (e as Error).message.trim(),
+				fix: "Fix the syntax at the line shown above.",
+				docs: "configuration#config-file",
+			},
+			{ cause: e },
+		);
+	}
+	const config = ConfigSchema.safeParse(raw ?? {});
+	if (!config.success) {
+		throw new UserError(".kanbot/config.yml has invalid values.", {
+			why: z.prettifyError(config.error),
+			fix: "Fix the fields above. .kanbot/config.schema.json lists allowed values.",
+			docs: "configuration#config-file",
+		});
+	}
+	return config.data;
 }
 
 /** Sets top-level keys, keeping the user's comments and formatting. */

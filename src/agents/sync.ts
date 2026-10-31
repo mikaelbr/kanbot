@@ -3,6 +3,7 @@ import { mkdir, readdir, rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
 import { stringify } from "yaml";
 import { configPath, loadConfig } from "../config.ts";
+import { UserError } from "../errors.ts";
 import type { AgentDef } from "./load.ts";
 
 /*
@@ -205,9 +206,11 @@ async function linkSkills(root: string, check: boolean) {
 	const ok = existsSync(link) && lstatSync(link).isSymbolicLink();
 	if (ok || check) return ok;
 	if (existsSync(link)) {
-		throw new Error(
-			".claude/skills exists and is not a symlink. Move its skills into .agents/skills.",
-		);
+		throw new UserError("Cannot link .claude/skills.", {
+			why: ".claude/skills exists and is not a symlink. kanbot keeps skills in .agents/skills and links to them.",
+			fix: "Move its skills into .agents/skills, delete .claude/skills, then rerun.",
+			docs: "skills#add-a-skill",
+		});
 	}
 	await mkdir(join(root, ".agents", "skills"), { recursive: true });
 	await mkdir(join(root, ".claude"), { recursive: true });

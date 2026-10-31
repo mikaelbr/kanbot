@@ -5,6 +5,7 @@ import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
+import { describeError } from "../errors.ts";
 import { copilotReviewRule } from "../github/api.ts";
 import { Gh, run } from "../github/gh.ts";
 import {
@@ -25,6 +26,16 @@ async function cmd(args: string[]) {
 		p.exited,
 	]);
 	return { ok: code === 0, out: `${out}${err}`.trim() };
+}
+
+/** Failure detail and fix for a check, from a thrown error. */
+function explain(e: unknown, fallback?: string) {
+	const d = describeError(e);
+	const detail = [d.message, d.why].filter(Boolean).join("\n");
+	return {
+		detail: detail.replace(/\n/g, "\n    "),
+		fix: d.fix ?? fallback,
+	};
 }
 
 export default defineCommand({
@@ -59,7 +70,7 @@ export default defineCommand({
 				detail: `${config.repo}, provider ${config.provider}`,
 			});
 		} catch (e) {
-			add({ name: "config", ok: false, detail: String(e), fix: "kanbot init" });
+			add({ name: "config", ok: false, ...explain(e, "kanbot init") });
 			return process.exit(1);
 		}
 
@@ -119,7 +130,7 @@ export default defineCommand({
 				fix: "kanbot sync",
 			});
 		} catch (e) {
-			add({ name: "agents", ok: false, detail: String(e) });
+			add({ name: "agents", ok: false, ...explain(e) });
 		}
 
 		const plan = await planUpgrade(root);
@@ -197,8 +208,7 @@ export default defineCommand({
 			add({
 				name: "project board",
 				ok: false,
-				detail: String(e),
-				fix: "kanbot board create",
+				...explain(e, "kanbot board create"),
 			});
 		}
 

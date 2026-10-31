@@ -1,7 +1,9 @@
+import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
+import { UserError } from "../errors.ts";
 import { RESULT_SCHEMAS } from "../schemas/results.ts";
 
 export const TOOL_CAPABILITIES = ["read", "edit", "bash", "web"] as const;
@@ -34,16 +36,23 @@ export function agentsDir(root: string) {
 
 export function parseAgent(text: string, file: string): AgentDef {
 	const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
-	if (!m) throw new Error(`${file}: missing YAML frontmatter`);
+	if (!m) throw invalid(file, "Missing YAML frontmatter between `---` lines.");
 	const fm = Frontmatter.safeParse(parse(m[1] as string));
 	if (!fm.success) {
-		throw new Error(`${file}: ${z.prettifyError(fm.error)}`);
+		throw invalid(file, z.prettifyError(fm.error));
 	}
 	return { ...fm.data, body: (m[2] as string).trim(), file };
 }
 
 export async function loadAgents(root: string): Promise<AgentDef[]> {
 	const dir = agentsDir(root);
+	if (!existsSync(dir)) {
+		throw new UserError("kanbot agents are missing.", {
+			why: "No .kanbot/agents directory in this repo.",
+			fix: "kanbot init (or kanbot upgrade to restore missing files)",
+			docs: "getting-started#set-up-a-repository",
+		});
+	}
 	const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
 	const agents = await Promise.all(
 		files.map(async (f) =>
@@ -57,23 +66,36 @@ export async function loadAgents(root: string): Promise<AgentDef[]> {
 function validate(agents: AgentDef[]) {
 	const names = new Set(agents.map((a) => a.name));
 	if (names.size !== agents.length) {
-		throw new Error("Duplicate agent names in .kanbot/agents");
+		throw new UserError("Duplicate agent names in .kanbot/agents.", {
+			why: "Two agent files declare the same `name`.",
+			fix: "Give each agent a unique name matching its filename.",
+			docs: "agents#frontmatter",
+		});
 	}
 	for (const a of agents) {
 		if (!a.file.endsWith(`${a.name}.md`)) {
-			throw new Error(`${a.file}: name "${a.name}" must match the filename`);
+			throw invalid(a.file, `name "${a.name}" must match the filename.`);
 		}
 		if (a.tier === "column" && !a.output) {
-			throw new Error(`${a.file}: column agents must declare an output schema`);
+			throw invalid(a.file, "Column agents must declare an `output` schema.");
 		}
 		for (const s of a.subagents) {
 			const sub = agents.find((x) => x.name === s);
-			if (!sub) throw new Error(`${a.file}: unknown subagent "${s}"`);
+			if (!sub)
+				throw invalid(a.file, `Unknown subagent "${s}" in \`subagents\`.`);
 			if (sub.tier !== "sub") {
-				throw new Error(`${a.file}: "${s}" is not a tier: sub agent`);
+				throw invalid(a.file, `Subagent "${s}" must have \`tier: sub\`.`);
 			}
 		}
 	}
+}
+
+function invalid(file: string, why: string) {
+	return new UserError(`Invalid agent file ${file}`, {
+		why,
+		fix: "Fix the file, then run `kanbot sync`.",
+		docs: "agents#frontmatter",
+	});
 }
 
 export function getAgent(agents: AgentDef[], name: string): AgentDef {

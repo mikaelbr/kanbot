@@ -1,4 +1,5 @@
 import { COLUMN_KEYS, type ColumnKey, type Config } from "../config.ts";
+import { UserError } from "../errors.ts";
 import type { Gh } from "./gh.ts";
 
 export type Board = {
@@ -60,7 +61,11 @@ function toBoard(p: RawProject, config: Config): Board {
 
 export async function loadBoard(gh: Gh, config: Config): Promise<Board> {
 	if (!config.project) {
-		throw new Error("No project configured. Run `kanbot board create`.");
+		throw new UserError("No project board configured.", {
+			why: "`project` is not set in .kanbot/config.yml.",
+			fix: "kanbot board create (or kanbot board link --owner <login> --number <n>)",
+			docs: "getting-started#create-the-board",
+		});
 	}
 	const data = await gh.query<{
 		repositoryOwner: { projectV2: RawProject | null } | null;
@@ -74,8 +79,13 @@ export async function loadBoard(gh: Gh, config: Config): Promise<Board> {
 	);
 	const p = data.repositoryOwner?.projectV2;
 	if (!p) {
-		throw new Error(
-			`Project ${config.project.owner}#${config.project.number} not found (does gh have the "project" scope? run: gh auth refresh -s project)`,
+		throw new UserError(
+			`Project ${config.project.owner}#${config.project.number} not found.`,
+			{
+				why: "It does not exist, or your gh token lacks the `project` scope.",
+				fix: "gh auth refresh -s project, then check `project` in .kanbot/config.yml",
+				docs: "getting-started#create-the-board",
+			},
 		);
 	}
 	return toBoard(p, config);
