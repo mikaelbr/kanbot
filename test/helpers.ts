@@ -35,6 +35,7 @@ export function pr(over: Partial<PR> = {}): PR {
 		reviews: [],
 		threads: [],
 		checks: "SUCCESS",
+		mergeable: "MERGEABLE",
 		...over,
 	};
 }

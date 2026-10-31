@@ -43,13 +43,16 @@ If the agent reports it is blocked, you get a notification.
 Each PR goes through, in order:
 
 1. **Your feedback.** Comments and review threads from you are handled first, by the `fixer`.
-2. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
-3. **Code review** by `reviewer-code`, then a fix if it found problems.
-4. **Spec review** by `reviewer-spec`, then a fix if it found problems.
+2. **Merge conflicts.** If the base branch moved and the PR no longer merges, the `fixer` merges the base branch in and resolves the conflicts. It tries up to 3 times. Then the issue gets `needs-human`.
+3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
+4. **Code review** by `reviewer-code`, then a fix if it found problems.
+5. **Spec review** by `reviewer-spec`, then a fix if it found problems.
 
 Nits don't trigger a fix. When both passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
 
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
+
+Conflicts are checked even after a PR is `agent-reviewed`. So if you push to the base branch yourself, or merge another PR, open kanbot PRs are kept mergeable. Kanbot merges rather than rebases, so history on the PR branch is never rewritten.
 
 ## 6. Done
 

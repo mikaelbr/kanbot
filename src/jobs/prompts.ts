@@ -138,7 +138,8 @@ export function reviewPrompt(job: ReviewJob, base: string) {
 		.join("\n\n");
 }
 
-export function fixPrompt(job: FixJob, base: string, ciLogs: string | null) {
+/** `details`: CI logs for a CI fix, the conflicted files for a conflict fix. */
+export function fixPrompt(job: FixJob, base: string, details: string | null) {
 	const { issue } = job.item;
 	const { pr } = job;
 	const parts = [
@@ -167,9 +168,13 @@ export function fixPrompt(job: FixJob, base: string, ciLogs: string | null) {
 				`### ref: ${c.id} (comment by @${c.author})\n${c.body.trim()}`,
 			);
 		}
+	} else if (r.type === "conflict") {
+		parts.push(
+			`## Merge conflicts\n\`origin/${base}\` has moved and conflicts with this branch. A merge of it is in progress in the worktree. Resolve every conflict, keeping the intent of both sides; the PR's plan and the base branch's changes both stand. Then run tests, lint and typecheck. Stage your resolution; committing the merge is optional. Do not abort the merge or rebase. Use \`ref: "conflict"\` in \`addressed\`.\n\nConflicted files:\n${details}`,
+		);
 	} else {
 		parts.push(
-			`## CI is failing\nMake CI pass without weakening tests. Use \`ref: "ci"\` in \`addressed\`.\n\n${ciLogs || "_No logs available; reproduce locally with the project's test/lint commands._"}`,
+			`## CI is failing\nMake CI pass without weakening tests. Use \`ref: "ci"\` in \`addressed\`.\n\n${details || "_No logs available; reproduce locally with the project's test/lint commands._"}`,
 		);
 	}
 	parts.push(RULES);

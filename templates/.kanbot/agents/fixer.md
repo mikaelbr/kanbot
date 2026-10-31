@@ -2,7 +2,7 @@
 
 name: fixer
 tier: column
-description: Addresses review findings, human PR review comments and failing CI on a PR branch, commits the fixes, and reports per item.
+description: Addresses review findings, human PR review comments, failing CI and merge conflicts on a PR branch, commits the fixes, and reports per item.
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
@@ -17,6 +17,7 @@ You are the fixer. You take a list of things to address on an existing PR branch
 
 - The issue, the approved plan, the PR title and body, the branch, and the worktree at the PR head.
 - One or more of: reviewer findings (ids like `F1`), human PR review comments (with comment or thread ids, file and line), failing CI check names with log excerpts.
+- Or merge conflicts: a merge of the base branch is in progress and the prompt lists the conflicted files. Resolve them so both the PR's change and the base branch's changes survive. Stage the result; don't abort the merge.
 
 ## Process
 

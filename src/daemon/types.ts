@@ -39,6 +39,8 @@ export type PR = {
 	reviews: Comment[];
 	threads: ReviewThread[];
 	checks: Checks;
+	/** UNKNOWN while GitHub is still computing it. */
+	mergeable: "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
 };
 
 export type Issue = {

@@ -124,6 +124,36 @@ export class Worktrees {
 		await git(path, "commit", "-m", message, "--no-verify");
 	}
 
+	/**
+	 * Merge `ref` into HEAD. Returns the conflicted files, leaving the merge in
+	 * progress for an agent to resolve; empty when it merged cleanly.
+	 */
+	async merge(path: string, ref: string): Promise<string[]> {
+		try {
+			await git(path, "merge", "--no-edit", "--no-verify", ref);
+			return [];
+		} catch (e) {
+			const files = await git(path, "diff", "--name-only", "--diff-filter=U");
+			if (!files) throw e;
+			return files.split("\n");
+		}
+	}
+
+	/** Stage everything and commit the merge in progress, if any. */
+	async concludeMerge(path: string) {
+		await git(path, "add", "-A");
+		const merging = await git(path, "rev-parse", "-q", "--verify", "MERGE_HEAD")
+			.then(() => true)
+			.catch(() => false);
+		if (merging) await git(path, "commit", "--no-edit", "--no-verify");
+	}
+
+	async isAncestor(path: string, ref: string) {
+		return git(path, "merge-base", "--is-ancestor", ref, "HEAD")
+			.then(() => true)
+			.catch(() => false);
+	}
+
 	async commitsAhead(path: string, of: string) {
 		return Number(await git(path, "rev-list", "--count", `${of}..HEAD`));
 	}

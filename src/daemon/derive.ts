@@ -62,7 +62,8 @@ export type FixJob = {
 	reason:
 		| { type: "review"; pass: 1 | 2; findings: Finding[] }
 		| { type: "feedback"; threads: ReviewThread[]; comments: Comment[] }
-		| { type: "ci" };
+		| { type: "ci" }
+		| { type: "conflict" };
 };
 
 export type Job = PlanJob | ImplementJob | ReviewJob | FixJob;
@@ -86,6 +87,7 @@ export type DeriveContext = {
 
 export const REVIEW_PASSES = [1, 2] as const;
 const MAX_CI_FIXES = 3;
+const MAX_CONFLICT_FIXES = 3;
 
 export function exploreCount(labels: string[]): number | null {
 	for (const l of labels) {
@@ -140,8 +142,8 @@ export function openFeedback(pr: PR, trusted: ReadonlySet<string>) {
 	return { threads, comments };
 }
 
-const ciFixCount = (pr: PR) =>
-	pr.comments.reduce((n, c) => n + markerValues(c.body, "ci").length, 0);
+const fixCount = (pr: PR, kind: "ci" | "conflict") =>
+	pr.comments.reduce((n, c) => n + markerValues(c.body, kind).length, 0);
 
 export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 	const jobs: Job[] = [];
@@ -246,6 +248,12 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 							number: issue.number,
 							why: `CI still failing on #${pr.number} after ${MAX_CI_FIXES} fix attempts`,
 						});
+					} else if (job === "conflictExhausted") {
+						actions.push({
+							kind: "needsHuman",
+							number: issue.number,
+							why: `#${pr.number} still conflicts with the base branch after ${MAX_CONFLICT_FIXES} merge attempts`,
+						});
 					} else if (job) jobs.push(job);
 				}
 				if (
@@ -270,7 +278,7 @@ function prJob(
 	trusted: ReadonlySet<string>,
 	ctx: DeriveContext,
 	blocked: (issue: Issue, key: string) => boolean,
-): Job | "agentReviewed" | "ciExhausted" | null {
+): Job | "agentReviewed" | "ciExhausted" | "conflictExhausted" | null {
 	const { issue } = item;
 	const prKey = `#${issue.number}:pr${pr.number}`;
 	// One job per PR at a time, whatever its kind.
@@ -290,10 +298,24 @@ function prJob(
 		};
 	}
 
-	// 2. Failing CI.
+	// 2. Conflicts with the base branch, e.g. after commits made outside kanbot.
+	if (pr.mergeable === "CONFLICTING") {
+		if (!pr.comments.some((c) => hasMarker(c.body, "conflict", pr.headSha))) {
+			if (fixCount(pr, "conflict") >= MAX_CONFLICT_FIXES) {
+				return issue.labels.includes(LABELS.needsHuman)
+					? null
+					: "conflictExhausted";
+			}
+			const key = `fix:${prKey}`;
+			if (blocked(issue, key)) return null;
+			return { kind: "fix", key, item, pr, reason: { type: "conflict" } };
+		}
+	}
+
+	// 3. Failing CI.
 	if (pr.checks === "FAILURE" || pr.checks === "ERROR") {
 		if (!pr.comments.some((c) => hasMarker(c.body, "ci", pr.headSha))) {
-			if (ciFixCount(pr) >= MAX_CI_FIXES) {
+			if (fixCount(pr, "ci") >= MAX_CI_FIXES) {
 				return issue.labels.includes(LABELS.needsHuman) ? null : "ciExhausted";
 			}
 			const key = `fix:${prKey}`;
@@ -302,7 +324,7 @@ function prJob(
 		}
 	}
 
-	// 3. Agent review passes, each followed by a fix when it found problems.
+	// 4. Agent review passes, each followed by a fix when it found problems.
 	for (const pass of REVIEW_PASSES) {
 		if (!reviewComment(pr, pass)) {
 			const key = `review${pass}:${prKey}`;

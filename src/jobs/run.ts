@@ -362,6 +362,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 	const { gh, worktrees, config } = deps;
 	const { pr } = job;
 	const cwd = await worktrees.checkout(worktreeName(job), pr.headRefName);
+	if (job.reason.type === "conflict") return mergeBase(job, deps, cwd);
 	const before = await worktrees.head(cwd);
 	const logs =
 		job.reason.type === "ci"
@@ -457,6 +458,52 @@ async function fix(job: FixJob, deps: JobDeps) {
 		`PR #${pr.number}: ${open ? "needs input" : "feedback addressed"}`,
 		msg,
 		pr.url,
+	);
+}
+
+// ---- merge base ---------------------------------------------------------------
+
+const CONFLICT_MARKER = /^(<{7}|>{7})( |$)/m;
+
+/** Merge the base branch into a conflicting PR; the fixer resolves conflicts. */
+async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
+	const { gh, worktrees, config } = deps;
+	const { pr } = job;
+	const base = `origin/${config.baseBranch}`;
+	const files = await worktrees.merge(cwd, base);
+	let summary = "It merged cleanly.";
+	if (files.length) {
+		const result = await runAgent(
+			deps,
+			job,
+			"fixer",
+			"fix-result",
+			cwd,
+			fixPrompt(job, config.baseBranch, files.map((f) => `- ${f}`).join("\n")),
+		);
+		FixResult.parse(result);
+		const left: string[] = [];
+		for (const f of files) {
+			const file = Bun.file(join(cwd, f));
+			if ((await file.exists()) && CONFLICT_MARKER.test(await file.text()))
+				left.push(f);
+		}
+		if (left.length)
+			throw new Error(`conflict markers left in ${left.join(", ")}`);
+		summary = `${result.summary} Resolved conflicts in ${files.map((f) => `\`${f}\``).join(", ")}.`;
+	}
+	await worktrees.concludeMerge(cwd);
+	await worktrees.commitAll(
+		cwd,
+		`fix: resolve merge conflicts (#${job.item.issue.number})`,
+	);
+	if (!(await worktrees.isAncestor(cwd, base)))
+		throw new Error(`${base} was not merged`);
+	await worktrees.push(cwd, pr.headRefName);
+	await postComment(
+		gh,
+		pr.number,
+		`**Merged \`${config.baseBranch}\`.** ${summary}\n\n${marker("conflict", pr.headSha)}`,
 	);
 }
 

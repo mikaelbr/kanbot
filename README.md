@@ -19,14 +19,14 @@ Full docs: [docs/](./docs/00-index.md).
 
 ## How it works
 
-| Column          | What happens                                                                                                                 |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Ideas**       | Backlog of ideas and tasks. Not touched by any agents.                                                                       |
-| **Planning**    | An agent writes a plan into the issue. Comment to revise it.                                                                 |
-| **Ready**       | Moving a card here approves the plan. Cards are picked top-down.                                                             |
-| **In Progress** | An agent implements it in its own worktree and opens a PR.                                                                   |
-| **Review**      | Two agent reviews, with fixes. Then you're notified. Comment on the PR and an agent addresses it. CI failures are fixed too. |
-| **Done**        | You merge.                                                                                                                   |
+| Column          | What happens                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Ideas**       | Backlog of ideas and tasks. Not touched by any agents.                                                                                           |
+| **Planning**    | An agent writes a plan into the issue. Comment to revise it.                                                                                     |
+| **Ready**       | Moving a card here approves the plan. Cards are picked top-down.                                                                                 |
+| **In Progress** | An agent implements it in its own worktree and opens a PR.                                                                                       |
+| **Review**      | Two agent reviews, with fixes. Then you're notified. Comment on the PR and an agent addresses it. CI failures and merge conflicts are fixed too. |
+| **Done**        | You merge.                                                                                                                                       |
 
 A Bun daemon polls the board and runs one `claude -p` / `codex exec` process per job. GitHub is the only state, so you can restart it any time. Agents never get a GitHub token; the daemon makes every comment, push and PR. Only collaborators with write access can steer agents.
 

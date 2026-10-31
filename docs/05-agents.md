@@ -21,21 +21,21 @@ The generated files also let you use the same agents in normal Claude Code or Co
 
 ## Default team
 
-| Agent                   | Tier   | Role                                          |
-| ----------------------- | ------ | --------------------------------------------- |
-| `planner`               | column | Writes and revises the plan.                  |
-| `implementer-frontend`  | column | Builds UI work.                               |
-| `implementer-backend`   | column | Builds server, API and data work.             |
-| `implementer-docs`      | column | Writes docs.                                  |
-| `implementer-technical` | column | Refactors, infra, tooling and CI.             |
-| `reviewer-code`         | column | Review pass 1: correctness and code quality.  |
-| `reviewer-spec`         | column | Review pass 2: acceptance criteria and UX.    |
-| `fixer`                 | column | Fixes findings, your comments and failing CI. |
-| `explorer`              | sub    | Maps the codebase for a change.               |
-| `plan-critic`           | sub    | Critiques a draft plan.                       |
-| `approach-designer`     | sub    | Designs N approaches for `explore:N`.         |
-| `test-writer`           | sub    | Writes failing tests first.                   |
-| `ui-verifier`           | sub    | Takes screenshots with Playwright.            |
+| Agent                   | Tier   | Role                                                           |
+| ----------------------- | ------ | -------------------------------------------------------------- |
+| `planner`               | column | Writes and revises the plan.                                   |
+| `implementer-frontend`  | column | Builds UI work.                                                |
+| `implementer-backend`   | column | Builds server, API and data work.                              |
+| `implementer-docs`      | column | Writes docs.                                                   |
+| `implementer-technical` | column | Refactors, infra, tooling and CI.                              |
+| `reviewer-code`         | column | Review pass 1: correctness and code quality.                   |
+| `reviewer-spec`         | column | Review pass 2: acceptance criteria and UX.                     |
+| `fixer`                 | column | Fixes findings, your comments, failing CI and merge conflicts. |
+| `explorer`              | sub    | Maps the codebase for a change.                                |
+| `plan-critic`           | sub    | Critiques a draft plan.                                        |
+| `approach-designer`     | sub    | Designs N approaches for `explore:N`.                          |
+| `test-writer`           | sub    | Writes failing tests first.                                    |
+| `ui-verifier`           | sub    | Takes screenshots with Playwright.                             |
 
 `planner`, `reviewer-code`, `reviewer-spec` and `fixer` are required. Implementers are picked through [`implementers`](./07-configuration.md#implementers) in config.
 

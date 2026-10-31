@@ -12,7 +12,7 @@ Board flow:
 2. **Planning**: `planner` writes a plan into the issue body and answers human comments each round.
 3. **Ready**: a human approves the plan by moving the card here.
 4. **In Progress**: an `implementer-*` agent builds the plan on a branch and commits.
-5. **Review**: `reviewer-code`, then `reviewer-spec`, then `fixer` for findings, human review comments and failing CI.
+5. **Review**: `reviewer-code`, then `reviewer-spec`, then `fixer` for findings, human review comments, failing CI and merge conflicts.
 6. **Done**: a human merges.
 
 ## Golden rules

@@ -12,7 +12,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 			comments(last: 100) { nodes { ${COMMENT} } }
 			closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
 				nodes {
-					id number url title body state headRefName headRefOid
+					id number url title body state headRefName headRefOid mergeable
 					labels(first: 30) { nodes { name } }
 					comments(last: 100) { nodes { ${COMMENT} } }
 					reviews(last: 50) { nodes { ${COMMENT} } }
@@ -83,6 +83,7 @@ export async function fetchIssue(gh: Gh, number: number): Promise<Issue> {
 				})),
 				checks: (p.commits.nodes[0]?.commit.statusCheckRollup?.state ??
 					null) as Checks,
+				mergeable: p.mergeable,
 			}),
 		),
 	};

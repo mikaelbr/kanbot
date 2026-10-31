@@ -302,6 +302,50 @@ describe("review", () => {
 		).toMatchObject([{ kind: "needsHuman" }]);
 	});
 
+	test("conflicting PR gets a merge fix once per head sha, then gives up", () => {
+		const conflicting = pr({
+			mergeable: "CONFLICTING",
+			headSha: "abc",
+			comments: [reviewed(1), reviewed(2)],
+			labels: ["agent-reviewed"],
+		});
+		expect(
+			derive(snap(item("review", { prs: [conflicting] })), ctx()).jobs,
+		).toMatchObject([{ kind: "fix", reason: { type: "conflict" } }]);
+
+		const tried = {
+			...conflicting,
+			comments: [...conflicting.comments, comment(marker("conflict", "abc"))],
+		};
+		expect(derive(snap(item("review", { prs: [tried] })), ctx()).jobs).toEqual(
+			[],
+		);
+
+		const exhausted = {
+			...conflicting,
+			headSha: "d",
+			comments: [
+				...conflicting.comments,
+				...["a", "b", "c"].map((s) => comment(marker("conflict", s))),
+			],
+		};
+		expect(
+			derive(snap(item("review", { prs: [exhausted] })), ctx()).actions,
+		).toMatchObject([{ kind: "needsHuman" }]);
+	});
+
+	test("conflicts are fixed before failing CI, after human feedback", () => {
+		const both = pr({ mergeable: "CONFLICTING", checks: "FAILURE" });
+		expect(
+			derive(snap(item("review", { prs: [both] })), ctx()).jobs,
+		).toMatchObject([{ reason: { type: "conflict" } }]);
+
+		const withFeedback = { ...both, comments: [comment("Rename this")] };
+		expect(
+			derive(snap(item("review", { prs: [withFeedback] })), ctx()).jobs,
+		).toMatchObject([{ reason: { type: "feedback" } }]);
+	});
+
 	test("one job per PR at a time", () => {
 		const r = derive(
 			snap(item("review", { prs: [pr({ number: 50 })] })),
