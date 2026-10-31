@@ -47,6 +47,7 @@ export default defineConfig({
 	// 01-getting-started.md -> getting-started.md
 	rewrites: Object.fromEntries(docs.map((d) => [d.file, `${d.slug}.md`])),
 	markdown: {
+		theme: { light: "catppuccin-latte", dark: "catppuccin-macchiato" },
 		config(md) {
 			md.core.ruler.push("rewrite-doc-links", (state) => {
 				for (const token of state.tokens) {
