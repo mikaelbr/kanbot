@@ -79,7 +79,7 @@ Maps a `type:*` label to an agent. Issues without a matching label use `default`
 
 ### Review
 
-Adds GitHub Copilot as a third reviewer. See [Copilot review](./10-copilot-review.md).
+Adds GitHub Copilot as a third reviewer. See [Copilot review](./09-copilot-review.md).
 
 ## Notifications
 

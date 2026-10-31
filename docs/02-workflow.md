@@ -20,7 +20,7 @@ flowchart LR
 
 ## 1. Ideas
 
-Write issues. Use the **User need** or **Technical task** issue template, or talk the idea through with your agent and let it file the issue. See [Capturing ideas](./09-capturing-ideas.md). Nothing runs here.
+Write issues. Use the **User need** or **Technical task** issue template, or talk the idea through with your agent and let it file the issue. See [Capturing ideas](./03-capturing-ideas.md). Nothing runs here.
 
 ## 2. Planning
 
@@ -47,13 +47,13 @@ Each PR goes through, in order:
 3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
 4. **Code review** by `reviewer-code`, then a fix if it found problems.
 5. **Spec review** by `reviewer-spec`, then a fix if it found problems.
-6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./10-copilot-review.md).
+6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./09-copilot-review.md).
 
 Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
 
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
 
-Want the same review for a PR you opened yourself? Label it `kanbot-review`. See [Working outside the board](./11-outside-the-board.md).
+Want the same review for a PR you opened yourself? Label it `kanbot-review`. See [Working outside the board](./04-outside-the-board.md).
 
 Conflicts are checked even after a PR is `agent-reviewed`. So if you push to the base branch yourself, or merge another PR, open kanbot PRs are kept mergeable. Kanbot merges rather than rebases, so history on the PR branch is never rewritten.
 

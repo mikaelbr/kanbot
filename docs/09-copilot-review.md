@@ -55,6 +55,6 @@ Rerun `kanbot board create` after changing `copilotOnPush`, so the ruleset match
 
 ## Good to know
 
-- Copilot reviews every PR the ruleset covers, including PRs you open yourself. kanbot only acts on Copilot comments on its own PRs and on PRs labeled [`kanbot-review`](./11-outside-the-board.md#your-own-prs-the-kanbot-review-label).
+- Copilot reviews every PR the ruleset covers, including PRs you open yourself. kanbot only acts on Copilot comments on its own PRs and on PRs labeled [`kanbot-review`](./04-outside-the-board.md#your-own-prs-the-kanbot-review-label).
 - Copilot reads `AGENTS.md` and `.github/copilot-instructions.md` from the PR branch. Whether it also reads `.agents/skills/` directly isn't documented, which is why the instructions file points at the skills by path.
 - Copilot's review is a comment, never an approval. You still merge.

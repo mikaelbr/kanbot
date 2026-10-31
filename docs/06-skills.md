@@ -27,7 +27,7 @@ Skills are reusable instructions agents load when relevant. They live in `.agent
 | `accessibility`       | WCAG 2.2 AA checklist.                                                                |
 | `verify-ui`           | Playwright screenshots at 390px and 1280px.                                           |
 | `kanbot-admin`        | For you, not board agents. See below.                                                 |
-| `kanbot-idea`         | For you: turns an idea into an issue. See [Capturing ideas](./09-capturing-ideas.md). |
+| `kanbot-idea`         | For you: turns an idea into an issue. See [Capturing ideas](./03-capturing-ideas.md). |
 
 ## kanbot-admin
 

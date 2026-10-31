@@ -57,6 +57,13 @@ Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per re
 | `needs-human`                         | Agents gave up. Remove it to retry.               |
 | `kanbot-review`                       | Agent review for your own PR, without a card      |
 
+## Beyond the board
+
+- **Capture ideas by chatting.** Ask your agent to file an idea; the `kanbot-idea` skill shapes it and puts it in Ideas. [More](./docs/03-capturing-ideas.md)
+- **Your own PRs.** Label a PR `kanbot-review` for agent review without a card. Commits to `main` that break kanbot PRs get merged in and fixed. [More](./docs/04-outside-the-board.md)
+- **Project memory.** Corrections you give on PRs become facts agents read on every job. [More](./docs/06-skills.md#project-memory)
+- **Copilot review.** Optionally add GitHub Copilot as a cloud reviewer. [More](./docs/09-copilot-review.md)
+
 ## Customizing
 
 - `.kanbot/config.yml`: concurrency, timeouts, notifications, column names.
@@ -65,7 +72,7 @@ Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per re
 
 ## Upgrading
 
-`bunx kanbot@latest upgrade` updates agents and skills you haven't edited. For edited ones, it writes the new version next to yours as `<file>.kanbot-new` to merge. See [Upgrading](./docs/08-upgrading.md).
+`bunx kanbot@latest upgrade` updates agents and skills you haven't edited. For edited ones, it writes the new version next to yours as `<file>.kanbot-new` to merge. See [Upgrading](./docs/10-upgrading.md).
 
 ## Shell completion
 

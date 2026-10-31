@@ -11,7 +11,7 @@ slug: getting-started
 
 - [Bun](https://bun.sh) 1.3 or newer.
 - [`gh`](https://cli.github.com) logged in, with the `project` scope.
-- [`claude`](https://docs.claude.com/en/docs/claude-code) or [`codex`](https://github.com/openai/codex) logged in with a subscription. See [Providers](./04-providers.md).
+- [`claude`](https://docs.claude.com/en/docs/claude-code) or [`codex`](https://github.com/openai/codex) logged in with a subscription. See [Providers](./07-providers.md).
 - A GitHub repository you can push to.
 
 Add the `project` scope to your `gh` token:
@@ -45,7 +45,7 @@ kanbot init --provider claude   # or codex
 
 | Path                                  | What                                                                                    |
 | ------------------------------------- | --------------------------------------------------------------------------------------- |
-| `.kanbot/config.yml`                  | Config. See [Configuration](./07-configuration.md).                                     |
+| `.kanbot/config.yml`                  | Config. See [Configuration](./08-configuration.md).                                     |
 | `.kanbot/agents/*.md`                 | Agent definitions. See [Agents](./05-agents.md).                                        |
 | `.agents/skills/`                     | Shared skills. See [Skills](./06-skills.md).                                            |
 | `.claude/`, `.codex/`                 | Generated from `.kanbot/agents`. Don't edit.                                            |
@@ -54,7 +54,7 @@ kanbot init --provider claude   # or codex
 | `.github/workflows/ci.yml`            | CI. Agents fix failing CI, so adjust it to your stack.                                  |
 | `.github/workflows/kanbot-merged.yml` | Closes sibling PRs when one exploratory PR is merged.                                   |
 | `.github/CODEOWNERS`                  | You, as owner.                                                                          |
-| `.kanbot/manifest.json`               | What kanbot installed, so upgrades keep your edits. See [Upgrading](./08-upgrading.md). |
+| `.kanbot/manifest.json`               | What kanbot installed, so upgrades keep your edits. See [Upgrading](./10-upgrading.md). |
 
 Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them.
 

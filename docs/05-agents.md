@@ -37,7 +37,7 @@ The generated files also let you use the same agents in normal Claude Code or Co
 | `test-writer`           | sub    | Writes failing tests first.                                    |
 | `ui-verifier`           | sub    | Takes screenshots with Playwright.                             |
 
-`planner`, `reviewer-code`, `reviewer-spec` and `fixer` are required. Implementers are picked through [`implementers`](./07-configuration.md#implementers) in config.
+`planner`, `reviewer-code`, `reviewer-spec` and `fixer` are required. Implementers are picked through [`implementers`](./08-configuration.md#implementers) in config.
 
 ## File format
 

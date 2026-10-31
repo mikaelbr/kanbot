@@ -20,7 +20,7 @@ Scaffold agents, skills, config and GitHub files into the repo. Also writes `.ka
 
 ## `kanbot upgrade`
 
-Update agents, skills and workflows to this kanbot version, keeping your edits. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./08-upgrading.md).
+Update agents, skills and workflows to this kanbot version, keeping your edits. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./10-upgrading.md).
 
 | Flag        | Default | Description                         |
 | ----------- | ------- | ----------------------------------- |
@@ -53,7 +53,7 @@ Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.
 
 ## `kanbot skills install`
 
-Install the skills that work outside a kanbot repo (`kanbot-idea`) for your user, in `~/.claude/skills/` and `~/.agents/skills/`. See [Capturing ideas](./09-capturing-ideas.md).
+Install the skills that work outside a kanbot repo (`kanbot-idea`) for your user, in `~/.claude/skills/` and `~/.agents/skills/`. See [Capturing ideas](./03-capturing-ideas.md).
 
 | Flag                               | Default | Description                     |
 | ---------------------------------- | ------- | ------------------------------- |
