@@ -143,6 +143,7 @@ export const LABELS = {
 	working: "kanbot:working",
 	agentReviewed: "agent-reviewed",
 	needsHuman: "needs-human",
+	review: "kanbot-review",
 	explorePrefix: "explore:",
 	typePrefix: "type:",
 	variantPrefix: "variant:",

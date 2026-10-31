@@ -89,6 +89,10 @@ export type DeriveContext = {
 };
 
 export const REVIEW_PASSES = [1, 2] as const;
+
+/** PRs without a card have no plan to check, so they skip the spec pass. */
+export const reviewPasses = (issue: Issue) =>
+	issue.prOnly ? REVIEW_PASSES.slice(0, 1) : REVIEW_PASSES;
 const MAX_CI_FIXES = 3;
 const MAX_CONFLICT_FIXES = 3;
 
@@ -251,7 +255,9 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 
 			case "review": {
 				const open = issue.prs.filter(
-					(p) => p.state === "OPEN" && p.headRefName.startsWith("kanbot/"),
+					(p) =>
+						p.state === "OPEN" &&
+						(issue.prOnly || p.headRefName.startsWith("kanbot/")),
 				);
 				for (const pr of open) {
 					const job = prJob(item, pr, trusted, ctx, blocked);
@@ -340,7 +346,7 @@ function prJob(
 	}
 
 	// 4. Agent review passes, each followed by a fix when it found problems.
-	for (const pass of REVIEW_PASSES) {
+	for (const pass of reviewPasses(issue)) {
 		if (!reviewComment(pr, pass)) {
 			const key = `review${pass}:${prKey}`;
 			if (blocked(issue, key)) return null;

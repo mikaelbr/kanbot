@@ -33,6 +33,11 @@ export const REPO_LABELS: [name: string, color: string, description: string][] =
 		],
 		[LABELS.working, "ededed", "An kanbot agent is working on this"],
 		[
+			LABELS.review,
+			"5319e7",
+			"Have kanbot agents review this PR, without a board card",
+		],
+		[
 			LABELS.agentReviewed,
 			"0e8a16",
 			"Passed both agent review passes; ready for human testing",

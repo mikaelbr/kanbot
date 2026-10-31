@@ -58,8 +58,8 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 7. `kanbot-review` label
 
-- [ ] Non-kanbot PRs with `kanbot-review` get code review + fixer. PR body is the spec. No card.
-- [ ] Docs: "Working outside the board" (local sessions, manual PRs, direct commits).
+- [x] Non-kanbot PRs with `kanbot-review` get code review + fixer. PR body is the spec. No card. Fork PRs skipped.
+- [x] Docs: "Working outside the board" (local sessions, manual PRs, direct commits).
 
 ## Out of scope
 

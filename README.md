@@ -55,6 +55,7 @@ Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per re
 | `explore:2..4`                        | Build N alternative approaches as N PRs           |
 | `agent-reviewed`                      | Passed agent review; ready for you                |
 | `needs-human`                         | Agents gave up. Remove it to retry.               |
+| `kanbot-review`                       | Agent review for your own PR, without a card      |
 
 ## Customizing
 

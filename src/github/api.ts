@@ -3,6 +3,19 @@ import type { Gh } from "./gh.ts";
 
 const COMMENT = "id databaseId author { login } body createdAt";
 
+const PR_FIELDS = `
+	id number url title body state headRefName headRefOid mergeable createdAt
+	labels(first: 30) { nodes { name } }
+	comments(last: 100) { nodes { ${COMMENT} } }
+	reviews(last: 50) { nodes { ${COMMENT} } }
+	reviewThreads(last: 100) {
+		nodes {
+			id isResolved path line
+			comments(last: 30) { nodes { ${COMMENT} } }
+		}
+	}
+	commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }`;
+
 const ISSUE_QUERY = `
 query($owner: String!, $name: String!, $number: Int!) {
 	repository(owner: $owner, name: $name) {
@@ -11,20 +24,17 @@ query($owner: String!, $name: String!, $number: Int!) {
 			labels(first: 50) { nodes { name } }
 			comments(last: 100) { nodes { ${COMMENT} } }
 			closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
-				nodes {
-					id number url title body state headRefName headRefOid mergeable createdAt
-					labels(first: 30) { nodes { name } }
-					comments(last: 100) { nodes { ${COMMENT} } }
-					reviews(last: 50) { nodes { ${COMMENT} } }
-					reviewThreads(last: 100) {
-						nodes {
-							id isResolved path line
-							comments(last: 30) { nodes { ${COMMENT} } }
-						}
-					}
-					commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }
-				}
+				nodes { ${PR_FIELDS} }
 			}
+		}
+	}
+}`;
+
+const LABELED_PRS_QUERY = `
+query($owner: String!, $name: String!, $label: String!) {
+	repository(owner: $owner, name: $name) {
+		pullRequests(labels: [$label], states: OPEN, first: 50) {
+			nodes { isCrossRepository ${PR_FIELDS} }
 		}
 	}
 }`;
@@ -57,36 +67,52 @@ export async function fetchIssue(gh: Gh, number: number): Promise<Issue> {
 		state: i.state,
 		labels: names(i.labels),
 		comments: i.comments.nodes.map(comment),
-		prs: i.closedByPullRequestsReferences.nodes.map(
-			// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
-			(p: any): PR => ({
-				id: p.id,
-				number: p.number,
-				url: p.url,
-				title: p.title,
-				body: p.body,
-				state: p.state,
-				headRefName: p.headRefName,
-				headSha: p.headRefOid,
-				createdAt: p.createdAt,
-				labels: names(p.labels),
-				comments: p.comments.nodes.map(comment),
-				reviews: p.reviews.nodes
-					.map(comment)
-					.filter((r: Comment) => r.body.trim()),
-				// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
-				threads: p.reviewThreads.nodes.map((t: any) => ({
-					id: t.id,
-					isResolved: t.isResolved,
-					path: t.path,
-					line: t.line,
-					comments: t.comments.nodes.map(comment),
-				})),
-				checks: (p.commits.nodes[0]?.commit.statusCheckRollup?.state ??
-					null) as Checks,
-				mergeable: p.mergeable,
-			}),
-		),
+		prs: i.closedByPullRequestsReferences.nodes.map(mapPR),
+	};
+}
+
+/**
+ * Open PRs with `label`, for review without a board card. Fork PRs are left
+ * out: their branch isn't on origin, so fixes couldn't be pushed.
+ */
+export async function fetchLabeledPRs(gh: Gh, label: string): Promise<PR[]> {
+	// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape, mapped below
+	const data = await gh.query<any>(LABELED_PRS_QUERY, {
+		owner: gh.owner,
+		name: gh.name,
+		label,
+	});
+	return data.repository.pullRequests.nodes
+		.filter((p: { isCrossRepository: boolean }) => !p.isCrossRepository)
+		.map(mapPR);
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
+function mapPR(p: any): PR {
+	return {
+		id: p.id,
+		number: p.number,
+		url: p.url,
+		title: p.title,
+		body: p.body,
+		state: p.state,
+		headRefName: p.headRefName,
+		headSha: p.headRefOid,
+		createdAt: p.createdAt,
+		labels: names(p.labels),
+		comments: p.comments.nodes.map(comment),
+		reviews: p.reviews.nodes.map(comment).filter((r: Comment) => r.body.trim()),
+		// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
+		threads: p.reviewThreads.nodes.map((t: any) => ({
+			id: t.id,
+			isResolved: t.isResolved,
+			path: t.path,
+			line: t.line,
+			comments: t.comments.nodes.map(comment),
+		})),
+		checks: (p.commits.nodes[0]?.commit.statusCheckRollup?.state ??
+			null) as Checks,
+		mergeable: p.mergeable,
 	};
 }
 

@@ -1,9 +1,10 @@
 import type { ColumnKey } from "../config.ts";
-import { fetchIssue } from "../github/api.ts";
+import { LABELS } from "../config.ts";
+import { fetchIssue, fetchLabeledPRs } from "../github/api.ts";
 import type { Gh } from "../github/gh.ts";
 import { type Board, listItems } from "../github/project.ts";
 import type { Trust } from "../github/trust.ts";
-import type { Item, Snapshot } from "./types.ts";
+import type { Item, PR, Snapshot } from "./types.ts";
 
 const ACTIVE: ReadonlySet<ColumnKey> = new Set([
 	"planning",
@@ -53,7 +54,10 @@ export async function takeSnapshot(
 			};
 		},
 	);
-	const present = items.filter((i): i is Item => i !== null);
+	const labeled = (await fetchLabeledPRs(gh, LABELS.review))
+		.filter((p) => !p.headRefName.startsWith("kanbot/"))
+		.map((p, i) => prItem(p, raw.length + i));
+	const present = [...items.filter((i): i is Item => i !== null), ...labeled];
 	const authors = present.flatMap(({ issue }) => [
 		...issue.comments.map((c) => c.author),
 		...issue.prs.flatMap((p) => [
@@ -63,6 +67,27 @@ export async function takeSnapshot(
 		]),
 	]);
 	return { items: present, trusted: await trust.resolve(authors) };
+}
+
+/** A `kanbot-review` PR as a Review item, so it gets the same review jobs. */
+export function prItem(pr: PR, position: number): Item {
+	return {
+		itemId: "",
+		column: "review",
+		position,
+		issue: {
+			id: pr.id,
+			number: pr.number,
+			url: pr.url,
+			title: pr.title,
+			body: pr.body,
+			state: "OPEN",
+			labels: pr.labels,
+			comments: [],
+			prs: [pr],
+			prOnly: true,
+		},
+	};
 }
 
 async function mapLimit<T, R>(

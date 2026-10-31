@@ -54,6 +54,8 @@ export type Issue = {
 	labels: string[];
 	comments: Comment[];
 	prs: PR[];
+	/** A PR labeled `kanbot-review`, reviewed without a card. Fields mirror the PR. */
+	prOnly?: boolean;
 };
 
 export type Item = {

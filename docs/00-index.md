@@ -21,3 +21,4 @@ kanbot runs a team of Claude Code or Codex agents from a GitHub Project board. Y
 8. [Upgrading](./08-upgrading.md): get new agents and skills, keep your edits.
 9. [Capturing ideas](./09-capturing-ideas.md): file ideas by chatting with your agent.
 10. [Copilot review](./10-copilot-review.md): add GitHub Copilot as a cloud reviewer.
+11. [Working outside the board](./11-outside-the-board.md): local sessions, your own PRs, direct commits.

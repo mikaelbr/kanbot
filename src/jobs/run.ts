@@ -11,6 +11,7 @@ import {
 	type Job,
 	type PlanJob,
 	type ReviewJob,
+	reviewPasses,
 	variantOf,
 } from "../daemon/derive.ts";
 import type { Worktrees } from "../daemon/git.ts";
@@ -347,7 +348,7 @@ async function review(job: ReviewJob, deps: JobDeps) {
 	ReviewResult.parse(result);
 	const icon = result.verdict === "approve" ? "✅" : "🛠️";
 	const body = [
-		`### ${icon} Agent review ${job.pass}/2 (${PASS_NAME[job.pass]}): ${result.verdict === "approve" ? "approve" : "changes requested"}`,
+		`### ${icon} Agent review ${job.pass}/${reviewPasses(job.item.issue).length} (${PASS_NAME[job.pass]}): ${result.verdict === "approve" ? "approve" : "changes requested"}`,
 		result.summary,
 		result.findings.length ? findingsList(result.findings) : "_No findings._",
 		marker("review", job.pass),
@@ -401,7 +402,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 			gh,
 			pr.number,
 			[
-				`**Addressed agent review ${r.pass}/2.** ${result.summary} ${pushed}`,
+				`**Addressed agent review ${r.pass}/${reviewPasses(job.item.issue).length}.** ${result.summary} ${pushed}`,
 				lines.join("\n"),
 				marker("fixed", r.pass),
 			].join("\n\n"),

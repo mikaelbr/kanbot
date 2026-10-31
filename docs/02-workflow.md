@@ -53,6 +53,8 @@ Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed
 
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
 
+Want the same review for a PR you opened yourself? Label it `kanbot-review`. See [Working outside the board](./11-outside-the-board.md).
+
 Conflicts are checked even after a PR is `agent-reviewed`. So if you push to the base branch yourself, or merge another PR, open kanbot PRs are kept mergeable. Kanbot merges rather than rebases, so history on the PR branch is never rewritten.
 
 ## 6. Done

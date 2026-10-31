@@ -111,6 +111,7 @@ notify:
 | `kanbot:working`                      | kanbot  | An agent is working on it.                  |
 | `agent-reviewed`                      | kanbot  | Passed agent review. Ready for you.         |
 | `needs-human`                         | kanbot  | Agents stopped. Remove it to retry.         |
+| `kanbot-review`                       | you     | Agent review for a PR without a card.       |
 
 ## Shared agent rules
 

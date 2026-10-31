@@ -63,6 +63,8 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	const trust = new Trust(gh);
 	const running = new Map<string, Promise<void>>();
 	let wake: () => void = () => {};
+	// kanbot-review PRs vanish from the snapshot when closed; clean up after them.
+	let prOnly = new Set<number>();
 	let stopping = false;
 
 	const stop = () => {
@@ -113,6 +115,17 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			failures: state.failures,
 			now: Date.now(),
 		});
+		const nowPrOnly = new Set(
+			snapshot.items.filter((i) => i.issue.prOnly).map((i) => i.issue.number),
+		);
+		for (const n of prOnly) {
+			if (nowPrOnly.has(n)) continue;
+			// Retry next tick while a job still uses the worktree.
+			if ([...running.keys()].some((k) => k.includes(`#${n}:`)))
+				nowPrOnly.add(n);
+			else actions.push({ kind: "cleanup", number: n });
+		}
+		prOnly = nowPrOnly;
 		for (const a of actions) {
 			if (a.kind === "cleanup" && opts.dryRun) continue;
 			if (opts.dryRun) log.info(`[dry-run] action ${describeAction(a)}`);

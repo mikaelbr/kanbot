@@ -5,6 +5,7 @@ import {
 	type ImplementJob,
 	schedule,
 } from "../src/daemon/derive.ts";
+import { prItem } from "../src/daemon/snapshot.ts";
 import { embedJson, marker, withPlan } from "../src/github/markers.ts";
 import type { Finding } from "../src/schemas/results.ts";
 import {
@@ -466,5 +467,37 @@ describe("schedule", () => {
 			"plan",
 		]);
 		expect(schedule(r.jobs, 0, config.priority)).toEqual([]);
+	});
+});
+
+describe("kanbot-review PRs without a card", () => {
+	const manual = (over: Parameters<typeof pr>[0] = {}) =>
+		prItem(
+			pr({ headRefName: "feature/login", labels: ["kanbot-review"], ...over }),
+			0,
+		);
+
+	test("get code review only, then agent-reviewed", () => {
+		const first = derive(snap(manual()), ctx());
+		expect(first.jobs).toMatchObject([{ kind: "review", pass: 1 }]);
+
+		const reviewed = manual({
+			comments: [
+				comment(`${marker("review", 1)} ${embedJson("findings", [])}`),
+			],
+		});
+		const r = derive(snap(reviewed), ctx());
+		expect(r.jobs).toEqual([]);
+		expect(r.actions).toMatchObject([{ kind: "agentReviewed" }]);
+	});
+
+	test("human feedback goes to the fixer", () => {
+		const r = derive(
+			snap(manual({ comments: [comment("Handle the empty case")] })),
+			ctx(),
+		);
+		expect(r.jobs).toMatchObject([
+			{ kind: "fix", reason: { type: "feedback" } },
+		]);
 	});
 });

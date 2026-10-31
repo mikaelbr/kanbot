@@ -1,8 +1,9 @@
-import type {
-	FixJob,
-	ImplementJob,
-	PlanJob,
-	ReviewJob,
+import {
+	type FixJob,
+	type ImplementJob,
+	type PlanJob,
+	type ReviewJob,
+	reviewPasses,
 } from "../daemon/derive.ts";
 import type { Comment, Issue, PR } from "../daemon/types.ts";
 import { extractPlan, isKanbot, stripPlan } from "../github/markers.ts";
@@ -63,6 +64,10 @@ function humanDecisions(pr: PR) {
 }
 
 function issueHeader(issue: Issue) {
+	if (issue.prOnly)
+		return `# Pull request #${issue.number}: ${issue.title}
+No issue or plan: the human opened this PR and asked for review. Its description is the spec.
+URL: ${issue.url}`;
 	return `# Issue #${issue.number}: ${issue.title}
 Labels: ${issue.labels.join(", ") || "none"}
 URL: ${issue.url}`;
@@ -131,7 +136,7 @@ export function reviewPrompt(job: ReviewJob, base: string) {
 		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
 		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`. CI status: ${pr.checks ?? "none"}.\n\n### PR description\n${quote(stripMarkers(pr.body))}`,
 		humanDecisions(pr),
-		`## Review pass ${job.pass} of 2\nYou only review. Do not edit files or commit.`,
+		`## Review pass ${job.pass} of ${reviewPasses(issue).length}\nYou only review. Do not edit files or commit.`,
 		RULES,
 	]
 		.filter(Boolean)

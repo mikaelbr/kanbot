@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { prItem } from "../src/daemon/snapshot.ts";
 import { fixPrompt, reviewPrompt } from "../src/jobs/prompts.ts";
 import { comment, item, pr } from "./helpers.ts";
 
@@ -56,4 +57,16 @@ describe("PR history in prompts", () => {
 		);
 		expect(out).not.toContain("Human decisions");
 	});
+});
+
+test("review prompt for a PR without a card uses the PR as spec", () => {
+	const p = pr({ body: "Adds login rate limiting", headRefName: "feature/x" });
+	const it = prItem(p, 0);
+	const out = reviewPrompt(
+		{ kind: "review", key: "r", item: it, pr: p, pass: 1 },
+		"main",
+	);
+	expect(out).toContain("# Pull request #");
+	expect(out).toContain("Adds login rate limiting");
+	expect(out).toContain("Review pass 1 of 1");
 });
