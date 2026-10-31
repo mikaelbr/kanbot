@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { defineConfig, type HeadConfig, type PageData } from "vitepress";
-import { type Doc, docsDir, linkRewriter, loadDocs } from "./docs";
+import { type Doc, docSections, docsDir, linkRewriter, loadDocs } from "./docs";
 
 const repo = "https://github.com/mikaelbr/kanbot";
 // Pages workflow sets these for kanbot.mib.im. Defaults match a local build.
@@ -229,13 +229,11 @@ export default defineConfig({
 		// Not a page, so VitePress won't add base itself.
 		nav: [{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" }],
 		sidebar: [
-			{
-				text: "Docs",
-				items: docs.map((d) => ({
-					text: d.slug === "index" ? "Overview" : d.title,
-					link: d.slug === "index" ? "/" : `/${d.slug}`,
-				})),
-			},
+			{ text: "Overview", link: "/" },
+			...docSections(docs).map((s) => ({
+				text: s.text,
+				items: s.docs.map((d) => ({ text: d.title, link: `/${d.slug}` })),
+			})),
 		],
 		socialLinks: [{ icon: "github", link: repo }],
 		editLink: {

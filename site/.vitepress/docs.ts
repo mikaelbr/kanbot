@@ -27,6 +27,27 @@ export function linkRewriter(docs: Doc[]): (href: string) => string {
 		});
 }
 
+// Sidebar groups from the index page's `## ` headings and the doc links under each.
+export function docSections(docs: Doc[]): { text: string; docs: Doc[] }[] {
+	const index = docs.find((d) => d.slug === "index");
+	const byFile = new Map(docs.map((d) => [d.file, d]));
+	const sections: { text: string; docs: Doc[] }[] = [];
+	for (const line of index?.body.split("\n") ?? []) {
+		const heading = line.match(/^## (.+)$/);
+		if (heading) sections.push({ text: heading[1], docs: [] });
+		const section = sections.at(-1);
+		for (const [, file] of line.matchAll(/\]\(\.\/([^)#]+\.md)/g)) {
+			const doc = byFile.get(file);
+			if (section && doc) section.docs.push(doc);
+		}
+	}
+	// Pages the index doesn't link still get a menu entry.
+	const listed = new Set(sections.flatMap((s) => s.docs));
+	const rest = docs.filter((d) => d !== index && !listed.has(d));
+	if (rest.length > 0) sections.push({ text: "More", docs: rest });
+	return sections.filter((s) => s.docs.length > 0);
+}
+
 // Docs in file order. Slug comes from frontmatter, else the name without its number prefix.
 export function loadDocs(): Doc[] {
 	return readdirSync(docsDir)
