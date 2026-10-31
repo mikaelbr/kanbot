@@ -25,6 +25,19 @@ Skills are reusable instructions agents load when relevant. They live in `.agent
 | `frontend-design`     | Visual design direction.                                      |
 | `accessibility`       | WCAG 2.2 AA checklist.                                        |
 | `verify-ui`           | Playwright screenshots at 390px and 1280px.                   |
+| `kanbot-admin`        | For you, not board agents. See below.                         |
+
+## kanbot-admin
+
+Board agents use the other skills. `kanbot-admin` is for you, when you work on the kanbot setup itself in a normal Claude Code or Codex session. Ask in plain words:
+
+> Add an implementer for mobile work.
+> Make the reviewers stricter about accessibility.
+> Upgrade kanbot.
+
+The agent finds the skill and knows where things live, which files are generated, and the steps for each change: edit agents and skills, update config, run `sync` and `doctor`, upgrade, and merge `.kanbot-new` files. You review the diff and commit.
+
+kanbot owns this skill, so `kanbot upgrade` always replaces it. Put your own notes in `project-conventions` instead.
 
 ## File format
 

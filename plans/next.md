@@ -28,9 +28,9 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 3. `kanbot-admin` skill
 
-- [ ] One skill in `.agents/skills/`, for interactive human sessions only. No board agent lists it.
-- [ ] Covers: add/edit agents and skills, `kanbot sync`, config, running upgrades, merging `.kanbot-new` files, adding memory.
-- [ ] Docs: skills page.
+- [x] One skill in `.agents/skills/`, for interactive human sessions only. No board agent lists it.
+- [x] Covers: add/edit agents and skills, `kanbot sync`, config, running upgrades, merging `.kanbot-new` files, adding memory (memory part lands with item 4).
+- [x] Docs: skills page.
 
 ### 4. Project memory
 

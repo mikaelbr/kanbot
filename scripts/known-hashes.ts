@@ -26,8 +26,8 @@ const out = Object.fromEntries(
 		.sort(([a], [b]) => a.localeCompare(b))
 		.map(([p, s]) => [p, [...s].sort()]),
 );
-await Bun.write(
-	`${root}/src/known-hashes.json`,
-	`${JSON.stringify(out, null, "\t")}\n`,
-);
+const file = `${root}/src/known-hashes.json`;
+await Bun.write(file, `${JSON.stringify(out, null, "\t")}\n`);
+await Bun.spawn(["biome", "format", "--write", file], { stdout: "ignore" })
+	.exited;
 console.log(`known-hashes.json: ${known.size} files`);
