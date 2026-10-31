@@ -1,14 +1,12 @@
 import { existsSync } from "node:fs";
-import { mkdir, readdir, stat } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
 import { run } from "../github/gh.ts";
 import { log } from "../log.ts";
-
-const TEMPLATES = join(import.meta.dir, "..", "..", "templates");
+import { applyUpgrade, NEW_SUFFIX, planUpgrade } from "../templates.ts";
 
 const GITIGNORE = [".kanbot/state.json", ".kanbot/logs/", ".kanbot/daemon.pid"];
 
@@ -27,7 +25,7 @@ export default defineCommand({
 		},
 		force: {
 			type: "boolean",
-			description: "Overwrite existing files",
+			description: "Overwrite existing files, including your edits",
 			default: false,
 		},
 	},
@@ -38,8 +36,16 @@ export default defineCommand({
 		if (!["claude", "codex"].includes(args.provider))
 			throw new Error("--provider must be claude or codex");
 
-		const written = await copyTree(TEMPLATES, root, args.force);
-		for (const f of written) log.info(`+ ${f}`);
+		const plan = await planUpgrade(root, { force: args.force });
+		await applyUpgrade(root, plan);
+		for (const c of plan.changes) {
+			if (c.action === "add" || c.action === "update") log.info(`+ ${c.path}`);
+			if (c.action === "conflict")
+				log.warn(
+					`! ${c.path} exists; kanbot's version is in ${c.path}${NEW_SUFFIX}`,
+				);
+		}
+		log.info("+ .kanbot/manifest.json");
 
 		if (!existsSync(configPath(root)) || args.force) {
 			const repo = JSON.parse(
@@ -84,32 +90,6 @@ Next steps:
   6. kanbot run                 # start the loop (or kanbot run --once --dry-run)`);
 	},
 });
-
-/** Copy templates without clobbering existing files. `_gitignore`-style names are not used. */
-async function copyTree(
-	src: string,
-	dest: string,
-	force: boolean,
-): Promise<string[]> {
-	const written: string[] = [];
-	const walk = async (dir: string) => {
-		for (const name of await readdir(dir)) {
-			const from = join(dir, name);
-			const rel = relative(src, from);
-			const to = join(dest, rel);
-			if ((await stat(from)).isDirectory()) {
-				await walk(from);
-				continue;
-			}
-			if (existsSync(to) && !force) continue;
-			await mkdir(dirname(to), { recursive: true });
-			await Bun.write(to, Bun.file(from));
-			written.push(rel);
-		}
-	};
-	await walk(src);
-	return written;
-}
 
 async function appendGitignore(root: string) {
 	const path = join(root, ".gitignore");

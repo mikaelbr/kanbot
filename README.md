@@ -62,6 +62,10 @@ Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per re
 - `.kanbot/agents/*.md`: agent definitions. Run `kanbot sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
 - `.agents/skills/`: skills shared by agents. Fill in `project-conventions` first.
 
+## Upgrading
+
+`bunx kanbot@latest upgrade` updates agents and skills you haven't edited. For edited ones, it writes the new version next to yours as `<file>.kanbot-new` to merge. See [Upgrading](./docs/08-upgrading.md).
+
 ## Shell completion
 
 ```sh

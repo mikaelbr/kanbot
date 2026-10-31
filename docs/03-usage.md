@@ -11,12 +11,20 @@ Run commands from the repository root. `kanbot --help` and `kanbot <command> --h
 
 ## `kanbot init`
 
-Scaffold agents, skills, config and GitHub files into the repo. Also writes `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`.
+Scaffold agents, skills, config and GitHub files into the repo. Also writes `.kanbot/manifest.json` and `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`. Existing files are kept; where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`.
 
-| Flag                         | Default  | Description               |
-| ---------------------------- | -------- | ------------------------- |
-| `--provider <claude\|codex>` | `claude` | Agent provider.           |
-| `--force`                    | `false`  | Overwrite existing files. |
+| Flag                         | Default  | Description                                |
+| ---------------------------- | -------- | ------------------------------------------ |
+| `--provider <claude\|codex>` | `claude` | Agent provider.                            |
+| `--force`                    | `false`  | Overwrite existing files, including edits. |
+
+## `kanbot upgrade`
+
+Update agents, skills and workflows to this kanbot version, keeping your edits. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./08-upgrading.md).
+
+| Flag        | Default | Description                         |
+| ----------- | ------- | ----------------------------------- |
+| `--dry-run` | `false` | Show what would change, write none. |
 
 ## `kanbot board create`
 
@@ -45,7 +53,7 @@ Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.
 
 ## `kanbot doctor`
 
-Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, files pushed to the base branch, board columns, board workflows and labels. Prints a fix for each failed check. Exits 1 on failure.
+Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. Prints a fix for each failed check. Exits 1 on failure.
 
 ## `kanbot run`
 

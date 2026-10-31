@@ -11,6 +11,7 @@ import {
 	loadBoard,
 	missingColumns,
 } from "../github/project.ts";
+import { NEW_SUFFIX, pendingMerges, planUpgrade } from "../templates.ts";
 import { REPO_LABELS } from "./board.ts";
 
 type Check = { name: string; ok: boolean; detail?: string; fix?: string };
@@ -119,6 +120,26 @@ export default defineCommand({
 		} catch (e) {
 			add({ name: "agents", ok: false, detail: String(e) });
 		}
+
+		const plan = await planUpgrade(root);
+		const behind = plan.changes.filter((c) =>
+			["add", "update", "conflict"].includes(c.action),
+		);
+		add({
+			name: "templates up to date",
+			ok: !behind.length,
+			detail: behind.length
+				? `${behind.length} file(s) differ from this kanbot version`
+				: undefined,
+			fix: "kanbot upgrade",
+		});
+		const merges = await pendingMerges(root);
+		add({
+			name: `no unmerged ${NEW_SUFFIX} files`,
+			ok: !merges.length,
+			detail: merges.join(", ") || undefined,
+			fix: `merge each into the file next to it and delete it (kanbot-admin skill can help)`,
+		});
 
 		await git(root, "fetch", "origin", config.baseBranch).catch(() => {});
 		const tree = await git(

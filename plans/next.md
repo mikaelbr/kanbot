@@ -19,12 +19,12 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 2. `kanbot upgrade` and manifest
 
-- [ ] Three file classes, declared in templates: kanbot-owned (always overwrite), user-owned (write once), shared (update if unmodified, else flag).
-- [ ] `init` writes committed `.kanbot/manifest.json`: kanbot version + template hash per file.
-- [ ] Ship template hashes of all published versions so manifest-less installs bootstrap.
-- [ ] `upgrade` runs locally, leaves changes uncommitted. Conflicts write `<file>.kanbot-new`. Prints a short changelog.
-- [ ] `doctor` warns when the repo is behind the installed version.
-- [ ] Docs: new "Upgrading" page.
+- [x] Three file classes, declared in `src/templates.ts`: kanbot-owned (always overwrite), user-owned (write once), shared (update if unmodified, else flag).
+- [x] `init` writes committed `.kanbot/manifest.json`: kanbot version + template hash per file.
+- [x] Ship template hashes of all past versions in git history (`bun run hashes`) so manifest-less installs bootstrap.
+- [x] `upgrade` runs locally, leaves changes uncommitted. Conflicts write `<file>.kanbot-new`. Prints a short changelog.
+- [x] `doctor` warns when the repo is behind the installed version.
+- [x] Docs: new "Upgrading" page.
 
 ### 3. `kanbot-admin` skill
 

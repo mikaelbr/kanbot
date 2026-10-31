@@ -10,6 +10,7 @@ export const main = defineCommand({
 	subCommands: {
 		init: () => import("./commands/init.ts").then((m) => m.default),
 		board: () => import("./commands/board.ts").then((m) => m.default),
+		upgrade: () => import("./commands/upgrade.ts").then((m) => m.default),
 		sync: () => import("./commands/sync.ts").then((m) => m.default),
 		doctor: () => import("./commands/doctor.ts").then((m) => m.default),
 		run: () => import("./commands/run.ts").then((m) => m.default),

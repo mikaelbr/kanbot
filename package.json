@@ -23,7 +23,8 @@
 		"typecheck": "tsc --noEmit",
 		"schema": "bun -e \"await Bun.write('schema/config.schema.json', (await import('./src/config.ts')).renderConfigSchema())\"",
 		"docs:dev": "pnpm --dir site dev",
-		"docs:build": "pnpm --dir site build"
+		"docs:build": "pnpm --dir site build",
+		"hashes": "bun scripts/known-hashes.ts"
 	},
 	"dependencies": {
 		"citty": "^0.2.2",
