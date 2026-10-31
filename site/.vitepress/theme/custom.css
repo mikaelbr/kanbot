@@ -1,0 +1,6 @@
+/* Match logo to the title's cap height and sit it on the baseline. */
+.VPNavBarTitle .logo {
+	height: 18px;
+	margin-right: 10px;
+	transform: translateY(-2px);
+}

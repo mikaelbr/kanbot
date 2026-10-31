@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo-dark.svg">
+  <img src="docs/public/logo.svg" alt="kanbot logo" width="96">
+</picture>
+
 # kanbot
 
 Run an autonomous dev team from a GitHub Project board. You define, specify and prioritize work while Claude or Codex agents work as your team.

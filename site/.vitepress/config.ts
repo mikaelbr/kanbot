@@ -63,6 +63,14 @@ export default defineConfig({
 	base,
 	cleanUrls: true,
 	lastUpdated: true,
+	head: [
+		[
+			"link",
+			{ rel: "icon", href: `${base}favicon.svg`, type: "image/svg+xml" },
+		],
+		["link", { rel: "icon", href: `${base}favicon.ico`, sizes: "32x32" }],
+		["link", { rel: "apple-touch-icon", href: `${base}apple-touch-icon.png` }],
+	],
 	// 01-getting-started.md -> getting-started.md
 	rewrites: Object.fromEntries(docs.map((d) => [d.file, `${d.slug}.md`])),
 	markdown: {
@@ -104,6 +112,7 @@ export default defineConfig({
 		],
 	},
 	themeConfig: {
+		logo: { light: "/logo.svg", dark: "/logo-dark.svg" },
 		// Not a page, so VitePress won't add base itself.
 		nav: [{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" }],
 		sidebar: [
