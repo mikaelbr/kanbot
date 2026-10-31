@@ -9,6 +9,12 @@ slug: index
 
 kanbot runs a team of Claude Code or Codex agents from a GitHub Project board. You write and prioritize issues. Agents plan, build, review and fix. You approve plans and merge PRs.
 
+## Demo
+
+One card from idea to a reviewed PR, in about 7 minutes (3 minute video).
+
+<video src="./assets/demo.mp4" poster="./assets/demo-poster.jpg" controls muted playsinline preload="none" width="100%"></video>
+
 ## Learn
 
 Read these in order the first time.

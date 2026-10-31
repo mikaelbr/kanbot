@@ -15,7 +15,7 @@ flowchart LR
   Review --> Done["Done<br/><i>you merge</i>"]
 ```
 
-Full docs: [docs/](./docs/00-index.md).
+Full docs: [docs/](./docs/00-index.md). Demo video: [docs/assets/demo.mp4](./docs/assets/demo.mp4).
 
 ## How it works
 
