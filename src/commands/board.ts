@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { LABELS, loadConfig, saveConfig } from "../config.ts";
-import { ensureLabel } from "../github/api.ts";
+import { ensureCopilotRuleset, ensureLabel } from "../github/api.ts";
 import { Gh } from "../github/gh.ts";
 import { createBoard, loadBoard, missingColumns } from "../github/project.ts";
 import { log } from "../log.ts";
@@ -83,6 +83,10 @@ const create = defineCommand({
 		}
 		await ensureLabels(gh);
 		log.info(`Labels ensured: ${REPO_LABELS.map(([n]) => n).join(", ")}`);
+		if (config.review.copilot) {
+			await ensureCopilotRuleset(gh, config.review.copilotOnPush);
+			log.info("Copilot review ruleset ensured.");
+		}
 		const board = await loadBoard(gh, await loadConfig(root));
 		const missing = missingColumns(board);
 		if (missing.length)

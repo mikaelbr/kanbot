@@ -30,6 +30,7 @@ export function pr(over: Partial<PR> = {}): PR {
 		state: "OPEN",
 		headRefName: "kanbot/1",
 		headSha: `sha${seq}`,
+		createdAt: "2026-10-01T00:00:00Z",
 		labels: [],
 		comments: [],
 		reviews: [],
@@ -65,9 +66,15 @@ export function item(
 }
 
 export const ctx = (
-	over: { running?: string[]; failures?: [string, number][] } = {},
+	over: {
+		running?: string[];
+		failures?: [string, number][];
+		config?: typeof config;
+		now?: number;
+	} = {},
 ) => ({
-	config,
+	config: over.config ?? config,
+	now: over.now ?? Date.parse("2026-10-02T00:00:00Z"),
 	running: new Set(over.running ?? []),
 	failures: new Map(over.failures ?? []),
 });

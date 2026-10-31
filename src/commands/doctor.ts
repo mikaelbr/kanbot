@@ -5,6 +5,7 @@ import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
+import { copilotReviewRule } from "../github/api.ts";
 import { Gh, run } from "../github/gh.ts";
 import {
 	boardWorkflows,
@@ -224,6 +225,25 @@ export default defineCommand({
 			detail: missingLabels.join(", ") || undefined,
 			fix: "kanbot board create",
 		});
+
+		if (config.review.copilot) {
+			const rule = await copilotReviewRule(gh, config.baseBranch).catch(
+				() => null,
+			);
+			add({
+				name: "Copilot review requested on PRs",
+				ok: rule !== null,
+				detail: rule
+					? `re-review on push: ${rule.parameters?.review_on_push ? "on" : "off"}`
+					: "review.copilot is on, but no ruleset requests Copilot review",
+				fix: "kanbot board create",
+			});
+			add({
+				name: ".github/copilot-instructions.md committed",
+				ok: tree.split("\n").includes(".github/copilot-instructions.md"),
+				fix: "kanbot sync, then commit and push",
+			});
+		}
 
 		if (checks.some((c) => !c.ok)) process.exit(1);
 	},

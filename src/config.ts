@@ -87,6 +87,30 @@ export const ConfigSchema = z.object({
 		.describe(
 			"Maps a type:<key> label to an agent. `default` is the fallback.",
 		),
+	review: z
+		.object({
+			copilot: z
+				.boolean()
+				.default(false)
+				.describe(
+					"Wait for GitHub Copilot's code review and have the fixer address its comments. Needs a paid Copilot plan; each review uses credits.",
+				),
+			copilotOnPush: z
+				.boolean()
+				.default(false)
+				.describe(
+					"Have Copilot review again after every push. One review per push.",
+				),
+			copilotWaitMinutes: z
+				.number()
+				.int()
+				.min(1)
+				.default(15)
+				.describe(
+					"Minutes to wait for Copilot's review before going on without it.",
+				),
+		})
+		.prefault({}),
 	codex: z
 		.object({
 			networkAccess: z

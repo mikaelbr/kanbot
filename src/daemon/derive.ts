@@ -63,7 +63,8 @@ export type FixJob = {
 		| { type: "review"; pass: 1 | 2; findings: Finding[] }
 		| { type: "feedback"; threads: ReviewThread[]; comments: Comment[] }
 		| { type: "ci" }
-		| { type: "conflict" };
+		| { type: "conflict" }
+		| { type: "copilot"; threads: ReviewThread[] };
 };
 
 export type Job = PlanJob | ImplementJob | ReviewJob | FixJob;
@@ -83,6 +84,8 @@ export type DeriveContext = {
 	running: ReadonlySet<string>;
 	/** Failure count per job key. */
 	failures: ReadonlyMap<string, number>;
+	/** Current time in ms, for waiting on Copilot. */
+	now: number;
 };
 
 export const REVIEW_PASSES = [1, 2] as const;
@@ -140,6 +143,18 @@ export function openFeedback(pr: PR, trusted: ReadonlySet<string>) {
 	// Top-level comments and review bodies are answered by PR comments with re-markers.
 	const comments = pendingComments([...pr.comments, ...pr.reviews], trusted);
 	return { threads, comments };
+}
+
+/** GitHub Copilot code review's login, with or without the `[bot]` suffix. */
+export const isCopilot = (login: string) =>
+	login.startsWith("copilot-pull-request-reviewer");
+
+/** Unresolved Copilot threads nobody has answered yet. */
+export function copilotThreads(pr: PR) {
+	return pr.threads.filter((t) => {
+		const last = t.comments.at(-1);
+		return !t.isResolved && last !== undefined && isCopilot(last.author);
+	});
 }
 
 const fixCount = (pr: PR, kind: "ci" | "conflict") =>
@@ -346,6 +361,29 @@ function prJob(
 				reason: { type: "review", pass, findings },
 			};
 		}
+	}
+
+	// 5. GitHub Copilot's review, when enabled. It arrives on its own schedule.
+	if (ctx.config.review.copilot) {
+		const threads = copilotThreads(pr);
+		if (threads.length) {
+			const key = `fix:${prKey}`;
+			if (blocked(issue, key)) return null;
+			return {
+				kind: "fix",
+				key,
+				item,
+				pr,
+				reason: { type: "copilot", threads },
+			};
+		}
+		const reviewed =
+			pr.reviews.some((r) => isCopilot(r.author)) ||
+			pr.threads.some((t) => t.comments.some((c) => isCopilot(c.author)));
+		const waited =
+			ctx.now - Date.parse(pr.createdAt) >=
+			ctx.config.review.copilotWaitMinutes * 60_000;
+		if (!reviewed && !waited) return null;
 	}
 
 	if (!pr.labels.includes(LABELS.agentReviewed)) return "agentReviewed";

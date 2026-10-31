@@ -49,12 +49,12 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 6. Copilot review
 
-- [ ] Spike: does Copilot code review read `.agents/skills/`? If not, mirror to `.github/skills/`.
-- [ ] `kanbot sync` generates `.github/copilot-instructions.md` pointing at `code-review` and `AGENTS.md`.
-- [ ] Config `review.copilot` (default off). `board create`/`doctor` set up the ruleset. Re-review on push off by default (`review.copilotOnPush`).
-- [ ] Review waits for `copilot-pull-request-reviewer[bot]` up to ~15 min, then proceeds.
-- [ ] Copilot comments are agent findings for the fixer; they don't outrank the plan.
-- [ ] Docs: cost note, setup, how it fits the review order.
+- [ ] Spike (manual, needs a paid plan): does Copilot code review read `.agents/skills/`? If not, mirror to `.github/skills/`. Also confirm the `copilot_code_review` ruleset rule type.
+- [x] `kanbot sync` generates `.github/copilot-instructions.md` pointing at `code-review` and `AGENTS.md`.
+- [x] Config `review.copilot` (default off). `board create`/`doctor` set up the ruleset. Re-review on push off by default (`review.copilotOnPush`).
+- [x] Review waits for `copilot-pull-request-reviewer[bot]` up to ~15 min, then proceeds.
+- [x] Copilot comments are agent findings for the fixer; they don't outrank the plan.
+- [x] Docs: cost note, setup, how it fits the review order.
 
 ### 7. `kanbot-review` label
 

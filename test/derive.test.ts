@@ -346,6 +346,75 @@ describe("review", () => {
 		).toMatchObject([{ reason: { type: "feedback" } }]);
 	});
 
+	describe("copilot", () => {
+		const copilotOn = {
+			...config,
+			review: { ...config.review, copilot: true },
+		};
+		const COPILOT = "copilot-pull-request-reviewer";
+		const done = [reviewed(1), reviewed(2)];
+		const created = "2026-10-01T00:00:00Z";
+		const at = (min: number) => Date.parse(created) + min * 60_000;
+
+		test("waits for Copilot's review, then goes on without it", () => {
+			const p = pr({ comments: done, createdAt: created });
+			const early = derive(
+				snap(item("review", { prs: [p] })),
+				ctx({ config: copilotOn, now: at(5) }),
+			);
+			expect(early.actions).toEqual([]);
+			const late = derive(
+				snap(item("review", { prs: [p] })),
+				ctx({ config: copilotOn, now: at(16) }),
+			);
+			expect(late.actions).toMatchObject([{ kind: "agentReviewed" }]);
+		});
+
+		test("unanswered Copilot threads go to the fixer", () => {
+			const t = {
+				id: "T9",
+				isResolved: false,
+				path: "a.ts",
+				line: 3,
+				comments: [comment("Possible null deref", COPILOT)],
+			};
+			const p = pr({ comments: done, threads: [t], createdAt: created });
+			const r = derive(
+				snap(item("review", { prs: [p] })),
+				ctx({ config: copilotOn, now: at(5) }),
+			);
+			expect(r.jobs).toMatchObject([
+				{ kind: "fix", reason: { type: "copilot", threads: [{ id: "T9" }] } },
+			]);
+
+			const answered = {
+				...t,
+				comments: [...t.comments, comment(`Fixed. ${marker("re", "T9")}`)],
+			};
+			const after = derive(
+				snap(item("review", { prs: [{ ...p, threads: [answered] }] })),
+				ctx({ config: copilotOn, now: at(5) }),
+			);
+			expect(after.jobs).toEqual([]);
+			expect(after.actions).toMatchObject([{ kind: "agentReviewed" }]);
+		});
+
+		test("Copilot comments are ignored when copilot is off", () => {
+			const t = {
+				id: "T9",
+				isResolved: false,
+				path: null,
+				line: null,
+				comments: [comment("Nit", COPILOT)],
+			};
+			const r = derive(
+				snap(item("review", { prs: [pr({ comments: done, threads: [t] })] })),
+				ctx(),
+			);
+			expect(r.jobs).toEqual([]);
+		});
+	});
+
 	test("one job per PR at a time", () => {
 		const r = derive(
 			snap(item("review", { prs: [pr({ number: 50 })] })),

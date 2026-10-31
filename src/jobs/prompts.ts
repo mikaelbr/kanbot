@@ -168,6 +168,15 @@ export function fixPrompt(job: FixJob, base: string, details: string | null) {
 				`### ref: ${c.id} (comment by @${c.author})\n${c.body.trim()}`,
 			);
 		}
+	} else if (r.type === "copilot") {
+		parts.push(
+			"## GitHub Copilot review\nAutomated review comments from GitHub Copilot. Treat them like agent findings: fix real problems, and decline with a reason where Copilot is wrong. They do not outrank the plan or the human's decisions. Answer every thread below using its id as `ref`.",
+		);
+		for (const t of r.threads) {
+			parts.push(
+				`### ref: ${t.id} (Copilot on ${t.path ?? "?"}${t.line ? `:${t.line}` : ""})\n${conversation(t.comments, 10)}`,
+			);
+		}
 	} else if (r.type === "conflict") {
 		parts.push(
 			`## Merge conflicts\n\`origin/${base}\` has moved and conflicts with this branch. A merge of it is in progress in the worktree. Resolve every conflict, keeping the intent of both sides; the PR's plan and the base branch's changes both stand. Then run tests, lint and typecheck. Stage your resolution; committing the merge is optional. Do not abort the merge or rebase. Use \`ref: "conflict"\` in \`addressed\`.\n\nConflicted files:\n${details}`,

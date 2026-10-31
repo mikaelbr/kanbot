@@ -44,6 +44,11 @@ implementers: # type:<key> label → agent
   infra: implementer-technical
   default: implementer-backend
 
+review:
+  copilot: false # add GitHub Copilot as a reviewer
+  copilotOnPush: false
+  copilotWaitMinutes: 15
+
 codex:
   networkAccess: false
 
@@ -71,6 +76,10 @@ Each exploratory variant counts as one worker. `priority` orders waiting jobs by
 ### Implementers
 
 Maps a `type:*` label to an agent. Issues without a matching label use `default`. See [Agents](./05-agents.md#common-changes).
+
+### Review
+
+Adds GitHub Copilot as a third reviewer. See [Copilot review](./10-copilot-review.md).
 
 ## Notifications
 
@@ -109,7 +118,7 @@ notify:
 
 ## Issue and PR templates
 
-`init` adds issue templates in `.github/ISSUE_TEMPLATE/` (user story and technical) and `.github/pull_request_template.md`. Edit them freely.
+`init` adds issue templates in `.github/ISSUE_TEMPLATE/` (user need and technical task) and `.github/pull_request_template.md`. Edit them freely.
 
 ## CI
 

@@ -111,6 +111,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			config,
 			running: new Set(running.keys()),
 			failures: state.failures,
+			now: Date.now(),
 		});
 		for (const a of actions) {
 			if (a.kind === "cleanup" && opts.dryRun) continue;

@@ -116,6 +116,21 @@ Do the thing.`,
 		);
 		expect(await sync(root, all, { check: true })).toEqual([]);
 	});
+
+	test("sync writes Copilot instructions only while review.copilot is on", async () => {
+		const root = await mkdtemp(join(tmpdir(), "kanbot-sync-"));
+		const all = await loadAgents(TEMPLATES);
+		const file = join(root, ".github/copilot-instructions.md");
+		await Bun.write(
+			join(root, ".kanbot/config.yml"),
+			"repo: acme/app\nreview:\n  copilot: true\n",
+		);
+		expect(await sync(root, all)).toContain(".github/copilot-instructions.md");
+		expect(await Bun.file(file).text()).toContain("code-review/SKILL.md");
+		await Bun.write(join(root, ".kanbot/config.yml"), "repo: acme/app\n");
+		expect(await sync(root, all)).toContain(".github/copilot-instructions.md");
+		expect(await Bun.file(file).exists()).toBe(false);
+	});
 });
 
 describe("markers", () => {

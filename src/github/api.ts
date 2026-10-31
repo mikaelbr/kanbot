@@ -12,7 +12,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 			comments(last: 100) { nodes { ${COMMENT} } }
 			closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
 				nodes {
-					id number url title body state headRefName headRefOid mergeable
+					id number url title body state headRefName headRefOid mergeable createdAt
 					labels(first: 30) { nodes { name } }
 					comments(last: 100) { nodes { ${COMMENT} } }
 					reviews(last: 50) { nodes { ${COMMENT} } }
@@ -68,6 +68,7 @@ export async function fetchIssue(gh: Gh, number: number): Promise<Issue> {
 				state: p.state,
 				headRefName: p.headRefName,
 				headSha: p.headRefOid,
+				createdAt: p.createdAt,
 				labels: names(p.labels),
 				comments: p.comments.nodes.map(comment),
 				reviews: p.reviews.nodes
@@ -255,4 +256,51 @@ export async function failedCheckLogs(gh: Gh, sha: string): Promise<string> {
 				`### ${r.name} (${r.conclusion})\n${[r.output.title, r.output.summary, r.output.text].filter(Boolean).join("\n").slice(0, 6000)}`,
 		)
 		.join("\n\n");
+}
+
+// ---- Copilot code review ------------------------------------------------------
+
+const COPILOT_RULESET = "kanbot: Copilot review";
+
+/** Create or update the branch ruleset that requests Copilot review on PRs. */
+export async function ensureCopilotRuleset(gh: Gh, onPush: boolean) {
+	const body = {
+		name: COPILOT_RULESET,
+		target: "branch",
+		enforcement: "active",
+		conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
+		rules: [
+			{
+				type: "copilot_code_review",
+				parameters: {
+					review_on_push: onPush,
+					review_draft_pull_requests: false,
+				},
+			},
+		],
+	};
+	const sets = await gh.rest<{ id: number; name: string }[]>(gh.r("/rulesets"));
+	const existing = sets.find((s) => s.name === COPILOT_RULESET);
+	return existing
+		? gh.restWrite(
+				"update Copilot review ruleset",
+				"PUT",
+				gh.r(`/rulesets/${existing.id}`),
+				body,
+			)
+		: gh.restWrite(
+				"create Copilot review ruleset",
+				"POST",
+				gh.r("/rulesets"),
+				body,
+			);
+}
+
+/** The active Copilot review rule on `branch`, if any. */
+export async function copilotReviewRule(gh: Gh, branch: string) {
+	type Rule = { type: string; parameters?: { review_on_push?: boolean } };
+	const rules = await gh.rest<Rule[]>(
+		gh.r(`/rules/branches/${encodeURIComponent(branch)}`),
+	);
+	return rules.find((r) => r.type === "copilot_code_review") ?? null;
 }

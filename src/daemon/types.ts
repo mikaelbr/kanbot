@@ -33,6 +33,7 @@ export type PR = {
 	state: "OPEN" | "CLOSED" | "MERGED";
 	headRefName: string;
 	headSha: string;
+	createdAt: string;
 	labels: string[];
 	comments: Comment[];
 	/** Submitted reviews that have a body. */

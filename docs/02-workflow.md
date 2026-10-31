@@ -47,8 +47,9 @@ Each PR goes through, in order:
 3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
 4. **Code review** by `reviewer-code`, then a fix if it found problems.
 5. **Spec review** by `reviewer-spec`, then a fix if it found problems.
+6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./10-copilot-review.md).
 
-Nits don't trigger a fix. When both passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
+Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
 
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
 

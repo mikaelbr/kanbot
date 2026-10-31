@@ -417,7 +417,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 		return;
 	}
 
-	// Human feedback: answer every thread so it is no longer "last word: human".
+	// Answer every thread so it no longer has a human or Copilot as last word.
 	let open = 0;
 	for (const t of r.threads) {
 		const a = by.get(t.id);
@@ -429,6 +429,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 		if (a?.resolved) await resolveThread(gh, t.id);
 		else open++;
 	}
+	if (r.type === "copilot") return;
 	if (r.comments.length) {
 		const lines = r.comments.map((c) => {
 			const a = by.get(c.id);

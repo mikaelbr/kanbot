@@ -142,6 +142,29 @@
 				"type": "string"
 			}
 		},
+		"review": {
+			"default": {},
+			"type": "object",
+			"properties": {
+				"copilot": {
+					"default": false,
+					"description": "Wait for GitHub Copilot's code review and have the fixer address its comments. Needs a paid Copilot plan; each review uses credits.",
+					"type": "boolean"
+				},
+				"copilotOnPush": {
+					"default": false,
+					"description": "Have Copilot review again after every push. One review per push.",
+					"type": "boolean"
+				},
+				"copilotWaitMinutes": {
+					"default": 15,
+					"description": "Minutes to wait for Copilot's review before going on without it.",
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 9007199254740991
+				}
+			}
+		},
 		"codex": {
 			"default": {},
 			"type": "object",
