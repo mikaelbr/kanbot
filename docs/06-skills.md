@@ -11,22 +11,23 @@ Skills are reusable instructions agents load when relevant. They live in `.agent
 
 ## Default skills
 
-| Skill                 | Used for                                                      |
-| --------------------- | ------------------------------------------------------------- |
-| `project-conventions` | Your stack, commands and conventions. **Fill this in first.** |
-| `project-memory`      | Lessons learned from your corrections. Grows over time.       |
-| `plan-template`       | The plan format.                                              |
-| `user-stories`        | User stories and Given/When/Then criteria.                    |
-| `issue-splitting`     | Splitting large issues.                                       |
-| `approach-designer`   | Writing N approaches for `explore:N`.                         |
-| `tdd`                 | Test-first loop.                                              |
-| `code-review`         | Review checklist and severity rubric.                         |
-| `spec-review`         | Checking a change against its plan.                           |
-| `pr-description`      | PR title and body format.                                     |
-| `frontend-design`     | Visual design direction.                                      |
-| `accessibility`       | WCAG 2.2 AA checklist.                                        |
-| `verify-ui`           | Playwright screenshots at 390px and 1280px.                   |
-| `kanbot-admin`        | For you, not board agents. See below.                         |
+| Skill                 | Used for                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `project-conventions` | Your stack, commands and conventions. **Fill this in first.**                         |
+| `project-memory`      | Lessons learned from your corrections. Grows over time.                               |
+| `plan-template`       | The plan format.                                                                      |
+| `user-stories`        | User stories and Given/When/Then criteria.                                            |
+| `issue-splitting`     | Splitting large issues.                                                               |
+| `approach-designer`   | Writing N approaches for `explore:N`.                                                 |
+| `tdd`                 | Test-first loop.                                                                      |
+| `code-review`         | Review checklist and severity rubric.                                                 |
+| `spec-review`         | Checking a change against its plan.                                                   |
+| `pr-description`      | PR title and body format.                                                             |
+| `frontend-design`     | Visual design direction.                                                              |
+| `accessibility`       | WCAG 2.2 AA checklist.                                                                |
+| `verify-ui`           | Playwright screenshots at 390px and 1280px.                                           |
+| `kanbot-admin`        | For you, not board agents. See below.                                                 |
+| `kanbot-idea`         | For you: turns an idea into an issue. See [Capturing ideas](./09-capturing-ideas.md). |
 
 ## kanbot-admin
 

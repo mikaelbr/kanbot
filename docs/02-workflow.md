@@ -20,7 +20,7 @@ flowchart LR
 
 ## 1. Ideas
 
-Write issues. Use the **User story** or **Technical** issue template. Nothing runs here.
+Write issues. Use the **User need** or **Technical task** issue template, or talk the idea through with your agent and let it file the issue. See [Capturing ideas](./09-capturing-ideas.md). Nothing runs here.
 
 ## 2. Planning
 

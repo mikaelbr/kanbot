@@ -51,6 +51,14 @@ Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.
 | --------- | ------------------------------------ |
 | `--check` | Exit 1 if generated files are stale. |
 
+## `kanbot skills install`
+
+Install the skills that work outside a kanbot repo (`kanbot-idea`) for your user, in `~/.claude/skills/` and `~/.agents/skills/`. See [Capturing ideas](./09-capturing-ideas.md).
+
+| Flag                               | Default | Description                     |
+| ---------------------------------- | ------- | ------------------------------- |
+| `--provider <claude\|codex\|both>` | `both`  | Which agent CLI to install for. |
+
 ## `kanbot doctor`
 
 Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. Prints a fix for each failed check. Exits 1 on failure.

@@ -19,3 +19,4 @@ kanbot runs a team of Claude Code or Codex agents from a GitHub Project board. Y
 6. [Skills](./06-skills.md): customize shared skills.
 7. [Configuration](./07-configuration.md): config file, labels, notifications and other options.
 8. [Upgrading](./08-upgrading.md): get new agents and skills, keep your edits.
+9. [Capturing ideas](./09-capturing-ideas.md): file ideas by chatting with your agent.

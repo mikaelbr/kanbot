@@ -42,10 +42,10 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 5. `kanbot-idea` skill
 
-- [ ] Interviews the user, checks for duplicate issues, writes a user-story or technical issue (adds `technical` label), adds it to **Ideas**. Leaves `type:*` to the planner.
-- [ ] Works through `gh` or the GitHub MCP server.
-- [ ] In-repo copy plus `kanbot skills install --global` (`~/.claude/skills`, Codex equivalent). Outside a repo, target board from argument or asked.
-- [ ] Docs: "Capturing ideas" incl. phone fallback (GitHub Mobile + issue templates + auto-add).
+- [x] Interviews the user, checks for duplicate issues, writes a user-story or technical issue (adds `technical` label), relies on the board's auto-add to put it in **Ideas**. Moving to Planning stays a drag by the human. Leaves `type:*` to the planner.
+- [x] Works through `gh` or the GitHub MCP server.
+- [x] In-repo copy plus `kanbot skills install` (`~/.claude/skills`, Codex equivalent). Outside a repo, target board from argument or asked.
+- [x] Docs: "Capturing ideas" incl. phone fallback (GitHub Mobile + issue templates + auto-add).
 
 ### 6. Copilot review
 

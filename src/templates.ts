@@ -24,6 +24,7 @@ export type FileClass = "kanbot" | "user" | "shared";
 const CLASSES: [prefix: string, FileClass][] = [
 	[".github/workflows/kanbot-", "kanbot"],
 	[".agents/skills/kanbot-admin/", "kanbot"],
+	[".agents/skills/kanbot-idea/", "kanbot"],
 	["AGENTS.md", "user"],
 	["CLAUDE.md", "user"],
 	[".agents/skills/project-conventions/", "user"],

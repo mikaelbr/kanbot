@@ -43,19 +43,20 @@ kanbot init --provider claude   # or codex
 
 `init` adds:
 
-| Path                                  | What                                                   |
-| ------------------------------------- | ------------------------------------------------------ |
-| `.kanbot/config.yml`                  | Config. See [Configuration](./07-configuration.md).    |
-| `.kanbot/agents/*.md`                 | Agent definitions. See [Agents](./05-agents.md).       |
-| `.agents/skills/`                     | Shared skills. See [Skills](./06-skills.md).           |
-| `.claude/`, `.codex/`                 | Generated from `.kanbot/agents`. Don't edit.           |
-| `AGENTS.md`, `CLAUDE.md`              | Rules every agent follows.                             |
-| `.github/ISSUE_TEMPLATE/`             | User story and technical issue templates.              |
-| `.github/workflows/ci.yml`            | CI. Agents fix failing CI, so adjust it to your stack. |
-| `.github/workflows/kanbot-merged.yml` | Closes sibling PRs when one exploratory PR is merged.  |
-| `.github/CODEOWNERS`                  | You, as owner.                                         |
+| Path                                  | What                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `.kanbot/config.yml`                  | Config. See [Configuration](./07-configuration.md).                                     |
+| `.kanbot/agents/*.md`                 | Agent definitions. See [Agents](./05-agents.md).                                        |
+| `.agents/skills/`                     | Shared skills. See [Skills](./06-skills.md).                                            |
+| `.claude/`, `.codex/`                 | Generated from `.kanbot/agents`. Don't edit.                                            |
+| `AGENTS.md`, `CLAUDE.md`              | Rules every agent follows.                                                              |
+| `.github/ISSUE_TEMPLATE/`             | User need and technical task issue templates.                                           |
+| `.github/workflows/ci.yml`            | CI. Agents fix failing CI, so adjust it to your stack.                                  |
+| `.github/workflows/kanbot-merged.yml` | Closes sibling PRs when one exploratory PR is merged.                                   |
+| `.github/CODEOWNERS`                  | You, as owner.                                                                          |
+| `.kanbot/manifest.json`               | What kanbot installed, so upgrades keep your edits. See [Upgrading](./08-upgrading.md). |
 
-Existing files are kept. Pass `--force` to overwrite them.
+Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them.
 
 ## Fill in project conventions
 

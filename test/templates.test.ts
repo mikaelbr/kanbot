@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { globalSkillDirs, installGlobal } from "../src/commands/skills.ts";
 import knownHashes from "../src/known-hashes.json" with { type: "json" };
 import {
 	applyUpgrade,
@@ -156,4 +157,13 @@ test("known-hashes.json covers the current templates (run `bun run hashes`)", as
 	for (const [path, content] of await listTemplates()) {
 		expect(known[path] ?? []).toContain(hash(content));
 	}
+});
+
+test("skills install copies global skills into each provider's folder", async () => {
+	const home = await tmp();
+	const written = await installGlobal(["claude", "codex"], home);
+	const dirs = globalSkillDirs(home);
+	expect(written).toContain(join(dirs.claude, "kanbot-idea", "SKILL.md"));
+	expect(written).toContain(join(dirs.codex, "kanbot-idea", "SKILL.md"));
+	expect(written.every((f) => f.includes("kanbot-idea"))).toBe(true);
 });

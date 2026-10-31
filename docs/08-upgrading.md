@@ -34,7 +34,7 @@ Commit the manifest. Without it, the next upgrade can't tell your edits apart.
 | Owner      | Files                                                                                               | On upgrade                                      |
 | ---------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | **You**    | `AGENTS.md`, `CLAUDE.md`, `project-conventions`, `project-memory`, `ci.yml`, issue and PR templates | Never touched after `init`.                     |
-| **kanbot** | `.github/workflows/kanbot-*.yml`, the `kanbot-admin` skill                                          | Always replaced.                                |
+| **kanbot** | `.github/workflows/kanbot-*.yml`, the `kanbot-admin` and `kanbot-idea` skills                       | Always replaced.                                |
 | **Shared** | Everything else: `.kanbot/agents/*.md` and `.agents/skills/*`                                       | Replaced if unedited, else `<file>.kanbot-new`. |
 
 Files you deleted stay deleted. Files kanbot no longer ships are listed, but left in place.
