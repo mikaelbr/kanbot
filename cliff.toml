@@ -1,0 +1,36 @@
+# Release notes and next version from conventional commits.
+# Preview: `pnpm release:preview`.
+
+[changelog]
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
+{% if commit.breaking %}**BREAKING** {% endif %}\
+{{ commit.message | upper_first }} \
+([{{ commit.id | truncate(length=7, end="") }}](https://github.com/mikaelbr/kanbot/commit/{{ commit.id }}))\
+{% endfor %}
+{% endfor %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+protect_breaking_commits = true
+tag_pattern = "v[0-9].*"
+commit_parsers = [
+  { message = "^feat", group = "<!-- 0 -->Features" },
+  { message = "^fix", group = "<!-- 1 -->Bug fixes" },
+  { message = "^perf", group = "<!-- 2 -->Performance" },
+  { message = "^refactor", group = "<!-- 3 -->Refactor" },
+  { message = "^docs", group = "<!-- 4 -->Docs" },
+  { message = "^revert", group = "<!-- 5 -->Reverts" },
+  { message = ".*", skip = true },
+]
+
+[bump]
+# While on 0.x, breaking changes bump minor, not major.
+features_always_bump_minor = true
+breaking_always_bump_major = false

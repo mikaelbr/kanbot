@@ -41,7 +41,9 @@
 		"docs:dev": "pnpm --dir site dev",
 		"docs:build": "pnpm --dir site build",
 		"hashes": "bun scripts/known-hashes.ts",
-		"prepublishOnly": "bun run check && bun run typecheck && bun test"
+		"prepublishOnly": "bun run check && bun run typecheck && bun test",
+		"prepare": "lefthook install",
+		"release:preview": "git-cliff --unreleased --bump --strip all && git-cliff --bumped-version"
 	},
 	"dependencies": {
 		"citty": "^0.2.2",
@@ -51,7 +53,24 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.6.4",
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
 		"@types/bun": "^1.4.4",
+		"git-cliff": "^2.14.2",
+		"lefthook": "^2.2.2",
 		"typescript": "^7.0.2"
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-conventional"
+		],
+		"rules": {
+			"body-max-line-length": [
+				0
+			],
+			"footer-max-line-length": [
+				0
+			]
+		}
 	}
 }

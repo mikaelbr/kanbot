@@ -101,3 +101,13 @@ bun test
 pnpm check
 pnpm typecheck
 ```
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org). A `commit-msg` hook and CI lint them.
+
+### Releasing
+
+1. Merge or push conventional commits to `main`.
+2. A draft release updates with the next version and notes. `feat` bumps minor, `fix` patch. On 0.x, breaking changes bump minor.
+3. Publish the draft on GitHub. This tags the commit, publishes to npm with provenance, and commits the version to `package.json` on `main`.
+
+Preview the next release with `pnpm release:preview`. Mark the draft as a pre-release to publish under the `next` tag.

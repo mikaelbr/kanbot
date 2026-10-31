@@ -1,0 +1,57 @@
+name: Release draft
+
+# Keeps one draft release in sync with unreleased commits on main.
+# Publish the draft on GitHub to release (see release.yml).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-draft
+  cancel-in-progress: true
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Update draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(pnpm exec git-cliff --bumped-version 2>/dev/null)
+          pnpm exec git-cliff --unreleased --bump --strip all -o notes.md 2>/dev/null
+          drafts=$(gh release list --json tagName,isDraft --jq '.[] | select(.isDraft) | .tagName')
+
+          if git rev-parse -q --verify "refs/tags/$version" >/dev/null || [ ! -s notes.md ]; then
+            echo "Nothing to release."
+            for d in $drafts; do gh release delete "$d" --yes; done
+            exit 0
+          fi
+
+          draft=$(echo "$drafts" | head -n1)
+          for d in $(echo "$drafts" | tail -n +2); do gh release delete "$d" --yes; done
+
+          if [ -n "$draft" ]; then
+            gh release edit "$draft" --draft --tag "$version" --title "$version" \
+              --target "$GITHUB_SHA" --notes-file notes.md
+          else
+            gh release create "$version" --draft --title "$version" \
+              --target "$GITHUB_SHA" --notes-file notes.md
+          fi
+          echo "Draft: $version" >> "$GITHUB_STEP_SUMMARY"

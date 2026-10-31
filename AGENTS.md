@@ -2,6 +2,7 @@
 
 ## Commits
 
+- Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …). They decide the next version and release notes. Mark breaking changes with `!` or a `BREAKING CHANGE:` footer.
 - Never add Claude as co-author. No `Co-Authored-By: Claude` lines in commits or PRs.
 
 ## Tooling
