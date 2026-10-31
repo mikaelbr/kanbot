@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { defineConfig, type HeadConfig, type PageData } from "vitepress";
@@ -88,7 +88,7 @@ function pageHead(page: PageData): HeadConfig[] {
 	];
 }
 
-// Raw markdown per page, llms.txt and robots.txt. Path -> content.
+// Raw markdown per page, llms.txt, robots.txt and security.txt. Path -> content.
 function agentFiles(docs: Doc[], url = siteUrl): Record<string, string> {
 	const rewriteLink = linkRewriter(docs);
 	const files: Record<string, string> = {};
@@ -105,7 +105,20 @@ function agentFiles(docs: Doc[], url = siteUrl): Record<string, string> {
 	files["llms-full.txt"] = bodies.join("\n\n---\n\n");
 	files["robots.txt"] =
 		`User-agent: *\nAllow: /\n\nSitemap: ${url}/sitemap.xml\n`;
+	files[".well-known/security.txt"] = securityTxt(url);
 	return files;
+}
+
+// RFC 9116. Expires one year from build, so each deploy renews it.
+function securityTxt(url: string): string {
+	const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+	return [
+		`Contact: ${repo}/security/advisories/new`,
+		`Expires: ${expires.toISOString()}`,
+		"Preferred-Languages: en",
+		`Canonical: ${url}/.well-known/security.txt`,
+		"",
+	].join("\n");
 }
 
 function llmsTxt(docs: Doc[], url: string): string {
@@ -143,7 +156,23 @@ export default defineConfig({
 		["link", { rel: "icon", href: `${base}favicon.ico`, sizes: "32x32" }],
 		["link", { rel: "apple-touch-icon", href: `${base}apple-touch-icon.png` }],
 		["link", { rel: "manifest", href: `${base}site.webmanifest` }],
-		["meta", { name: "theme-color", content: "#1e1e2e" }],
+		// Catppuccin latte/mocha base, for browser chrome.
+		[
+			"meta",
+			{
+				name: "theme-color",
+				content: "#eff1f5",
+				media: "(prefers-color-scheme: light)",
+			},
+		],
+		[
+			"meta",
+			{
+				name: "theme-color",
+				content: "#1e1e2e",
+				media: "(prefers-color-scheme: dark)",
+			},
+		],
 		["meta", { property: "og:site_name", content: "kanbot" }],
 		["meta", { property: "og:locale", content: "en_US" }],
 		["meta", { property: "og:image", content: ogImage }],
@@ -217,7 +246,9 @@ export default defineConfig({
 	},
 	buildEnd({ outDir }) {
 		for (const [path, content] of Object.entries(agentFiles(docs))) {
-			writeFileSync(join(outDir, path), content);
+			const file = join(outDir, path);
+			mkdirSync(dirname(file), { recursive: true });
+			writeFileSync(file, content);
 		}
 	},
 });

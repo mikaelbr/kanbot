@@ -4,3 +4,11 @@
 	margin-right: 10px;
 	transform: translateY(-2px);
 }
+
+/* Even line lengths in headings, no orphans in prose. */
+.vp-doc :is(h1, h2, h3, h4) {
+	text-wrap: balance;
+}
+.vp-doc :is(p, li) {
+	text-wrap: pretty;
+}
