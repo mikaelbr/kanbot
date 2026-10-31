@@ -47,7 +47,7 @@ For each `<file>.kanbot-new`, keep your changes, take what's new from kanbot, th
 
 > Use kanbot-admin to merge the kanbot upgrade.
 
-The [`kanbot-admin`](./06-skills.md#kanbot-admin) skill knows the steps. `kanbot doctor` reports any `.kanbot-new` files left over.
+The [`kanbot-admin`](./06-skills.md#admin-skills) skill knows the steps. `kanbot doctor` reports any `.kanbot-new` files left over.
 
 ## Repos set up before the manifest
 

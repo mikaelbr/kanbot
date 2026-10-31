@@ -16,7 +16,7 @@ The agents and skills kanbot installs also work in normal Claude Code and Codex 
 - follows the same `AGENTS.md`, `project-conventions` and `project-memory`,
 - can call the same subagents, such as `explorer` and `test-writer`,
 - can file new ideas for the board with [`kanbot-idea`](./03-capturing-ideas.md),
-- can maintain the kanbot setup with [`kanbot-admin`](./06-skills.md#kanbot-admin).
+- can maintain the kanbot setup with [`kanbot-admin`](./06-skills.md#admin-skills).
 
 Work done this way doesn't need a card. The board shows what you want agents to do, and git history shows what happened.
 

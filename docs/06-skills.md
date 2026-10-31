@@ -9,37 +9,45 @@ slug: skills
 
 Skills are reusable instructions agents load when relevant. They live in `.agents/skills/<name>/SKILL.md`, the Codex location. `.claude/skills` is a symlink to the same folder, so both providers share them.
 
-## Default skills
+There are two kinds:
 
-| Skill                 | Used for                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| `project-conventions` | Your stack, commands and conventions. **Fill this in first.**                         |
-| `project-memory`      | Lessons learned from your corrections. Grows over time.                               |
-| `plan-template`       | The plan format.                                                                      |
-| `user-stories`        | User stories and Given/When/Then criteria.                                            |
-| `issue-splitting`     | Splitting large issues.                                                               |
-| `approach-designer`   | Writing N approaches for `explore:N`.                                                 |
-| `tdd`                 | Test-first loop.                                                                      |
-| `code-review`         | Review checklist and severity rubric.                                                 |
-| `spec-review`         | Checking a change against its plan.                                                   |
-| `pr-description`      | PR title and body format.                                                             |
-| `frontend-design`     | Visual design direction.                                                              |
-| `accessibility`       | WCAG 2.2 AA checklist.                                                                |
-| `verify-ui`           | Playwright screenshots at 390px and 1280px.                                           |
-| `kanbot-admin`        | For you, not board agents. See below.                                                 |
-| `kanbot-idea`         | For you: turns an idea into an issue. See [Capturing ideas](./03-capturing-ideas.md). |
+- **Board skills** help board agents do the work on cards: plan, build, review and fix.
+- **Admin skills** help you run kanbot itself, in a normal Claude Code or Codex session. Board agents don't use them.
 
-## kanbot-admin
+## Board skills
 
-Board agents use the other skills. `kanbot-admin` is for you, when you work on the kanbot setup itself in a normal Claude Code or Codex session. Ask in plain words:
+| Skill                 | Used for                                                      |
+| --------------------- | ------------------------------------------------------------- |
+| `project-conventions` | Your stack, commands and conventions. **Fill this in first.** |
+| `project-memory`      | Lessons learned from your corrections. Grows over time.       |
+| `plan-template`       | The plan format.                                              |
+| `user-stories`        | User stories and Given/When/Then criteria.                    |
+| `issue-splitting`     | Splitting large issues.                                       |
+| `approach-designer`   | Writing N approaches for `explore:N`.                         |
+| `tdd`                 | Test-first loop.                                              |
+| `code-review`         | Review checklist and severity rubric.                         |
+| `spec-review`         | Checking a change against its plan.                           |
+| `pr-description`      | PR title and body format.                                     |
+| `frontend-design`     | Visual design direction.                                      |
+| `accessibility`       | WCAG 2.2 AA checklist.                                        |
+| `verify-ui`           | Playwright screenshots at 390px and 1280px.                   |
+
+## Admin skills
+
+| Skill          | Used for                                                                       |
+| -------------- | ------------------------------------------------------------------------------ |
+| `kanbot-admin` | Changing the kanbot setup: agents, skills, memory, config, upgrades.           |
+| `kanbot-idea`  | Turning an idea into an issue. See [Capturing ideas](./03-capturing-ideas.md). |
+
+Ask in plain words. Your agent finds the right skill:
 
 > Add an implementer for mobile work.
 > Make the reviewers stricter about accessibility.
 > Upgrade kanbot.
 
-The agent finds the skill and knows where things live, which files are generated, and the steps for each change: edit agents and skills, update config, run `sync` and `doctor`, upgrade, and merge `.kanbot-new` files. You review the diff and commit.
+`kanbot-admin` knows where things live, which files are generated, and the steps for each change: edit agents and skills, update config, run `sync` and `doctor`, upgrade, and merge `.kanbot-new` files. You review the diff and commit.
 
-kanbot owns this skill, so `kanbot upgrade` always replaces it. Put your own notes in `project-conventions` instead.
+kanbot owns the admin skills, so `kanbot upgrade` always replaces them. Put your own notes in `project-conventions` instead.
 
 ## File format
 
@@ -85,7 +93,7 @@ Facts live in `.agents/skills/project-memory/facts/`, with a one-line index in `
 2. The `fixer` makes the change. If your correction applies beyond this PR, it also adds a fact, as a separate `docs(memory): …` commit in the same PR.
 3. You merge the PR, and the fact with it. Don't want the fact? Ask in a comment to drop it.
 
-You can also add facts yourself, by hand or by asking your agent: "remember that we never call the payment API from the frontend". The [`kanbot-admin`](#kanbot-admin) skill knows how.
+You can also add facts yourself, by hand or by asking your agent: "remember that we never call the payment API from the frontend". The [`kanbot-admin`](#admin-skills) skill knows how.
 
 **Keeping it true.** When the code changes so a fact no longer holds, agents that touch the area fix or delete the fact. Reviewers flag stale facts as findings.
 
