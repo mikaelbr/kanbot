@@ -20,10 +20,29 @@ const docs = loadDocs();
 const rewriteLink = linkRewriter(docs);
 const index = docs.find((d) => d.slug === "index");
 
-function llmsTxt(docs: Doc[]): string {
+// Raw markdown per page plus llms.txt, for agents. Path -> content.
+function agentFiles(docs: Doc[], url = siteUrl): Record<string, string> {
+	const rewriteLink = linkRewriter(docs);
+	const files: Record<string, string> = {};
+	const bodies: string[] = [];
+	for (const d of docs) {
+		const body = d.body.replace(
+			/\]\((\.\/[^)]+)\)/g,
+			(_, href) => `](${rewriteLink(href)})`,
+		);
+		bodies.push(body);
+		files[`${d.slug}.md`] = `${body}\n`;
+	}
+	files["llms.txt"] = llmsTxt(docs, url);
+	files["llms-full.txt"] = bodies.join("\n\n---\n\n");
+	return files;
+}
+
+function llmsTxt(docs: Doc[], url: string): string {
+	const index = docs.find((d) => d.slug === "index");
 	const pages = docs
 		.filter((d) => d.slug !== "index")
-		.map((d) => `- [${d.title}](${siteUrl}/${d.slug}.md): ${d.description}`);
+		.map((d) => `- [${d.title}](${url}/${d.slug}.md): ${d.description}`);
 	return [
 		"# autogh",
 		"",
@@ -31,7 +50,7 @@ function llmsTxt(docs: Doc[]): string {
 		"",
 		"## Docs",
 		"",
-		`- [Full docs](${siteUrl}/llms-full.txt): all pages in one file.`,
+		`- [Full docs](${url}/llms-full.txt): all pages in one file.`,
 		...pages,
 		"",
 	].join("\n");
@@ -62,9 +81,31 @@ export default defineConfig({
 	// docs/ sits outside site/, so point it at site's vue.
 	vite: {
 		resolve: { alias: [{ find: /^vue(\/.*)?$/, replacement: `${vueDir}$1` }] },
+		plugins: [
+			{
+				// buildEnd only runs on build. Serve the same files in dev.
+				name: "agent-files",
+				enforce: "pre",
+				configureServer(server) {
+					server.middlewares.use((req, res, next) => {
+						// Skip module imports of .md pages (/foo.md?t=...).
+						if (!req.url || req.url.includes("?")) return next();
+						if (req.headers["sec-fetch-dest"] === "script") return next();
+						const path = req.url.slice(base.length);
+						const url = `http://${req.headers.host}${base}`.replace(/\/$/, "");
+						const content = path && agentFiles(loadDocs(), url)[path];
+						if (!content) return next();
+						const type = path.endsWith(".md") ? "markdown" : "plain";
+						res.setHeader("Content-Type", `text/${type}; charset=utf-8`);
+						res.end(content);
+					});
+				},
+			},
+		],
 	},
 	themeConfig: {
-		nav: [{ text: "llms.txt", link: `${siteUrl}/llms.txt`, target: "_blank" }],
+		// Not a page, so VitePress won't add base itself.
+		nav: [{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" }],
 		sidebar: [
 			{
 				text: "Docs",
@@ -81,18 +122,9 @@ export default defineConfig({
 		},
 		search: { provider: "local" },
 	},
-	// Raw markdown per page plus llms.txt, for agents.
 	buildEnd({ outDir }) {
-		const bodies: string[] = [];
-		for (const d of docs) {
-			const body = d.body.replace(
-				/\]\((\.\/[^)]+)\)/g,
-				(_, href) => `](${rewriteLink(href)})`,
-			);
-			bodies.push(body);
-			writeFileSync(join(outDir, `${d.slug}.md`), `${body}\n`);
+		for (const [path, content] of Object.entries(agentFiles(docs))) {
+			writeFileSync(join(outDir, path), content);
 		}
-		writeFileSync(join(outDir, "llms.txt"), llmsTxt(docs));
-		writeFileSync(join(outDir, "llms-full.txt"), bodies.join("\n\n---\n\n"));
 	},
 });
