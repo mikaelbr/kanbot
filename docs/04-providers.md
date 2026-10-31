@@ -7,17 +7,17 @@ slug: providers
 
 # Providers
 
-autogh runs agents with either Claude Code or Codex. Both use your subscription login, not API keys.
+kanbot runs agents with either Claude Code or Codex. Both use your subscription login, not API keys.
 
 ## Choose a provider
 
 Pick one at setup:
 
 ```sh
-autogh init --provider claude   # or codex
+kanbot init --provider claude   # or codex
 ```
 
-Or change `provider` in `.autogh/config.yml`:
+Or change `provider` in `.kanbot/config.yml`:
 
 ```yaml
 provider: codex
@@ -33,7 +33,7 @@ Log in with a Claude subscription:
 claude auth login
 ```
 
-`autogh doctor` fails if you are logged in with an API key, since that would bill API usage.
+`kanbot doctor` fails if you are logged in with an API key, since that would bill API usage.
 
 Each job runs `claude -p` with:
 
@@ -72,4 +72,4 @@ effort: high
 
 ## Rate limits
 
-When a job hits a usage limit, the daemon pauses and resumes later. `autogh status` shows the pause.
+When a job hits a usage limit, the daemon pauses and resumes later. `kanbot status` shows the pause.

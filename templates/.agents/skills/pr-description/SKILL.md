@@ -27,7 +27,7 @@ Conventional commit, imperative, under 72 characters, naming the user-visible ef
 
 ## Screenshots
 
-![<state, width>](.autogh/screenshots/<branch>/<name>.png)
+![<state, width>](.kanbot/screenshots/<branch>/<name>.png)
 <!-- UI changes only; 1-3 images that show the change. -->
 
 ## Notes for reviewer

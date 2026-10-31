@@ -3,11 +3,11 @@ import { join } from "node:path";
 
 /** One daemon per repo. Stale locks (dead pid) are taken over. */
 export async function acquireLock(root: string): Promise<() => void> {
-	const file = join(root, ".autogh", "daemon.pid");
+	const file = join(root, ".kanbot", "daemon.pid");
 	if (existsSync(file)) {
 		const pid = Number(await Bun.file(file).text());
 		if (pid && isAlive(pid)) {
-			throw new Error(`autogh is already running for this repo (pid ${pid})`);
+			throw new Error(`kanbot is already running for this repo (pid ${pid})`);
 		}
 	}
 	await Bun.write(file, String(process.pid));

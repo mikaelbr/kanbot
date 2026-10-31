@@ -4,7 +4,7 @@ Shared instructions for every coding agent working in this repository (Codex and
 
 ## How this repo is operated
 
-This repository is developed by an autonomous agent team driven by autogh from a GitHub Project board. A daemon polls the board, starts one headless agent per job in its own git worktree, and performs every GitHub side effect itself (comments, issue edits, pushes, pull requests) from the agent's structured output.
+This repository is developed by an autonomous agent team driven by kanbot from a GitHub Project board. A daemon polls the board, starts one headless agent per job in its own git worktree, and performs every GitHub side effect itself (comments, issue edits, pushes, pull requests) from the agent's structured output.
 
 Board flow:
 
@@ -29,10 +29,10 @@ Board flow:
 
 ## Where things live
 
-- `.autogh/agents/*.md`: agent definitions (frontmatter + instructions). This is the source of truth.
+- `.kanbot/agents/*.md`: agent definitions (frontmatter + instructions). This is the source of truth.
 - `.agents/skills/<name>/SKILL.md`: skills shared by all agents. `.claude/skills` is a symlink to it.
-- `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` are **generated** from `.autogh/agents` by `autogh sync`. Do not edit them by hand; edit the source and run `autogh sync`.
-- `.autogh/screenshots/<branch>/`: UI screenshots committed for review.
+- `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` are **generated** from `.kanbot/agents` by `kanbot sync`. Do not edit them by hand; edit the source and run `kanbot sync`.
+- `.kanbot/screenshots/<branch>/`: UI screenshots committed for review.
 
 ## When working interactively
 

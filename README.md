@@ -1,4 +1,4 @@
-# autogh
+# kanbot
 
 Run an autonomous dev team from a GitHub Project board. You define, specify and prioritize work while Claude or Codex agents work as your team.
 Uses subscriptions for Claude or Codex, and does not require API usage. The agents are fully autonomous, but you can comment on their work and steer them as needed.
@@ -34,14 +34,14 @@ Requires [Bun](https://bun.sh) ≥ 1.3, `gh` logged in, and `claude` or `codex` 
 ```sh
 gh auth refresh -s project
 cd your-repo
-bunx autogh init --provider claude   # or codex
-autogh board create                  # then enable the built-in workflows it prints
-git add -A && git commit -m "chore: add autogh" && git push
-autogh doctor
-autogh run
+bunx kanbot init --provider claude   # or codex
+kanbot board create                  # then enable the built-in workflows it prints
+git add -A && git commit -m "chore: add kanbot" && git push
+kanbot doctor
+kanbot run
 ```
 
-Use `autogh run --once --dry-run` to see what it would do. Run one daemon per repo.
+Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per repo.
 
 ## Labels
 
@@ -55,23 +55,23 @@ Use `autogh run --once --dry-run` to see what it would do. Run one daemon per re
 
 ## Customizing
 
-- `.autogh/config.yml`: concurrency, timeouts, notifications, column names.
-- `.autogh/agents/*.md`: agent definitions. Run `autogh sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
+- `.kanbot/config.yml`: concurrency, timeouts, notifications, column names.
+- `.kanbot/agents/*.md`: agent definitions. Run `kanbot sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
 - `.agents/skills/`: skills shared by agents. Fill in `project-conventions` first.
 
 ## Shell completion
 
 ```sh
-echo 'source <(autogh completion)' >> ~/.zshrc     # or ~/.bashrc
-autogh completion --shell fish > ~/.config/fish/completions/autogh.fish
+echo 'source <(kanbot completion)' >> ~/.zshrc     # or ~/.bashrc
+kanbot completion --shell fish > ~/.config/fish/completions/kanbot.fish
 ```
 
 The shell is detected from `$SHELL`; pass `--shell zsh|bash|fish` to override. For zsh, `compinit` must run first.
 
 ## Operating
 
-- `autogh status` shows the board, daemon and failures.
-- `.autogh/logs/*.jsonl` has every agent transcript.
+- `kanbot status` shows the board, daemon and failures.
+- `.kanbot/logs/*.jsonl` has every agent transcript.
 
 ## Limitations
 

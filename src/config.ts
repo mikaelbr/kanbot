@@ -30,7 +30,7 @@ export const ConfigSchema = z.object({
 		.object({ owner: z.string(), number: z.number().int() })
 		.nullable()
 		.default(null)
-		.describe("GitHub Project board. Set by `autogh board create`."),
+		.describe("GitHub Project board. Set by `kanbot board create`."),
 	columns: z
 		.object({
 			ideas: z.string().default("Ideas"),
@@ -116,7 +116,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 
 export const LABELS = {
 	technical: "technical",
-	working: "autogh:working",
+	working: "kanbot:working",
 	agentReviewed: "agent-reviewed",
 	needsHuman: "needs-human",
 	explorePrefix: "explore:",
@@ -125,11 +125,11 @@ export const LABELS = {
 } as const;
 
 export function configPath(root: string) {
-	return join(root, ".autogh", "config.yml");
+	return join(root, ".kanbot", "config.yml");
 }
 
 export function configSchemaPath(root: string) {
-	return join(root, ".autogh", "config.schema.json");
+	return join(root, ".kanbot", "config.schema.json");
 }
 
 /** Points editors (yaml-language-server) at the schema next to the config. */
@@ -139,7 +139,7 @@ const SCHEMA_HEADER = "# yaml-language-server: $schema=./config.schema.json\n";
 export function configJsonSchema() {
 	return {
 		...z.toJSONSchema(ConfigSchema, { io: "input", target: "draft-7" }),
-		title: "autogh config",
+		title: "kanbot config",
 	};
 }
 
@@ -156,7 +156,7 @@ export function renderConfigSchema(): string {
 	return `${JSON.stringify(configJsonSchema(), null, "\t")}\n`;
 }
 
-/** Writes .autogh/config.schema.json. Returns true if it was missing or stale. */
+/** Writes .kanbot/config.schema.json. Returns true if it was missing or stale. */
 export async function writeConfigSchema(
 	root: string,
 	opts: { check?: boolean } = {},
@@ -172,7 +172,7 @@ export async function writeConfigSchema(
 export async function loadConfig(root: string): Promise<Config> {
 	const path = configPath(root);
 	if (!existsSync(path)) {
-		throw new Error(`No ${path}. Run \`autogh init\` first.`);
+		throw new Error(`No ${path}. Run \`kanbot init\` first.`);
 	}
 	return ConfigSchema.parse(parse(await Bun.file(path).text()) ?? {});
 }

@@ -23,7 +23,7 @@ export default defineCommand({
 			check: args.check,
 		});
 		if (await writeConfigSchema(root, { check: args.check }))
-			changed.push(".autogh/config.schema.json");
+			changed.push(".kanbot/config.schema.json");
 		if (!changed.length) return log.info("Generated files are up to date.");
 		for (const f of changed) log.info(`${args.check ? "stale" : "wrote"} ${f}`);
 		if (args.check) process.exit(1);

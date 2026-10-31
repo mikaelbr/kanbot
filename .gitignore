@@ -1,7 +1,7 @@
 node_modules/
-.autogh/state.json
-.autogh/logs/
-.autogh/worktrees/
+.kanbot/state.json
+.kanbot/logs/
+.kanbot/worktrees/
 .DS_Store
 site/.vitepress/dist/
 site/.vitepress/cache/

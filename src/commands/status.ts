@@ -18,7 +18,7 @@ export default defineCommand({
 		const board = await loadBoard(gh, config);
 		const items = await listItems(gh, board);
 
-		const pidFile = join(root, ".autogh", "daemon.pid");
+		const pidFile = join(root, ".kanbot", "daemon.pid");
 		const pid = existsSync(pidFile)
 			? (await Bun.file(pidFile).text()).trim()
 			: null;

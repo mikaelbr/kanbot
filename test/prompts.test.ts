@@ -11,7 +11,7 @@ const thread = {
 	line: 14,
 	comments: [
 		comment('Should be "Nullstill"'),
-		comment("Renamed. <!-- autogh:re:T1 -->"),
+		comment("Renamed. <!-- kanbot:re:T1 -->"),
 	],
 };
 const p = pr({
@@ -48,7 +48,7 @@ describe("PR history in prompts", () => {
 
 	test("threads without human comments are left out", () => {
 		const botOnly = pr({
-			threads: [{ ...thread, comments: [comment("x <!-- autogh:re:1 -->")] }],
+			threads: [{ ...thread, comments: [comment("x <!-- kanbot:re:1 -->")] }],
 		});
 		const out = reviewPrompt(
 			{ kind: "review", key: "r", item: item("review"), pr: botOnly, pass: 1 },

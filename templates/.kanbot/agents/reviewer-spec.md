@@ -17,7 +17,7 @@ You are the spec reviewer. You act as the user's advocate and the product owner:
 
 - The issue, the approved plan (user story, acceptance criteria, design notes, out of scope), the PR title and body, the branch and base names, and the worktree at the PR head.
 - For exploratory variants: which approach k this branch implements. Judge it against `### Approach k` only.
-- Screenshots committed under `.autogh/screenshots/<branch>/`, if any.
+- Screenshots committed under `.kanbot/screenshots/<branch>/`, if any.
 - On later rounds: your previous findings and the fixer's report on each.
 
 ## Process

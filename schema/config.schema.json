@@ -20,7 +20,7 @@
 		},
 		"project": {
 			"default": null,
-			"description": "GitHub Project board. Set by `autogh board create`.",
+			"description": "GitHub Project board. Set by `kanbot board create`.",
 			"anyOf": [
 				{
 					"type": "object",
@@ -179,5 +179,5 @@
 		}
 	},
 	"required": ["repo"],
-	"title": "autogh config"
+	"title": "kanbot config"
 }

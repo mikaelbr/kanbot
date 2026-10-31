@@ -28,7 +28,7 @@ async function cmd(args: string[]) {
 export default defineCommand({
 	meta: {
 		name: "doctor",
-		description: "Check that everything autogh needs is in place",
+		description: "Check that everything kanbot needs is in place",
 	},
 	async run() {
 		const root = process.cwd();
@@ -57,7 +57,7 @@ export default defineCommand({
 				detail: `${config.repo}, provider ${config.provider}`,
 			});
 		} catch (e) {
-			add({ name: "config", ok: false, detail: String(e), fix: "autogh init" });
+			add({ name: "config", ok: false, detail: String(e), fix: "kanbot init" });
 			return process.exit(1);
 		}
 
@@ -109,12 +109,12 @@ export default defineCommand({
 				name: "generated agent files up to date",
 				ok: !stale.length,
 				detail: stale.join(", ") || undefined,
-				fix: "autogh sync",
+				fix: "kanbot sync",
 			});
 			add({
 				name: "config schema up to date",
 				ok: !(await writeConfigSchema(root, { check: true })),
-				fix: "autogh sync",
+				fix: "kanbot sync",
 			});
 		} catch (e) {
 			add({ name: "agents", ok: false, detail: String(e) });
@@ -138,12 +138,12 @@ export default defineCommand({
 				name: `${path} committed on origin/${config.baseBranch}`,
 				ok: tree.split("\n").some((f) => f.startsWith(path)),
 				detail: "worktrees are created from the base branch",
-				fix: "commit and push the autogh files",
+				fix: "commit and push the kanbot files",
 			});
 		}
 		add({
-			name: ".github/workflows/autogh-merged.yml",
-			ok: existsSync(join(root, ".github/workflows/autogh-merged.yml")),
+			name: ".github/workflows/kanbot-merged.yml",
+			ok: existsSync(join(root, ".github/workflows/kanbot-merged.yml")),
 		});
 
 		const gh = new Gh(config.repo);
@@ -156,7 +156,7 @@ export default defineCommand({
 				detail: missing.length
 					? `missing columns: ${missing.join(", ")}`
 					: board.url,
-				fix: "autogh board create",
+				fix: "kanbot board create",
 			});
 			// Moving cards to Done on close/merge and adding new issues are left to GitHub.
 			const workflows = await boardWorkflows(gh, board);
@@ -176,7 +176,7 @@ export default defineCommand({
 				name: "project board",
 				ok: false,
 				detail: String(e),
-				fix: "autogh board create",
+				fix: "kanbot board create",
 			});
 		}
 
@@ -201,7 +201,7 @@ export default defineCommand({
 			name: "labels",
 			ok: !missingLabels.length,
 			detail: missingLabels.join(", ") || undefined,
-			fix: "autogh board create",
+			fix: "kanbot board create",
 		});
 
 		if (checks.some((c) => !c.ok)) process.exit(1);

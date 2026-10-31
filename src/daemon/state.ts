@@ -12,7 +12,7 @@ export class State {
 	private readonly file: string;
 
 	constructor(root: string) {
-		this.file = join(root, ".autogh", "state.json");
+		this.file = join(root, ".kanbot", "state.json");
 	}
 
 	async load() {

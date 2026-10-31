@@ -36,7 +36,7 @@ export class Worktrees {
 		readonly base: string,
 		readonly dryRun = false,
 	) {
-		this.dir = join(homedir(), ".autogh", "worktrees", repo.replace("/", "__"));
+		this.dir = join(homedir(), ".kanbot", "worktrees", repo.replace("/", "__"));
 	}
 
 	/**

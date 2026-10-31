@@ -1,7 +1,7 @@
 ---
 
 name: plan-template
-description: The exact markdown structure for an autogh issue plan, with an example. Use whenever writing, revising or critiquing a plan in the Planning column, or when an implementer or reviewer needs to know which plan section holds what.
+description: The exact markdown structure for an kanbot issue plan, with an example. Use whenever writing, revising or critiquing a plan in the Planning column, or when an implementer or reviewer needs to know which plan section holds what.
 ---
 
 # Plan template

@@ -3,7 +3,7 @@ import { runDaemon } from "../daemon/loop.ts";
 import { log } from "../log.ts";
 
 export default defineCommand({
-	meta: { name: "run", description: "Run the autogh loop for this repo" },
+	meta: { name: "run", description: "Run the kanbot loop for this repo" },
 	args: {
 		once: {
 			type: "boolean",

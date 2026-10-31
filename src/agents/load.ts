@@ -29,7 +29,7 @@ export type AgentDef = z.infer<typeof Frontmatter> & {
 };
 
 export function agentsDir(root: string) {
-	return join(root, ".autogh", "agents");
+	return join(root, ".kanbot", "agents");
 }
 
 export function parseAgent(text: string, file: string): AgentDef {
@@ -57,7 +57,7 @@ export async function loadAgents(root: string): Promise<AgentDef[]> {
 function validate(agents: AgentDef[]) {
 	const names = new Set(agents.map((a) => a.name));
 	if (names.size !== agents.length) {
-		throw new Error("Duplicate agent names in .autogh/agents");
+		throw new Error("Duplicate agent names in .kanbot/agents");
 	}
 	for (const a of agents) {
 		if (!a.file.endsWith(`${a.name}.md`)) {
@@ -78,6 +78,6 @@ function validate(agents: AgentDef[]) {
 
 export function getAgent(agents: AgentDef[], name: string): AgentDef {
 	const a = agents.find((x) => x.name === name);
-	if (!a) throw new Error(`No agent named "${name}" in .autogh/agents`);
+	if (!a) throw new Error(`No agent named "${name}" in .kanbot/agents`);
 	return a;
 }

@@ -30,13 +30,12 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: site/pnpm-lock.yaml
-      - id: pages
-        uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v5
       - run: pnpm --dir site install --frozen-lockfile
       - run: pnpm --dir site build
         env:
-          DOCS_BASE: ${{ steps.pages.outputs.base_path }}/
-          DOCS_URL: ${{ steps.pages.outputs.base_url }}
+          DOCS_BASE: /
+          DOCS_URL: https://kanbot.mib.im
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/.vitepress/dist

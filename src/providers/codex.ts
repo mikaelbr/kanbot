@@ -17,7 +17,7 @@ export function codex({ networkAccess }: { networkAccess: boolean }): Provider {
 		name: "codex",
 		async run(input: RunInput): Promise<RunResult> {
 			const { agent } = input;
-			const tmp = await mkdtemp(join(tmpdir(), "autogh-codex-"));
+			const tmp = await mkdtemp(join(tmpdir(), "kanbot-codex-"));
 			try {
 				const schemaFile = join(tmp, "schema.json");
 				const lastFile = join(tmp, "last.json");

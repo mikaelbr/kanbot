@@ -84,7 +84,7 @@ async function runAgent<N extends ResultSchemaName>(
 	prompt: string,
 ): Promise<z.infer<(typeof RESULT_SCHEMAS)[N]>> {
 	const agent = getAgent(deps.agents, agentName);
-	const logDir = join(deps.root, ".autogh", "logs");
+	const logDir = join(deps.root, ".kanbot", "logs");
 	await mkdir(logDir, { recursive: true });
 	const logFile = join(
 		logDir,
@@ -176,7 +176,7 @@ async function plan(job: PlanJob, deps: JobDeps) {
 		const res = await createIssue(
 			gh,
 			ni.title,
-			`${ni.body}\n\n_Split from #${issue.number} by autogh._\n${marker("created", issue.number)}`,
+			`${ni.body}\n\n_Split from #${issue.number} by kanbot._\n${marker("created", issue.number)}`,
 		);
 		if (!res) continue;
 		if (ni.subIssue) await addSubIssue(gh, issue.id, res.node_id);
@@ -243,7 +243,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 			await postComment(
 				gh,
 				issue.number,
-				`**Implementation blocked${job.variant ? ` (approach ${job.variant})` : ""}.** ${result.blockedReason ?? ""}\n\nRemove \`${LABELS.needsHuman}\` once resolved and autogh will retry.\n${marker("blocked", job.branch)}`,
+				`**Implementation blocked${job.variant ? ` (approach ${job.variant})` : ""}.** ${result.blockedReason ?? ""}\n\nRemove \`${LABELS.needsHuman}\` once resolved and kanbot will retry.\n${marker("blocked", job.branch)}`,
 			);
 			deps.notify.send(
 				`Blocked: #${issue.number}`,
@@ -507,7 +507,7 @@ export async function applyAction(action: Action, deps: JobDeps) {
 			await postComment(
 				gh,
 				action.number,
-				`**autogh needs a human.** ${action.why}\n\nRemove \`${LABELS.needsHuman}\` to let agents retry.\n${marker("needs-human")}`,
+				`**kanbot needs a human.** ${action.why}\n\nRemove \`${LABELS.needsHuman}\` to let agents retry.\n${marker("needs-human")}`,
 			);
 			deps.notify.send(`Needs human: #${action.number}`, action.why);
 			return;

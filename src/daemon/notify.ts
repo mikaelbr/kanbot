@@ -33,7 +33,7 @@ function desktop(title: string, message: string, url?: string) {
 	return new Promise<void>((resolve, reject) =>
 		notifier.notify(
 			{
-				title: "autogh",
+				title: "kanbot",
 				subtitle: title,
 				message,
 				...(url ? { open: url } : {}),

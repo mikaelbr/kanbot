@@ -1,20 +1,20 @@
 /**
  * Hidden HTML-comment markers. Agents post as the human's own account, so the
- * marker is the only way to tell autogh output apart from human input, and it
+ * marker is the only way to tell kanbot output apart from human input, and it
  * doubles as the idempotency key for every side effect.
  */
 
-const ANY = /<!--\s*autogh(?::[^>]*)?-->/;
-const PLAN_START = "<!-- autogh:plan:start -->";
-const PLAN_END = "<!-- autogh:plan:end -->";
+const ANY = /<!--\s*kanbot(?::[^>]*)?-->/;
+const PLAN_START = "<!-- kanbot:plan:start -->";
+const PLAN_END = "<!-- kanbot:plan:end -->";
 
 export function marker(...parts: (string | number)[]) {
 	return parts.length
-		? `<!-- autogh:${parts.join(":")} -->`
-		: "<!-- autogh -->";
+		? `<!-- kanbot:${parts.join(":")} -->`
+		: "<!-- kanbot -->";
 }
 
-export function isAutogh(body: string) {
+export function isKanbot(body: string) {
 	return ANY.test(body);
 }
 
@@ -22,9 +22,9 @@ export function hasMarker(body: string, ...parts: (string | number)[]) {
 	return body.includes(marker(...parts));
 }
 
-/** All values `x` from markers shaped `<!-- autogh:<kind>:x -->`. */
+/** All values `x` from markers shaped `<!-- kanbot:<kind>:x -->`. */
 export function markerValues(body: string, kind: string): string[] {
-	const re = new RegExp(`<!-- autogh:${kind}:([^ ]+) -->`, "g");
+	const re = new RegExp(`<!-- kanbot:${kind}:([^ ]+) -->`, "g");
 	return [...body.matchAll(re)].map((m) => m[1] as string);
 }
 
@@ -49,8 +49,8 @@ export function withPlan(body: string, plan: string): string {
 	return human ? `${human}\n\n---\n\n${block}` : block;
 }
 
-const DESC_START = "<!-- autogh:desc:start -->";
-const DESC_END = "<!-- autogh:desc:end -->";
+const DESC_START = "<!-- kanbot:desc:start -->";
+const DESC_END = "<!-- kanbot:desc:end -->";
 /** Where the daemon's own PR body sections begin, for bodies without a desc block. */
 const PR_TAIL = /^(### Risks|### Checks|> Exploratory|Closes #)/m;
 
@@ -70,12 +70,12 @@ export function withDescription(body: string, description: string): string {
 
 /** Embed machine-readable data in a comment. */
 export function embedJson(kind: string, data: unknown) {
-	return `<!-- autogh-data:${kind} ${Buffer.from(JSON.stringify(data)).toString("base64")} -->`;
+	return `<!-- kanbot-data:${kind} ${Buffer.from(JSON.stringify(data)).toString("base64")} -->`;
 }
 
 export function readJson<T>(body: string, kind: string): T | null {
 	const m = body.match(
-		new RegExp(`<!-- autogh-data:${kind} ([A-Za-z0-9+/=]+) -->`),
+		new RegExp(`<!-- kanbot-data:${kind} ([A-Za-z0-9+/=]+) -->`),
 	);
 	if (!m?.[1]) return null;
 	return JSON.parse(Buffer.from(m[1], "base64").toString("utf8")) as T;

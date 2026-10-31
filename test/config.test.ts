@@ -14,7 +14,7 @@ import {
 
 let root: string;
 beforeEach(async () => {
-	root = await mkdtemp(join(tmpdir(), "autogh-config-"));
+	root = await mkdtemp(join(tmpdir(), "kanbot-config-"));
 });
 afterEach(() => rm(root, { recursive: true, force: true }));
 

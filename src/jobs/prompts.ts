@@ -5,17 +5,17 @@ import type {
 	ReviewJob,
 } from "../daemon/derive.ts";
 import type { Comment, Issue, PR } from "../daemon/types.ts";
-import { extractPlan, isAutogh, stripPlan } from "../github/markers.ts";
+import { extractPlan, isKanbot, stripPlan } from "../github/markers.ts";
 import type { Finding } from "../schemas/results.ts";
 
 /*
  * Job prompts carry the *task*; the agent's own instructions (from
- * .autogh/agents) carry the *how*. Keep these factual and structured.
+ * .kanbot/agents) carry the *how*. Keep these factual and structured.
  */
 
 const RULES = `## Ground rules
 - You are running headless inside a git worktree. Nobody will answer questions mid-run.
-- Never use \`gh\`, never \`git push\`, never contact GitHub. autogh applies your output.
+- Never use \`gh\`, never \`git push\`, never contact GitHub. kanbot applies your output.
 - Your final answer must be the structured JSON result. Put everything the human should see in it.
 - Write short and plain: only what the reader needs to act or understand. Don't restate the input or narrate your process.`;
 
@@ -29,13 +29,13 @@ function conversation(comments: Comment[], limit = 30) {
 	return recent
 		.map(
 			(c) =>
-				`**${isAutogh(c.body) ? "autogh (agent)" : `@${c.author}`}** — ${c.createdAt}\n${stripMarkers(c.body)}`,
+				`**${isKanbot(c.body) ? "kanbot (agent)" : `@${c.author}`}** — ${c.createdAt}\n${stripMarkers(c.body)}`,
 		)
 		.join("\n\n---\n\n");
 }
 
 function stripMarkers(body: string) {
-	return body.replace(/<!--\s*autogh[^>]*-->/g, "").trim();
+	return body.replace(/<!--\s*kanbot[^>]*-->/g, "").trim();
 }
 
 /**
@@ -44,10 +44,10 @@ function stripMarkers(body: string) {
  */
 function humanDecisions(pr: PR) {
 	const threads = pr.threads.filter((t) =>
-		t.comments.some((c) => !isAutogh(c.body)),
+		t.comments.some((c) => !isKanbot(c.body)),
 	);
 	const comments = [...pr.comments, ...pr.reviews].filter(
-		(c) => !isAutogh(c.body),
+		(c) => !isKanbot(c.body),
 	);
 	if (!threads.length && !comments.length) return null;
 	const parts = [
@@ -111,7 +111,7 @@ export function implementPrompt(job: ImplementJob, base: string) {
 			`## Your variant: Approach ${job.variant} of ${job.variants}\nImplement ONLY "Approach ${job.variant}" from the plan. Other agents implement the other approaches in parallel; do not hedge toward them. The human will compare the PRs and merge one.`,
 		);
 	}
-	const humanNotes = issue.comments.filter((c) => !isAutogh(c.body)).slice(-10);
+	const humanNotes = issue.comments.filter((c) => !isKanbot(c.body)).slice(-10);
 	if (humanNotes.length)
 		parts.push(
 			`## Recent human comments on the issue\n${conversation(humanNotes)}`,

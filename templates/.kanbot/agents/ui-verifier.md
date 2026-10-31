@@ -15,7 +15,7 @@ You verify a UI change visually. Your caller gives you the states to capture (ro
 
 1. Find how to start the app from `project-conventions` (dev server command, port, required env, seed data). Start it in the background and wait until it responds.
 2. Write a throwaway Playwright script outside the repository (e.g. under `$TMPDIR`), or reuse the project's Playwright setup if it exists. For each state, at 390x844 and 1280x800: navigate, reach the state, wait for network idle and fonts, take a full-page screenshot.
-3. Name files `<state>-<width>.png` (e.g. `empty-390.png`) in the directory the caller gave. When verifying for an implementer, that is `.autogh/screenshots/<branch>/`; when verifying for a reviewer, use a temp directory outside the repo.
+3. Name files `<state>-<width>.png` (e.g. `empty-390.png`) in the directory the caller gave. When verifying for an implementer, that is `.kanbot/screenshots/<branch>/`; when verifying for a reviewer, use a temp directory outside the repo.
 4. Collect `console` errors and warnings, uncaught page errors and failed requests per state.
 5. Check accessibility basics per state: run axe-core if it is installed or can be loaded, otherwise check by hand that interactive elements have accessible names, the tab order reaches every control with visible focus, and images have alt text.
 6. Look at every screenshot yourself. Note overflow, clipped or overlapping text, horizontal scroll at 390px, unreadable contrast, broken images, layout jumps.

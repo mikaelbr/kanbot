@@ -1,13 +1,13 @@
 ---
 
-title: autogh
+title: kanbot
 description: Run an autonomous dev team from a GitHub Project board.
 slug: index
 ---
 
-# autogh
+# kanbot
 
-autogh runs a team of Claude Code or Codex agents from a GitHub Project board. You write and prioritize issues. Agents plan, build, review and fix. You approve plans and merge PRs.
+kanbot runs a team of Claude Code or Codex agents from a GitHub Project board. You write and prioritize issues. Agents plan, build, review and fix. You approve plans and merge PRs.
 
 ## Docs
 

@@ -38,7 +38,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	const changed = await sync(root, agents, { check: true });
 	if (changed.length) {
 		log.warn(
-			`Generated agent files are stale (${changed.join(", ")}). Run \`autogh sync\` and commit.`,
+			`Generated agent files are stale (${changed.join(", ")}). Run \`kanbot sync\` and commit.`,
 		);
 	}
 	const gh = new Gh(config.repo, opts.dryRun);
@@ -75,7 +75,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	process.on("SIGTERM", stop);
 
 	log.info(
-		`autogh: ${config.repo} · ${board.url} · provider ${config.provider} · ${config.concurrency} workers${opts.dryRun ? " · DRY RUN" : ""}`,
+		`kanbot: ${config.repo} · ${board.url} · provider ${config.provider} · ${config.concurrency} workers${opts.dryRun ? " · DRY RUN" : ""}`,
 	);
 
 	try {

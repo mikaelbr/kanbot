@@ -54,10 +54,10 @@ Agents that learn something durable may propose an edit to this file in their PR
 
 1. Create `.agents/skills/<name>/SKILL.md`.
 2. Add the name to `skills` in each agent that should use it. See [Agents](./05-agents.md#frontmatter).
-3. Run `autogh sync`, commit and push.
+3. Run `kanbot sync`, commit and push.
 
 ## Edit or remove a skill
 
-Edit `SKILL.md` directly. To remove one, delete its folder and remove it from every agent's `skills`, then run `autogh sync`.
+Edit `SKILL.md` directly. To remove one, delete its folder and remove it from every agent's `skills`, then run `kanbot sync`.
 
 Commit and push. Worktrees are made from the base branch, so agents only see pushed changes.

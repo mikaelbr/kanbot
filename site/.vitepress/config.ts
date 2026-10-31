@@ -4,8 +4,8 @@ import { dirname, join } from "node:path";
 import { defineConfig } from "vitepress";
 import { type Doc, docsDir, linkRewriter, loadDocs } from "./docs";
 
-const repo = "https://github.com/mikaelbr/autogh";
-// Set by the Pages workflow. Defaults match a local build.
+const repo = "https://github.com/mikaelbr/kanbot";
+// Pages workflow sets these for kanbot.mib.im. Defaults match a local build.
 const base = process.env.DOCS_BASE ?? "/";
 const siteUrl = (process.env.DOCS_URL ?? "http://localhost:4173").replace(
 	/\/$/,
@@ -44,7 +44,7 @@ function llmsTxt(docs: Doc[], url: string): string {
 		.filter((d) => d.slug !== "index")
 		.map((d) => `- [${d.title}](${url}/${d.slug}.md): ${d.description}`);
 	return [
-		"# autogh",
+		"# kanbot",
 		"",
 		`> ${index?.description ?? ""}`,
 		"",
@@ -57,7 +57,7 @@ function llmsTxt(docs: Doc[], url: string): string {
 }
 
 export default defineConfig({
-	title: "autogh",
+	title: "kanbot",
 	description: index?.description,
 	srcDir: docsDir,
 	base,

@@ -39,7 +39,7 @@ export function workerEnv(): Record<string, string> {
 		if (/^(GH|GITHUB)_.*TOKEN$|^GH_ENTERPRISE_TOKEN$/.test(k)) continue;
 		env[k] = v;
 	}
-	env.AUTOGH_WORKER = "1";
+	env.KANBOT_WORKER = "1";
 	return env;
 }
 

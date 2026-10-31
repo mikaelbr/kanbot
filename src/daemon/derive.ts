@@ -7,7 +7,7 @@ import {
 import {
 	extractPlan,
 	hasMarker,
-	isAutogh,
+	isKanbot,
 	markerValues,
 	readJson,
 } from "../github/markers.ts";
@@ -97,18 +97,18 @@ export function exploreCount(labels: string[]): number | null {
 }
 
 export function branchFor(issue: number, variant: number | null) {
-	return variant === null ? `autogh/${issue}` : `autogh/${issue}-v${variant}`;
+	return variant === null ? `kanbot/${issue}` : `kanbot/${issue}-v${variant}`;
 }
 
 export function variantOf(branch: string): number | null {
-	const m = branch.match(/^autogh\/\d+-v(\d)$/);
+	const m = branch.match(/^kanbot\/\d+-v(\d)$/);
 	return m ? Number(m[1]) : null;
 }
 
 const isHuman = (c: Comment, trusted: ReadonlySet<string>) =>
-	!isAutogh(c.body) && trusted.has(c.author);
+	!isKanbot(c.body) && trusted.has(c.author);
 
-/** Comment ids already answered, via `<!-- autogh:re:<id> -->` markers. */
+/** Comment ids already answered, via `<!-- kanbot:re:<id> -->` markers. */
 function answered(comments: Comment[]): Set<string> {
 	return new Set(comments.flatMap((c) => markerValues(c.body, "re")));
 }
@@ -234,7 +234,7 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 
 			case "review": {
 				const open = issue.prs.filter(
-					(p) => p.state === "OPEN" && p.headRefName.startsWith("autogh/"),
+					(p) => p.state === "OPEN" && p.headRefName.startsWith("kanbot/"),
 				);
 				for (const pr of open) {
 					const job = prJob(item, pr, trusted, ctx, blocked);

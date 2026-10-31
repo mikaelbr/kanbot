@@ -1,7 +1,7 @@
 ---
 
 title: Getting started
-description: Install autogh and set it up in a repository.
+description: Install kanbot and set it up in a repository.
 slug: getting-started
 ---
 
@@ -25,34 +25,34 @@ gh auth refresh -s project
 Run it without installing:
 
 ```sh
-bunx autogh <command>
+bunx kanbot <command>
 ```
 
 Or install it globally:
 
 ```sh
-bun add -g autogh
+bun add -g kanbot
 ```
 
 ## Set up a repository
 
 ```sh
 cd your-repo
-autogh init --provider claude   # or codex
+kanbot init --provider claude   # or codex
 ```
 
 `init` adds:
 
 | Path                                  | What                                                   |
 | ------------------------------------- | ------------------------------------------------------ |
-| `.autogh/config.yml`                  | Config. See [Configuration](./07-configuration.md).    |
-| `.autogh/agents/*.md`                 | Agent definitions. See [Agents](./05-agents.md).       |
+| `.kanbot/config.yml`                  | Config. See [Configuration](./07-configuration.md).    |
+| `.kanbot/agents/*.md`                 | Agent definitions. See [Agents](./05-agents.md).       |
 | `.agents/skills/`                     | Shared skills. See [Skills](./06-skills.md).           |
-| `.claude/`, `.codex/`                 | Generated from `.autogh/agents`. Don't edit.           |
+| `.claude/`, `.codex/`                 | Generated from `.kanbot/agents`. Don't edit.           |
 | `AGENTS.md`, `CLAUDE.md`              | Rules every agent follows.                             |
 | `.github/ISSUE_TEMPLATE/`             | User story and technical issue templates.              |
 | `.github/workflows/ci.yml`            | CI. Agents fix failing CI, so adjust it to your stack. |
-| `.github/workflows/autogh-merged.yml` | Closes sibling PRs when one exploratory PR is merged.  |
+| `.github/workflows/kanbot-merged.yml` | Closes sibling PRs when one exploratory PR is merged.  |
 | `.github/CODEOWNERS`                  | You, as owner.                                         |
 
 Existing files are kept. Pass `--force` to overwrite them.
@@ -66,13 +66,13 @@ Also review `AGENTS.md` and `.github/workflows/ci.yml`.
 ## Create the board
 
 ```sh
-autogh board create
+kanbot board create
 ```
 
 This creates a GitHub Project with the six columns and adds the labels. To use an existing project instead:
 
 ```sh
-autogh board link --owner <login> --number <n>
+kanbot board link --owner <login> --number <n>
 ```
 
 Then enable these built-in workflows in the project (Project → ⋯ → Workflows). They can't be set through the API:
@@ -84,18 +84,18 @@ Then enable these built-in workflows in the project (Project → ⋯ → Workflo
 
 ## Commit and push
 
-Agents work in worktrees made from the base branch, so the autogh files must be pushed:
+Agents work in worktrees made from the base branch, so the kanbot files must be pushed:
 
 ```sh
-git add -A && git commit -m "chore: add autogh" && git push
+git add -A && git commit -m "chore: add kanbot" && git push
 ```
 
 ## Check and run
 
 ```sh
-autogh doctor                # checks auth, board, labels and generated files
-autogh run --once --dry-run  # shows what it would do
-autogh run                   # starts the daemon
+kanbot doctor                # checks auth, board, labels and generated files
+kanbot run --once --dry-run  # shows what it would do
+kanbot run                   # starts the daemon
 ```
 
 Run one daemon per repo. Next, read the [development flow](./02-workflow.md).
@@ -103,8 +103,8 @@ Run one daemon per repo. Next, read the [development flow](./02-workflow.md).
 ## Shell completion
 
 ```sh
-echo 'source <(autogh completion)' >> ~/.zshrc     # or ~/.bashrc
-autogh completion --shell fish > ~/.config/fish/completions/autogh.fish
+echo 'source <(kanbot completion)' >> ~/.zshrc     # or ~/.bashrc
+kanbot completion --shell fish > ~/.config/fish/completions/kanbot.fish
 ```
 
 For zsh, `compinit` must run first.

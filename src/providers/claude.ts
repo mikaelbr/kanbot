@@ -32,7 +32,7 @@ export const claude: Provider = {
 		const { agent } = input;
 		// Pass agent definitions explicitly so runs don't depend on what is
 		// committed in the worktree's .claude/agents.
-		const tmp = await mkdtemp(join(tmpdir(), "autogh-claude-"));
+		const tmp = await mkdtemp(join(tmpdir(), "kanbot-claude-"));
 		const agentsFile = join(tmp, "agents.json");
 		await Bun.write(agentsFile, JSON.stringify(claudeAgentsJson(input.agents)));
 		const cmd = [

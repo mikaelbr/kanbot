@@ -9,7 +9,7 @@ slug: configuration
 
 ## Config file
 
-`.autogh/config.yml` is created by `init` and `board create`. All fields except `repo` have defaults. autogh keeps your comments when it updates the file.
+`.kanbot/config.yml` is created by `init` and `board create`. All fields except `repo` have defaults. kanbot keeps your comments when it updates the file.
 
 ```yaml
 # yaml-language-server: $schema=./config.schema.json
@@ -56,13 +56,13 @@ Restart the daemon after changes.
 
 ### Schema
 
-`init` and `sync` write `.autogh/config.schema.json`, matching your autogh version. The header line above points editors at it (VS Code needs the YAML extension), giving autocomplete, docs on hover and errors. `doctor` reports a stale schema.
+`init` and `sync` write `.kanbot/config.schema.json`, matching your kanbot version. The header line above points editors at it (VS Code needs the YAML extension), giving autocomplete, docs on hover and errors. `doctor` reports a stale schema.
 
-The schema also ships in the package as `schema/config.schema.json`, e.g. `https://unpkg.com/autogh/schema/config.schema.json`.
+The schema also ships in the package as `schema/config.schema.json`, e.g. `https://unpkg.com/kanbot/schema/config.schema.json`.
 
 ### Columns
 
-Rename columns to match your board's Status field. `autogh doctor` reports missing ones.
+Rename columns to match your board's Status field. `kanbot doctor` reports missing ones.
 
 ### Concurrency and priority
 
@@ -74,7 +74,7 @@ Maps a `type:*` label to an agent. Issues without a matching label use `default`
 
 ## Notifications
 
-autogh acts as your GitHub account, so GitHub won't notify you about agent work. autogh notifies you when:
+kanbot acts as your GitHub account, so GitHub won't notify you about agent work. kanbot notifies you when:
 
 - a PR is ready to test,
 - exploratory PRs are ready to compare,
@@ -91,21 +91,21 @@ notify:
 
 ## Labels
 
-`autogh board create` adds these labels.
+`kanbot board create` adds these labels.
 
 | Label                                 | Set by  | Meaning                                     |
 | ------------------------------------- | ------- | ------------------------------------------- |
 | `technical`                           | you     | Plan as a technical goal, not a user story. |
 | `type:frontend\|backend\|docs\|infra` | planner | Picks the implementer.                      |
 | `explore:2..4`                        | you     | Build N approaches as N PRs.                |
-| `variant:1..4`                        | autogh  | Marks which approach a PR is.               |
-| `autogh:working`                      | autogh  | An agent is working on it.                  |
-| `agent-reviewed`                      | autogh  | Passed agent review. Ready for you.         |
-| `needs-human`                         | autogh  | Agents stopped. Remove it to retry.         |
+| `variant:1..4`                        | kanbot  | Marks which approach a PR is.               |
+| `kanbot:working`                      | kanbot  | An agent is working on it.                  |
+| `agent-reviewed`                      | kanbot  | Passed agent review. Ready for you.         |
+| `needs-human`                         | kanbot  | Agents stopped. Remove it to retry.         |
 
 ## Shared agent rules
 
-`AGENTS.md` holds rules every agent follows, in autogh and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./06-skills.md#project-conventions).
+`AGENTS.md` holds rules every agent follows, in kanbot and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./06-skills.md#project-conventions).
 
 ## Issue and PR templates
 
@@ -115,7 +115,7 @@ notify:
 
 Agents fix failing CI on their PRs, up to 3 times per PR. Adjust `.github/workflows/ci.yml` to run your tests, lint and typecheck.
 
-`.github/workflows/autogh-merged.yml` closes sibling PRs when one exploratory PR is merged. It runs on GitHub, so it works when the daemon is off.
+`.github/workflows/kanbot-merged.yml` closes sibling PRs when one exploratory PR is merged. It runs on GitHub, so it works when the daemon is off.
 
 ## Limitations
 

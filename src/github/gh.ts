@@ -1,7 +1,7 @@
 import { log } from "../log.ts";
 
 /**
- * Thin wrapper over the `gh` CLI so autogh reuses the user's existing auth.
+ * Thin wrapper over the `gh` CLI so kanbot reuses the user's existing auth.
  * Reads always run; writes are skipped (and logged) in dry-run mode.
  */
 export class Gh {

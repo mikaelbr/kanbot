@@ -7,7 +7,7 @@ slug: agents
 
 # Agents
 
-Agents are defined in `.autogh/agents/<name>.md`. This is the only place to edit them. `autogh sync` renders them into each provider's format:
+Agents are defined in `.kanbot/agents/<name>.md`. This is the only place to edit them. `kanbot sync` renders them into each provider's format:
 
 - Claude: `.claude/agents/<name>.md` and `.claude/settings.json`
 - Codex: `.codex/agents/<name>.toml`
@@ -98,14 +98,14 @@ Schemas are defined in `src/schemas/results.ts` and can't be changed per repo. A
 
 ## Common changes
 
-**Change a model.** Edit `models` and run `autogh sync`.
+**Change a model.** Edit `models` and run `kanbot sync`.
 
 **Change behaviour.** Edit the markdown body. Keep it about _how_ to work; the daemon's prompt carries the task.
 
 **Add an implementer.** Copy an implementer file, rename it, then map a label to it:
 
 ```yaml
-# .autogh/config.yml
+# .kanbot/config.yml
 implementers:
   frontend: implementer-frontend
   backend: implementer-backend
@@ -122,7 +122,7 @@ Create the `type:mobile` label in GitHub too.
 ## Apply changes
 
 ```sh
-autogh sync
+kanbot sync
 git add -A && git commit -m "chore: update agents" && git push
 ```
 

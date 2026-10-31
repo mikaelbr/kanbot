@@ -60,7 +60,7 @@ function toBoard(p: RawProject, config: Config): Board {
 
 export async function loadBoard(gh: Gh, config: Config): Promise<Board> {
 	if (!config.project) {
-		throw new Error("No project configured. Run `autogh board create`.");
+		throw new Error("No project configured. Run `kanbot board create`.");
 	}
 	const data = await gh.query<{
 		repositoryOwner: { projectV2: RawProject | null } | null;
@@ -85,7 +85,7 @@ export function missingColumns(board: Board): ColumnKey[] {
 	return COLUMN_KEYS.filter((k) => !board.options[k]);
 }
 
-/** Create a project linked to the repo with the autogh columns. */
+/** Create a project linked to the repo with the kanbot columns. */
 export async function createBoard(gh: Gh, config: Config, title: string) {
 	const repo = await gh.query<{
 		repository: { id: string; owner: { id: string; login: string } };

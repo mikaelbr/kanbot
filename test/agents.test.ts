@@ -13,7 +13,7 @@ import {
 import {
 	embedJson,
 	extractPlan,
-	isAutogh,
+	isKanbot,
 	readJson,
 	stripPlan,
 	withDescription,
@@ -98,11 +98,11 @@ Do the thing.`,
 	});
 
 	test("sync writes files, links skills and is idempotent", async () => {
-		const root = await mkdtemp(join(tmpdir(), "autogh-sync-"));
+		const root = await mkdtemp(join(tmpdir(), "kanbot-sync-"));
 		await Bun.write(
-			join(root, ".autogh/agents/implementer-frontend.md"),
+			join(root, ".kanbot/agents/implementer-frontend.md"),
 			await Bun.file(
-				join(TEMPLATES, ".autogh/agents/implementer-frontend.md"),
+				join(TEMPLATES, ".kanbot/agents/implementer-frontend.md"),
 			).text(),
 		);
 		const agents = await loadAgents(root).catch(() => null);
@@ -125,21 +125,21 @@ describe("markers", () => {
 		const updated = withPlan(`${body}\n\nhuman edit`, "## Plan v2");
 		expect(extractPlan(updated)).toBe("## Plan v2");
 		expect(stripPlan(updated)).toContain("human edit");
-		expect(updated.match(/autogh:plan:start/g)).toHaveLength(1);
+		expect(updated.match(/kanbot:plan:start/g)).toHaveLength(1);
 	});
 
 	test("PR description block is replaced, the daemon's tail is kept", () => {
-		const body = `${withDescription("", "v1 text")}\n\nCloses #1\n<!-- autogh:pr:1 -->`;
+		const body = `${withDescription("", "v1 text")}\n\nCloses #1\n<!-- kanbot:pr:1 -->`;
 		const updated = withDescription(body, "v2 text");
 		expect(updated).toContain("v2 text");
 		expect(updated).not.toContain("v1 text");
 		expect(updated).toContain("Closes #1");
-		expect(updated.match(/autogh:desc:start/g)).toHaveLength(1);
+		expect(updated.match(/kanbot:desc:start/g)).toHaveLength(1);
 	});
 
 	test("PR bodies without a description block get one prepended", () => {
 		const updated = withDescription("Old body\n\nCloses #1", "new");
-		expect(updated.startsWith("<!-- autogh:desc:start -->")).toBe(true);
+		expect(updated.startsWith("<!-- kanbot:desc:start -->")).toBe(true);
 		expect(updated).toContain("Closes #1");
 		expect(updated).not.toContain("Old body");
 	});
@@ -149,7 +149,7 @@ describe("markers", () => {
 		expect(
 			readJson(`text ${embedJson("findings", data)} more`, "findings"),
 		).toEqual(data);
-		expect(isAutogh(embedJson("x", 1))).toBe(false);
+		expect(isKanbot(embedJson("x", 1))).toBe(false);
 	});
 });
 
@@ -170,12 +170,12 @@ test("result schemas export strict JSON schemas", () => {
 test("relative screenshots become branch URLs", () => {
 	expect(
 		absoluteImages(
-			"![home](.autogh/screenshots/a.png) ![x](https://e.com/b.png)",
+			"![home](.kanbot/screenshots/a.png) ![x](https://e.com/b.png)",
 			"acme/app",
-			"autogh/1",
+			"kanbot/1",
 		),
 	).toBe(
-		"![home](https://github.com/acme/app/blob/autogh/1/.autogh/screenshots/a.png?raw=true) ![x](https://e.com/b.png)",
+		"![home](https://github.com/acme/app/blob/kanbot/1/.kanbot/screenshots/a.png?raw=true) ![x](https://e.com/b.png)",
 	);
 });
 

@@ -25,7 +25,7 @@ You are the fixer. You take a list of things to address on an existing PR branch
 3. Fix the cause, not the symptom. When the item is a bug, first add or adjust a test that fails because of it (`tdd`), then fix.
 4. Keep each fix minimal and inside the plan. Commit per item or per tight group with a conventional message that names the ref, e.g. `fix(api): reject empty names (F2)`.
 5. After all items: run the full test suite, lint and typecheck. A fix that breaks something else is not a fix.
-6. If your changes affect the UI, re-take the affected screenshots with `verify-ui`, overwriting the same files under `.autogh/screenshots/<branch>/` so the PR shows the latest version. Commit them.
+6. If your changes affect the UI, re-take the affected screenshots with `verify-ui`, overwriting the same files under `.kanbot/screenshots/<branch>/` so the PR shows the latest version. Commit them.
 7. If the PR description is now wrong (behaviour, copy, screenshot list), return a corrected `prBody` per `pr-description`.
 8. Do not silently skip anything. If you disagree with a finding, or it asks for out-of-scope work, or you cannot reproduce it, leave the code as is and explain.
 

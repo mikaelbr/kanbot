@@ -34,7 +34,7 @@ Moving a card to Ready approves the plan. Cards are picked top-down, in the proj
 
 ## 4. In Progress
 
-An implementer builds the plan on branch `autogh/<issue>` in its own worktree, commits, and the daemon opens a PR. The `type:*` label picks the implementer. When all PRs are open, the card moves to Review.
+An implementer builds the plan on branch `kanbot/<issue>` in its own worktree, commits, and the daemon opens a PR. The `type:*` label picks the implementer. When all PRs are open, the card moves to Review.
 
 If the agent reports it is blocked, you get a notification.
 
@@ -53,11 +53,11 @@ Comment on the PR or start a review thread any time. An agent answers and pushes
 
 ## 6. Done
 
-You test and merge. The board's built-in workflow moves the card to Done, and autogh cleans up worktrees.
+You test and merge. The board's built-in workflow moves the card to Done, and kanbot cleans up worktrees.
 
 ## Exploring alternatives
 
-Add `explore:2`, `explore:3` or `explore:4` to an issue before planning. The plan then has N approaches, and N agents build them as N PRs (`autogh/<issue>-v<k>`). When all are agent-reviewed, autogh posts a comparison and notifies you. Merge one; a GitHub workflow closes the others.
+Add `explore:2`, `explore:3` or `explore:4` to an issue before planning. The plan then has N approaches, and N agents build them as N PRs (`kanbot/<issue>-v<k>`). When all are agent-reviewed, kanbot posts a comparison and notifies you. Merge one; a GitHub workflow closes the others.
 
 ## When agents give up
 

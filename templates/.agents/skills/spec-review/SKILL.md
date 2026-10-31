@@ -43,7 +43,7 @@ Check each state exists and looks right at 390px and 1280px:
 - [ ] Disabled and in-progress controls
 - [ ] No horizontal scroll at 390px; tap targets at least 24x24px (44 preferred)
 
-Use committed screenshots under `.autogh/screenshots/<branch>/` first. Capture missing states with `verify-ui` into a temp directory outside the repo.
+Use committed screenshots under `.kanbot/screenshots/<branch>/` first. Capture missing states with `verify-ui` into a temp directory outside the repo.
 
 ## 4. Accessibility
 

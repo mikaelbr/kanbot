@@ -10,13 +10,13 @@ import { log } from "../log.ts";
 
 const TEMPLATES = join(import.meta.dir, "..", "..", "templates");
 
-const GITIGNORE = [".autogh/state.json", ".autogh/logs/", ".autogh/daemon.pid"];
+const GITIGNORE = [".kanbot/state.json", ".kanbot/logs/", ".kanbot/daemon.pid"];
 
 export default defineCommand({
 	meta: {
 		name: "init",
 		description:
-			"Scaffold autogh agents, skills and GitHub files into this repo",
+			"Scaffold kanbot agents, skills and GitHub files into this repo",
 	},
 	args: {
 		provider: {
@@ -54,7 +54,7 @@ export default defineCommand({
 				baseBranch: repo.defaultBranchRef.name,
 			});
 			log.info(
-				`+ .autogh/config.yml (${repo.nameWithOwner}, base ${repo.defaultBranchRef.name})`,
+				`+ .kanbot/config.yml (${repo.nameWithOwner}, base ${repo.defaultBranchRef.name})`,
 			);
 		}
 
@@ -63,7 +63,7 @@ export default defineCommand({
 			const login = (await run(["api", "user", "--jq", ".login"])).trim();
 			await Bun.write(
 				codeowners,
-				`# Human reviewers. autogh acts as your account, so this documents ownership\n# rather than triggering review requests for your own PRs.\n* @${login}\n`,
+				`# Human reviewers. kanbot acts as your account, so this documents ownership\n# rather than triggering review requests for your own PRs.\n* @${login}\n`,
 			);
 			log.info(`+ .github/CODEOWNERS (@${login})`);
 		}
@@ -71,17 +71,17 @@ export default defineCommand({
 		await appendGitignore(root);
 		const changed = await sync(root, await loadAgents(root));
 		if (await writeConfigSchema(root))
-			changed.push(".autogh/config.schema.json");
+			changed.push(".kanbot/config.schema.json");
 		for (const f of changed) log.info(`~ ${f} (generated)`);
 
 		console.log(`
 Next steps:
   1. Review AGENTS.md and fill in .agents/skills/project-conventions/SKILL.md
   2. Adjust .github/workflows/ci.yml to your stack (agents fix failing CI)
-  3. autogh board create        # creates the project board and labels
-  4. autogh doctor              # checks auth, board, generated files
+  3. kanbot board create        # creates the project board and labels
+  4. kanbot doctor              # checks auth, board, generated files
   5. Commit and push these files to the default branch (agents work from it)
-  6. autogh run                 # start the loop (or autogh run --once --dry-run)`);
+  6. kanbot run                 # start the loop (or kanbot run --once --dry-run)`);
 	},
 });
 
@@ -117,6 +117,6 @@ async function appendGitignore(root: string) {
 	const missing = GITIGNORE.filter((l) => !current.split("\n").includes(l));
 	if (!missing.length) return;
 	const sep = current && !current.endsWith("\n") ? "\n" : "";
-	await Bun.write(path, `${current}${sep}\n# autogh\n${missing.join("\n")}\n`);
+	await Bun.write(path, `${current}${sep}\n# kanbot\n${missing.join("\n")}\n`);
 	log.info("~ .gitignore");
 }

@@ -103,16 +103,16 @@ describe("ready / in progress", () => {
 	test("one implement job for a normal issue", () => {
 		const r = derive(snap(item("ready", { body: planned })), ctx());
 		expect(r.jobs).toMatchObject([
-			{ kind: "implement", variant: null, branch: "autogh/1" },
+			{ kind: "implement", variant: null, branch: "kanbot/1" },
 		]);
 	});
 
 	test("explore:3 yields three variant jobs on separate branches", () => {
 		const r = derive(snap(item("ready", { labels: ["explore:3"] })), ctx());
 		expect((r.jobs as ImplementJob[]).map((j) => j.branch)).toEqual([
-			"autogh/1-v1",
-			"autogh/1-v2",
-			"autogh/1-v3",
+			"kanbot/1-v1",
+			"kanbot/1-v2",
+			"kanbot/1-v3",
 		]);
 	});
 
@@ -132,7 +132,7 @@ describe("ready / in progress", () => {
 	});
 
 	test("in-progress issue only re-runs variants without a PR", () => {
-		const prs = [pr({ headRefName: "autogh/1-v1" })];
+		const prs = [pr({ headRefName: "kanbot/1-v1" })];
 		const r = derive(
 			snap(item("inProgress", { labels: ["explore:2"], prs })),
 			ctx(),
@@ -142,8 +142,8 @@ describe("ready / in progress", () => {
 
 	test("moves to Review once every variant has a PR", () => {
 		const prs = [
-			pr({ headRefName: "autogh/1-v1" }),
-			pr({ headRefName: "autogh/1-v2" }),
+			pr({ headRefName: "kanbot/1-v1" }),
+			pr({ headRefName: "kanbot/1-v2" }),
 		];
 		const r = derive(
 			snap(item("inProgress", { labels: ["explore:2"], prs })),
@@ -313,7 +313,7 @@ describe("review", () => {
 	test("exploratory issue gets a comparison once all variants are reviewed", () => {
 		const done = (v: number) =>
 			pr({
-				headRefName: `autogh/1-v${v}`,
+				headRefName: `kanbot/1-v${v}`,
 				labels: ["agent-reviewed", `variant:${v}`],
 				comments: [reviewed(1), reviewed(2)],
 			});
@@ -324,7 +324,7 @@ describe("review", () => {
 		expect(r.actions).toMatchObject([{ kind: "compare" }]);
 	});
 
-	test("PRs not created by autogh are ignored", () => {
+	test("PRs not created by kanbot are ignored", () => {
 		expect(
 			derive(
 				snap(item("review", { prs: [pr({ headRefName: "feature/x" })] })),
@@ -342,7 +342,7 @@ describe("schedule", () => {
 				item("planning", { number: 2 }, 1),
 				item(
 					"review",
-					{ number: 3, prs: [pr({ headRefName: "autogh/3" })] },
+					{ number: 3, prs: [pr({ headRefName: "kanbot/3" })] },
 					2,
 				),
 			),

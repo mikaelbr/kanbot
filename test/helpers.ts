@@ -28,7 +28,7 @@ export function pr(over: Partial<PR> = {}): PR {
 		title: "PR",
 		body: "",
 		state: "OPEN",
-		headRefName: "autogh/1",
+		headRefName: "kanbot/1",
 		headSha: `sha${seq}`,
 		labels: [],
 		comments: [],

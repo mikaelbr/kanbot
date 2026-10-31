@@ -1,7 +1,7 @@
 ---
 
 name: verify-ui
-description: Run the app and use Playwright to screenshot key UI states at 390px and 1280px, save them under .autogh/screenshots/<branch>/, and check console errors. Use after implementing or fixing a UI change, when reviewing a UI PR, or when asked to verify, screenshot or visually check the app. Degrades gracefully when there is no UI or dev server.
+description: Run the app and use Playwright to screenshot key UI states at 390px and 1280px, save them under .kanbot/screenshots/<branch>/, and check console errors. Use after implementing or fixing a UI change, when reviewing a UI PR, or when asked to verify, screenshot or visually check the app. Degrades gracefully when there is no UI or dev server.
 ---
 
 # Verify UI
@@ -19,7 +19,7 @@ Skip with a note in `risks` ("no UI to verify") when the change has no visual ef
 3. Start it in the background, logging to a file, and wait until it responds:
 
 ```bash
-(bun run dev > "$TMPDIR/autogh-dev.log" 2>&1 &)
+(bun run dev > "$TMPDIR/kanbot-dev.log" 2>&1 &)
 for i in $(seq 1 60); do curl -sf http://localhost:5173 >/dev/null && break; sleep 1; done
 ```
 
@@ -38,7 +38,7 @@ Do not add Playwright to the project's dependencies unless the plan asks for it.
 
 ## 4. Capture states
 
-Write a throwaway script outside the repository (e.g. `$TMPDIR/autogh-shots.mjs`):
+Write a throwaway script outside the repository (e.g. `$TMPDIR/kanbot-shots.mjs`):
 
 ```js
 import { chromium } from "playwright";
@@ -82,7 +82,7 @@ Run it with `node`/`bun` from a directory where `playwright` resolves. Use `page
 
 ## 5. Where to save
 
-- Implementers and fixers: `.autogh/screenshots/<branch>/<state>-<width>.png`, committed (`chore: add screenshots for review`). Replace old screenshots of the same state rather than accumulating them.
+- Implementers and fixers: `.kanbot/screenshots/<branch>/<state>-<width>.png`, committed (`chore: add screenshots for review`). Replace old screenshots of the same state rather than accumulating them.
 - Reviewers: a temp directory outside the repo. Reviewers never commit.
 - List the committed paths in the `screenshots` output field and embed them in the PR body.
 

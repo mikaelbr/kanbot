@@ -31,7 +31,7 @@ export const REPO_LABELS: [name: string, color: string, description: string][] =
 			"fbca04",
 			"Implement 4 alternative approaches as separate PRs",
 		],
-		[LABELS.working, "ededed", "An autogh agent is working on this"],
+		[LABELS.working, "ededed", "An kanbot agent is working on this"],
 		[
 			LABELS.agentReviewed,
 			"0e8a16",
@@ -57,7 +57,7 @@ const create = defineCommand({
 	meta: {
 		name: "create",
 		description:
-			"Create a GitHub Project board for this repo with the autogh columns",
+			"Create a GitHub Project board for this repo with the kanbot columns",
 	},
 	args: {
 		title: {

@@ -9,7 +9,7 @@ describe("worktreeName", () => {
 	// git refuses to check out one branch in two worktrees, so every job on a
 	// branch must reuse the same worktree.
 	test("implement, review and fix on one branch share a worktree", () => {
-		const p = pr({ headRefName: "autogh/7" });
+		const p = pr({ headRefName: "kanbot/7" });
 		const jobs: Job[] = [
 			{
 				kind: "implement",
@@ -17,7 +17,7 @@ describe("worktreeName", () => {
 				item: it,
 				variant: null,
 				variants: 1,
-				branch: "autogh/7",
+				branch: "kanbot/7",
 			},
 			{ kind: "review", key: "r", item: it, pr: p, pass: 1 },
 			{ kind: "fix", key: "f", item: it, pr: p, reason: { type: "ci" } },
@@ -30,7 +30,7 @@ describe("worktreeName", () => {
 			kind: "review",
 			key: "r",
 			item: it,
-			pr: pr({ headRefName: "autogh/7-v2" }),
+			pr: pr({ headRefName: "kanbot/7-v2" }),
 			pass: 1,
 		};
 		const implement: Job = {
@@ -39,7 +39,7 @@ describe("worktreeName", () => {
 			item: it,
 			variant: 2,
 			variants: 2,
-			branch: "autogh/7-v2",
+			branch: "kanbot/7-v2",
 		};
 		expect(worktreeName(review)).toBe("i7-v2");
 		expect(worktreeName(implement)).toBe("i7-v2");

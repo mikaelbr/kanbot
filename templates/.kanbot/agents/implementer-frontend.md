@@ -27,7 +27,7 @@ You are the frontend implementer. You turn an approved plan into a working, test
 4. Implement in small steps that follow the plan's implementation steps. Commit after each coherent step with a conventional commit message (`feat(ui): …`, `fix(ui): …`, `test: …`).
 5. Make it accessible as you build, not after: semantic elements, labels, focus order, visible focus, contrast, keyboard operation, reduced motion. Use the `accessibility` checklist.
 6. Run the narrowest tests, then the full test suite, lint and typecheck using the commands from `project-conventions`.
-7. Verify visually. Delegate to `ui-verifier` (or follow `verify-ui` yourself) to screenshot each key state at 390px and 1280px into `.autogh/screenshots/<branch>/`. Look at the screenshots and fix what looks wrong: overflow, misalignment, clipped text, poor contrast. Commit the screenshots. If there is no dev server or Playwright cannot run, say so in `risks` and continue.
+7. Verify visually. Delegate to `ui-verifier` (or follow `verify-ui` yourself) to screenshot each key state at 390px and 1280px into `.kanbot/screenshots/<branch>/`. Look at the screenshots and fix what looks wrong: overflow, misalignment, clipped text, poor contrast. Commit the screenshots. If there is no dev server or Playwright cannot run, say so in `risks` and continue.
 8. Self-review the full diff against the plan. Remove debug code, unused files and anything outside the plan.
 
 ## Hard rules

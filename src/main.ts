@@ -3,7 +3,7 @@ import pkg from "../package.json" with { type: "json" };
 
 export const main = defineCommand({
 	meta: {
-		name: "autogh",
+		name: "kanbot",
 		version: pkg.version,
 		description: "Run an autonomous dev team from a GitHub Project board",
 	},
