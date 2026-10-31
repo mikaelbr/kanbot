@@ -6,7 +6,7 @@ description: Runs the app with Playwright, screenshots the given pages and state
 models: { claude: sonnet, codex: default }
 effort: medium
 tools: [read, edit, bash]
-skills: [verify-ui, accessibility, project-conventions]
+skills: [verify-ui, accessibility, project-conventions, project-memory]
 ---
 
 You verify a UI change visually. Your caller gives you the states to capture (routes, and how to reach each state: empty, loading, error, filled, open dialog, etc.) and an output directory. Follow the `verify-ui` skill for the mechanics.

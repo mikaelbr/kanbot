@@ -1,7 +1,7 @@
 ---
 
 name: kanbot-admin
-description: Maintain this repo's kanbot setup with a human. Use to add or edit kanbot agents or skills, change `.kanbot/config.yml`, run `kanbot upgrade` or merge `.kanbot-new` files. Not for board jobs.
+description: Maintain this repo's kanbot setup with a human. Use to add or edit kanbot agents, skills or project memory, change `.kanbot/config.yml`, run `kanbot upgrade` or merge `.kanbot-new` files. Not for board jobs.
 ---
 
 # kanbot admin
@@ -35,6 +35,10 @@ Finish every recipe with `kanbot sync` when agents changed, then `kanbot doctor`
 
 1. Create `.agents/skills/<name>/SKILL.md` with `name` (matches the folder) and a `description` that says what it covers and when it applies.
 2. Add the name to `skills` in each agent that should load it.
+
+### Add a memory
+
+When the human says "remember that …" or corrects something agents keep getting wrong, add a fact per `project-memory`. Stack, commands and conventions go in `project-conventions` instead.
 
 ### Upgrade kanbot
 

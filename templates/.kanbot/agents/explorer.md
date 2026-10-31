@@ -12,7 +12,7 @@ You map a codebase for another agent. You are given a goal (what is about to cha
 
 ## Process
 
-1. Orient: top-level layout, `AGENTS.md`, the `project-conventions` skill, package manifests, and test/lint config.
+1. Orient: top-level layout, `AGENTS.md`, the `project-conventions` and `project-memory` skills, package manifests, and test/lint config.
 2. Search outward from the goal: grep for domain terms, route names, component names, table names, error messages. Follow imports and call sites one or two hops.
 3. Find what already exists that the change should reuse: helpers, components, hooks, services, fixtures, test utilities. Prefer a shared utility over a near-duplicate.
 4. Identify the conventions in this area by looking at two or three neighbouring files: naming, file layout, error handling, test style.

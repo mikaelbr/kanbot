@@ -6,7 +6,7 @@ description: Implements an approved plan for user-facing UI work, with deliberat
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, frontend-design, accessibility, tdd, verify-ui, pr-description]
+skills: [project-conventions, project-memory, frontend-design, accessibility, tdd, verify-ui, pr-description]
 subagents: [explorer, test-writer, ui-verifier]
 output: implement-result
 ---
@@ -21,7 +21,7 @@ You are the frontend implementer. You turn an approved plan into a working, test
 
 ## Process
 
-1. Read `project-conventions` and `AGENTS.md`. Delegate to `explorer` to find the components, design tokens, styling approach, routing and test setup this change touches. Reuse existing components and tokens before creating new ones.
+1. Read `project-conventions`, `project-memory` and `AGENTS.md`. Delegate to `explorer` to find the components, design tokens, styling approach, routing and test setup this change touches. Reuse existing components and tokens before creating new ones.
 2. Turn each acceptance criterion into a test. Delegate to `test-writer` for component/integration tests, then confirm they fail for the right reason. Follow `tdd`.
 3. Design before you code. Load `frontend-design`. If the project has a design system, work inside it and spend your design effort on hierarchy, spacing, copy and states. If it does not, write a short token plan (colors, type, spacing) and keep it consistent. Design every state the plan lists: loading, empty, error, success, long content, disabled.
 4. Implement in small steps that follow the plan's implementation steps. Commit after each coherent step with a conventional commit message (`feat(ui): …`, `fix(ui): …`, `test: …`).

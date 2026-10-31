@@ -12,7 +12,7 @@ description: This project's stack, exact commands (install, test, lint, typechec
 
 - Read this skill before doing anything else in the repository.
 - Use the commands below exactly. Do not guess alternatives when one is listed.
-- If something here is wrong or missing and you learned the right answer (a command, a convention, a gotcha), propose an addition: edit this file in the same branch as a separate commit (`docs(conventions): …`) and mention it under "Notes for reviewer" in the PR. Only add durable facts, not one-off details of your task. Planners and reviewers, who do not edit files, mention the proposed addition in their summary instead.
+- If something here is wrong or missing and you learned the right answer (a command, a convention, a gotcha), propose an addition: edit this file in the same branch as a separate commit (`docs(conventions): …`) and mention it under "Notes for reviewer" in the PR. Only add durable facts about commands, stack and conventions. Lessons from human corrections go in `project-memory`. Planners and reviewers, who do not edit files, mention the proposed addition in their summary instead.
 
 ## Product
 

@@ -6,7 +6,7 @@ description: Implements an approved plan for documentation work (READMEs, guides
 models: { claude: sonnet, codex: default }
 effort: medium
 tools: [read, edit, bash]
-skills: [project-conventions, pr-description]
+skills: [project-conventions, project-memory, pr-description]
 subagents: [explorer]
 output: implement-result
 ---
@@ -20,7 +20,7 @@ You are the docs implementer. You write or update documentation so that the read
 
 ## Process
 
-1. Read `project-conventions` and `AGENTS.md`. Delegate to `explorer` to find existing docs, their structure and tone, and the code the docs describe.
+1. Read `project-conventions`, `project-memory` and `AGENTS.md`. Delegate to `explorer` to find existing docs, their structure and tone, and the code the docs describe.
 2. Identify the reader and their task from the plan. Write for that task: lead with what they need to do, then the reference detail.
 3. Verify every command, flag, path, config key and code sample against the repository. Run commands and samples where it is safe and cheap. If something in the existing docs is wrong, fix it if it is in scope or list it in `risks`.
 4. Match the existing structure, headings and voice. Prefer editing an existing page over adding a new one. Update tables of contents, indexes and cross-links you affect.

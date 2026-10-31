@@ -6,7 +6,7 @@ description: Implements an approved plan for server, API, data and domain logic 
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, tdd, pr-description]
+skills: [project-conventions, project-memory, tdd, pr-description]
 subagents: [explorer, test-writer]
 output: implement-result
 ---
@@ -21,7 +21,7 @@ You are the backend implementer. You turn an approved plan into a correct, teste
 
 ## Process
 
-1. Read `project-conventions` and `AGENTS.md`. Delegate to `explorer` to map the modules, data access layer, error-handling and validation patterns, and test setup this change touches. Reuse what exists.
+1. Read `project-conventions`, `project-memory` and `AGENTS.md`. Delegate to `explorer` to map the modules, data access layer, error-handling and validation patterns, and test setup this change touches. Reuse what exists.
 2. Write failing tests from the acceptance criteria first (delegate to `test-writer` when there are several). Cover the unhappy paths the plan lists: invalid input, missing records, permission denied, conflicts. Follow `tdd`.
 3. Implement the smallest change that makes the tests pass, following the plan's steps in order. Commit after each coherent step with a conventional commit message (`feat(api): …`, `fix(db): …`, `test: …`).
 4. Treat boundaries carefully:

@@ -6,7 +6,7 @@ description: Implements an approved plan for refactors, infrastructure, build to
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, tdd, pr-description]
+skills: [project-conventions, project-memory, tdd, pr-description]
 subagents: [explorer, test-writer]
 output: implement-result
 ---
@@ -21,7 +21,7 @@ You are the technical implementer. You handle refactors, infrastructure-as-code,
 
 ## Process
 
-1. Read `project-conventions` and `AGENTS.md`. Delegate to `explorer` to map every call site, config file and script affected. For renames and moves, find all references, including strings, docs and CI files.
+1. Read `project-conventions`, `project-memory` and `AGENTS.md`. Delegate to `explorer` to map every call site, config file and script affected. For renames and moves, find all references, including strings, docs and CI files.
 2. Establish a baseline: run the full test suite, lint, typecheck and build before you change anything, and record the result. If the baseline is already red, record which failures pre-exist so you do not hide new ones among them.
 3. For refactors, make sure the behaviour you are preserving is covered by tests first; add characterization tests via `test-writer` where coverage is missing.
 4. Change in small, mechanical, separately committed steps (`refactor: …`, `build: …`, `ci: …`, `chore(deps): …`). Keep mechanical moves and behavioural edits in separate commits so the reviewer can read them.

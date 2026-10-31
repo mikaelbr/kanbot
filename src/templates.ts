@@ -27,6 +27,7 @@ const CLASSES: [prefix: string, FileClass][] = [
 	["AGENTS.md", "user"],
 	["CLAUDE.md", "user"],
 	[".agents/skills/project-conventions/", "user"],
+	[".agents/skills/project-memory/", "user"],
 	[".github/workflows/ci.yml", "user"],
 	[".github/ISSUE_TEMPLATE/", "user"],
 	[".github/pull_request_template.md", "user"],

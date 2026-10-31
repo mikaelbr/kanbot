@@ -31,11 +31,11 @@ Commit the manifest. Without it, the next upgrade can't tell your edits apart.
 
 ## Who owns which file
 
-| Owner      | Files                                                                             | On upgrade                                      |
-| ---------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
-| **You**    | `AGENTS.md`, `CLAUDE.md`, `project-conventions`, `ci.yml`, issue and PR templates | Never touched after `init`.                     |
-| **kanbot** | `.github/workflows/kanbot-*.yml`, the `kanbot-admin` skill                        | Always replaced.                                |
-| **Shared** | Everything else: `.kanbot/agents/*.md` and `.agents/skills/*`                     | Replaced if unedited, else `<file>.kanbot-new`. |
+| Owner      | Files                                                                                               | On upgrade                                      |
+| ---------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **You**    | `AGENTS.md`, `CLAUDE.md`, `project-conventions`, `project-memory`, `ci.yml`, issue and PR templates | Never touched after `init`.                     |
+| **kanbot** | `.github/workflows/kanbot-*.yml`, the `kanbot-admin` skill                                          | Always replaced.                                |
+| **Shared** | Everything else: `.kanbot/agents/*.md` and `.agents/skills/*`                                       | Replaced if unedited, else `<file>.kanbot-new`. |
 
 Files you deleted stay deleted. Files kanbot no longer ships are listed, but left in place.
 

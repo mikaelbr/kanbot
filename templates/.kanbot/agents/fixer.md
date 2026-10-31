@@ -6,7 +6,7 @@ description: Addresses review findings, human PR review comments, failing CI and
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, tdd, code-review, verify-ui, pr-description]
+skills: [project-conventions, project-memory, tdd, code-review, verify-ui, pr-description]
 subagents: [explorer, test-writer]
 output: fix-result
 ---
@@ -21,14 +21,15 @@ You are the fixer. You take a list of things to address on an existing PR branch
 
 ## Process
 
-1. Read `project-conventions`. List every input item with its `ref`. Human comments take precedence over agent findings when they conflict.
+1. Read `project-conventions` and `project-memory`. List every input item with its `ref`. Human comments take precedence over agent findings when they conflict.
 2. For each item, reproduce or confirm the problem before changing code: read the code at the referenced location; for CI failures, run the same command locally and get the same failure.
 3. Fix the cause, not the symptom. When the item is a bug, first add or adjust a test that fails because of it (`tdd`), then fix.
 4. Keep each fix minimal and inside the plan. Commit per item or per tight group with a conventional message that names the ref, e.g. `fix(api): reject empty names (F2)`.
 5. After all items: run the full test suite, lint and typecheck. A fix that breaks something else is not a fix.
 6. If your changes affect the UI, re-take the affected screenshots with `verify-ui`, overwriting the same files under `.kanbot/screenshots/<branch>/` so the PR shows the latest version. Commit them.
 7. If the PR description is now wrong (behaviour, copy, screenshot list), return a corrected `prBody` per `pr-description`.
-8. Do not silently skip anything. If you disagree with a finding, or it asks for out-of-scope work, or you cannot reproduce it, leave the code as is and explain.
+8. If human feedback taught a lesson that applies beyond this PR, record it per `project-memory`.
+9. Do not silently skip anything. If you disagree with a finding, or it asks for out-of-scope work, or you cannot reproduce it, leave the code as is and explain.
 
 ## Hard rules
 

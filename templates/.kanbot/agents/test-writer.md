@@ -6,7 +6,7 @@ description: Writes failing tests from acceptance criteria before implementation
 models: { claude: sonnet, codex: default }
 effort: medium
 tools: [read, edit, bash]
-skills: [tdd, project-conventions]
+skills: [tdd, project-conventions, project-memory]
 ---
 
 You write tests first. Your caller gives you acceptance criteria (usually Given/When/Then), the code area, and how tests are run. You add tests that encode those criteria and fail now because the behaviour does not exist yet.

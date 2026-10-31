@@ -34,11 +34,11 @@ Decisions from the 2026-10-31 grilling session. Work top-down; one commit per it
 
 ### 4. Project memory
 
-- [ ] `project-memory` skill (user-owned): `SKILL.md` index + one file per fact.
-- [ ] Every board agent lists it.
-- [ ] Agents add a fact in their PR only when human feedback revealed something durable. Merge is the gate.
-- [ ] Agents fix or delete facts the code contradicts. Reviewers flag stale facts.
-- [ ] Docs: memory section, how it differs from `project-conventions`.
+- [x] `project-memory` skill (user-owned): `SKILL.md` index + one file per fact.
+- [x] Every board agent lists it.
+- [x] Agents add a fact in their PR only when human feedback revealed something durable. Merge is the gate.
+- [x] Agents fix or delete facts the code contradicts. Reviewers flag stale facts.
+- [x] Docs: memory section, how it differs from `project-conventions`.
 
 ### 5. `kanbot-idea` skill
 
