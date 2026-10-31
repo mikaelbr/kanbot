@@ -3,3 +3,5 @@ node_modules/
 .autogh/logs/
 .autogh/worktrees/
 .DS_Store
+site/.vitepress/dist/
+site/.vitepress/cache/
