@@ -1,7 +1,5 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo-dark.svg">
-  <img src="docs/public/logo.svg" alt="kanbot logo" width="96">
-</picture>
+<img src="docs/public/logo.svg#gh-light-mode-only" alt="kanbot logo" width="96">
+<img src="docs/public/logo-dark.svg#gh-dark-mode-only" alt="kanbot logo" width="96">
 
 # kanbot
 
