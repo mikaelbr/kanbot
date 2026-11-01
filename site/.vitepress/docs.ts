@@ -1,7 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-export const docsDir = resolve(import.meta.dirname, "../../docs");
+// DOCS_DIR points at another checkout, e.g. the latest release tag.
+export const docsDir = process.env.DOCS_DIR
+	? resolve(process.env.DOCS_DIR)
+	: resolve(import.meta.dirname, "../../docs");
 
 export type Doc = {
 	file: string;

@@ -32,14 +32,37 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
       - uses: actions/configure-pages@v5
       - run: pnpm --dir site install --frozen-lockfile
-      - run: pnpm --dir site build
+      # kanbot.mib.im documents the latest release, so it matches what npm installs.
+      - name: Check out the latest release
+        id: release
         env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --json tagName --jq .tagName)
+          git worktree add "$RUNNER_TEMP/release" "$tag"
+          # The changelog is site content, not versioned docs.
+          cp docs/changelog.md "$RUNNER_TEMP/release/docs/"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Build release docs
+        run: pnpm --dir site build && mv site/.vitepress/dist _site
+        env:
+          DOCS_CHANNEL: release
+          DOCS_DIR: ${{ runner.temp }}/release/docs
+          DOCS_VERSION: ${{ steps.release.outputs.tag }}
           DOCS_BASE: /
           DOCS_URL: https://kanbot.mib.im
           GITHUB_TOKEN: ${{ github.token }}
+      # kanbot.mib.im/main/ documents unreleased changes.
+      - name: Build main docs
+        run: pnpm --dir site build && mv site/.vitepress/dist _site/main
+        env:
+          DOCS_CHANNEL: main
+          DOCS_BASE: /main/
+          DOCS_URL: https://kanbot.mib.im/main
+          GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site/.vitepress/dist
+          path: _site
 
   deploy:
     needs: build

@@ -12,9 +12,15 @@ const siteUrl = (process.env.DOCS_URL ?? "http://localhost:4173").replace(
 	/\/$/,
 	"",
 );
+// "release": kanbot.mib.im, docs of the latest release.
+// "main": kanbot.mib.im/main/, docs of unreleased changes. Also local builds.
+const channel = process.env.DOCS_CHANNEL === "release" ? "release" : "main";
+const releaseUrl = "https://kanbot.mib.im";
+const mainUrl = `${releaseUrl}/main/`;
 
-// Latest tag, else package.json (clones without tags).
+// DOCS_VERSION, else latest tag, else package.json (clones without tags).
 function currentVersion(): string {
+	if (process.env.DOCS_VERSION) return process.env.DOCS_VERSION;
 	try {
 		return execSync("git describe --tags --abbrev=0", {
 			stdio: ["ignore", "pipe", "ignore"],
@@ -197,6 +203,13 @@ export default defineConfig({
 		["meta", { property: "og:image:alt", content: ogImageAlt }],
 		["meta", { name: "twitter:card", content: "summary_large_image" }],
 		["meta", { name: "twitter:image:alt", content: ogImageAlt }],
+		// Room for the unreleased banner; keep main out of search results.
+		...(channel === "main"
+			? ([
+					["style", {}, ":root { --vp-layout-top-height: 40px; }"],
+					["meta", { name: "robots", content: "noindex" }],
+				] satisfies HeadConfig[])
+			: []),
 	],
 	transformHead: ({ pageData }) => pageHead(pageData),
 	// 01-getting-started.md -> getting-started.md
@@ -240,13 +253,19 @@ export default defineConfig({
 		],
 	},
 	themeConfig: {
+		// Read by the theme's banner.
+		channel,
+		releaseUrl,
 		logo: { light: "/logo.svg", dark: "/logo-dark.svg" },
 		// Not a page, so VitePress won't add base itself.
 		nav: [
 			{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" },
 			{
-				text: currentVersion(),
+				text: channel === "release" ? currentVersion() : "main",
 				items: [
+					channel === "release"
+						? { text: "Unreleased (main)", link: mainUrl }
+						: { text: "Latest release", link: releaseUrl },
 					{ text: "Changelog", link: "/changelog" },
 					{ text: "Releases", link: `${repo}/releases` },
 				],
