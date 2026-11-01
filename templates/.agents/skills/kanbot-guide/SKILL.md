@@ -102,7 +102,7 @@ Warn: never enable the branch rule "Require approval of the most recent reviewab
 ## Troubleshoot
 
 1. `kanbot doctor`: prints a fix for each failed check.
-2. `kanbot status`: board by column, daemon, failures, rate-limit pause.
+2. `kanbot status`: board by column, what waits on the user (oldest first), daemon, failures, rate-limit pause.
 3. `.kanbot/logs/*.jsonl`: full agent transcripts.
 4. `needs-human` label: the issue has a comment saying why. Fix the cause, then remove the label to retry.
 5. Nothing happens: is the daemon running, are kanbot files pushed to the base branch, is the card in an active column?

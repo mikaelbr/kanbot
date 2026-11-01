@@ -94,7 +94,7 @@ Start the daemon. It polls the board, runs agent jobs and applies their results 
 
 ## `kanbot status`
 
-Show the board by column, daemon PID, provider, `needs-human` issues, local failure counts and any rate-limit pause.
+Show the board by column, daemon PID and provider, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
 
 ## `kanbot completion`
 

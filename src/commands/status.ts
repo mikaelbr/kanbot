@@ -1,15 +1,27 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand } from "citty";
-import { COLUMN_KEYS, LABELS, loadConfig } from "../config.ts";
+import { COLUMN_KEYS, loadConfig } from "../config.ts";
+import { waitingOnHuman } from "../daemon/derive.ts";
+import { takeSnapshot } from "../daemon/snapshot.ts";
 import { State } from "../daemon/state.ts";
-import { Gh, run } from "../github/gh.ts";
+import { Gh } from "../github/gh.ts";
 import { listItems, loadBoard } from "../github/project.ts";
+import { Trust } from "../github/trust.ts";
+
+/** Short age like `5m`, `3h` or `2d`. */
+export function age(since: string, now = Date.now()) {
+	const m = Math.max(0, Math.floor((now - Date.parse(since)) / 60_000));
+	if (m < 60) return `${m}m`;
+	if (m < 60 * 24) return `${Math.floor(m / 60)}h`;
+	return `${Math.floor(m / (60 * 24))}d`;
+}
 
 export default defineCommand({
 	meta: {
 		name: "status",
-		description: "Show board columns, daemon state and failures",
+		description:
+			"Show board columns, what waits on you, daemon state and failures",
 	},
 	async run() {
 		const root = process.cwd();
@@ -37,22 +49,14 @@ export default defineCommand({
 			console.log(`${config.columns[key].padEnd(12)} ${shown}`);
 		}
 
-		const needsHuman = JSON.parse(
-			await run([
-				"issue",
-				"list",
-				"--repo",
-				config.repo,
-				"--label",
-				LABELS.needsHuman,
-				"--json",
-				"number,title",
-			]),
-		) as { number: number; title: string }[];
-		if (needsHuman.length) {
-			console.log(
-				`\nneeds-human:\n${needsHuman.map((i) => `  #${i.number} ${i.title}`).join("\n")}`,
-			);
+		const snapshot = await takeSnapshot(gh, board, new Trust(gh), items);
+		const waiting = waitingOnHuman(snapshot, config);
+		if (waiting.length) {
+			const rows = waiting.map(({ item, why, url, since }) => {
+				const ago = since ? age(since) : "?";
+				return `  ${ago.padStart(4)}  #${item.issue.number} ${why} · ${item.issue.title}\n        ${url}`;
+			});
+			console.log(`\nwaiting on you:\n${rows.join("\n")}`);
 		}
 
 		const state = await new State(root).load();

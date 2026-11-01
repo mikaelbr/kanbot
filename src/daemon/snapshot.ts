@@ -18,8 +18,10 @@ export async function takeSnapshot(
 	gh: Gh,
 	board: Board,
 	trust: Trust,
+	/** Board items already listed, to save a query. */
+	listed?: Awaited<ReturnType<typeof listItems>>,
 ): Promise<Snapshot> {
-	const raw = await listItems(gh, board);
+	const raw = listed ?? (await listItems(gh, board));
 	const items = await mapLimit(
 		raw,
 		4,

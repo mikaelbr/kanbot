@@ -89,7 +89,7 @@ The shell is detected from `$SHELL`; pass `--shell zsh|bash|fish` to override. F
 
 ## Operating
 
-- `kanbot status` shows the board, daemon and failures.
+- `kanbot status` shows the board, what waits on you, daemon and failures.
 - `.kanbot/logs/*.jsonl` has every agent transcript.
 
 ## Limitations

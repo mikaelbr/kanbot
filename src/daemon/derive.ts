@@ -516,3 +516,108 @@ export function schedule(
 		.sort((a, b) => rank(a) - rank(b))
 		.slice(0, Math.max(0, freeSlots));
 }
+
+/** A card that needs a human before it can move on. */
+export type Waiting = {
+	item: Item;
+	why: string;
+	/** Link to act on: the PR, or the issue. */
+	url: string;
+	/** When it started waiting, if known. */
+	since: string | null;
+};
+
+/** Does the body carry `<!-- kanbot:<kind> -->` or `<!-- kanbot:<kind>:x -->`? */
+const markedAs = (body: string, kind: string) =>
+	body.includes(`<!-- kanbot:${kind} -->`) ||
+	body.includes(`<!-- kanbot:${kind}:`);
+
+const lastMarked = (comments: Comment[], ...kinds: string[]) =>
+	comments.findLast((c) => kinds.some((k) => markedAs(c.body, k)));
+
+/** First line of a kanbot comment, without bold. */
+const headline = (c: Comment | undefined) =>
+	c?.body.split("\n")[0]?.replaceAll("**", "").trim() || null;
+
+/** Cards waiting on a human, oldest first. Pure, like `derive`. */
+export function waitingOnHuman(snapshot: Snapshot, config: Config): Waiting[] {
+	const { trusted } = snapshot;
+	const out: Waiting[] = [];
+
+	for (const item of snapshot.items) {
+		const { issue } = item;
+		if (issue.state === "CLOSED" || item.column === "done") continue;
+		const add = (why: string, c?: Comment, url = issue.url) =>
+			out.push({ item, why, url, since: c?.createdAt ?? null });
+
+		if (issue.labels.includes(LABELS.needsHuman)) {
+			const c = lastMarked(
+				[...issue.comments, ...issue.prs.flatMap((p) => p.comments)].sort(
+					(a, b) => a.createdAt.localeCompare(b.createdAt),
+				),
+				"needs-human",
+				"blocked",
+			);
+			add(headline(c) ?? LABELS.needsHuman, c);
+			continue;
+		}
+
+		switch (item.column) {
+			case "planning": {
+				const plan = extractPlan(issue.body);
+				if (plan === null || pendingComments(issue.comments, trusted).length)
+					break;
+				const c = lastMarked(issue.comments, "plan");
+				add(
+					openQuestions(plan).length
+						? "answer the plan's questions"
+						: "approve the plan",
+					c,
+				);
+				break;
+			}
+
+			case "ready": {
+				if (issue.prs.length || !gatePosted(issue.comments)) break;
+				if (!openQuestions(extractPlan(issue.body)).length) break;
+				add("answer open questions", lastMarked(issue.comments, "questions"));
+				break;
+			}
+
+			case "review": {
+				const open = issue.prs.filter(
+					(p) =>
+						p.state === "OPEN" &&
+						(issue.prOnly || p.headRefName.startsWith("kanbot/")),
+				);
+				const compare = lastMarked(issue.comments, "compare");
+				if (exploreCount(issue.labels) !== null && compare) {
+					add("pick an approach", compare);
+					break;
+				}
+				for (const pr of open) {
+					if (!pr.labels.includes(LABELS.agentReviewed)) continue;
+					const feedback = openFeedback(pr, trusted);
+					if (feedback.threads.length || feedback.comments.length) continue;
+					const approved = approvedBy(pr, trusted) !== null;
+					// Approved kanbot PRs are merged by the daemon.
+					const autoMerge =
+						config.merge.onApproval && pr.headRefName.startsWith("kanbot/");
+					if (approved && autoMerge) continue;
+					const c = lastMarked(pr.comments, "ready");
+					out.push({
+						item,
+						why: `${approved ? "merge" : "review"} PR #${pr.number}`,
+						url: pr.url,
+						since: c?.createdAt ?? pr.createdAt,
+					});
+				}
+				break;
+			}
+		}
+	}
+
+	// Oldest first; unknown age last.
+	const key = (w: Waiting) => w.since ?? "\uffff";
+	return out.sort((a, b) => key(a).localeCompare(key(b)));
+}

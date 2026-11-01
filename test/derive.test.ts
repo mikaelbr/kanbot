@@ -6,6 +6,7 @@ import {
 	type ImplementJob,
 	openQuestions,
 	schedule,
+	waitingOnHuman,
 	withOpenQuestions,
 } from "../src/daemon/derive.ts";
 import { prItem } from "../src/daemon/snapshot.ts";
@@ -743,5 +744,132 @@ describe("ready gate on blockers", () => {
 		expect(withPR.actions).not.toContainEqual(
 			expect.objectContaining({ kind: "waiting" }),
 		);
+	});
+});
+
+describe("waiting on human", () => {
+	const kanbot = (body: string, createdAt: string) => ({
+		...comment(body, HUMAN),
+		createdAt,
+	});
+	const whys = (...items: ReturnType<typeof item>[]) =>
+		waitingOnHuman(snap(...items), config).map((w) => w.why);
+
+	test("plan without new comments waits for approval", () => {
+		const c = kanbot(`Plan.\n${marker("plan")}`, "2026-10-05T00:00:00Z");
+		const [w] = waitingOnHuman(
+			snap(item("planning", { body: planned, comments: [c] })),
+			config,
+		);
+		expect(w).toMatchObject({
+			why: "approve the plan",
+			since: "2026-10-05T00:00:00Z",
+		});
+	});
+
+	test("plan with questions asks for answers; new comment means agent's turn", () => {
+		const withQ = withPlan("x", "## Plan\n\n## Open questions\n\n- Which?");
+		expect(whys(item("planning", { body: withQ }))).toEqual([
+			"answer the plan's questions",
+		]);
+		expect(
+			whys(
+				item("planning", { body: planned, comments: [comment("Change it")] }),
+			),
+		).toEqual([]);
+		expect(whys(item("planning"))).toEqual([]);
+	});
+
+	test("Ready card with posted open questions", () => {
+		const withQ = withPlan("x", "## Plan\n\n## Open questions\n\n- Which?");
+		const gate = kanbot(`Q\n${marker("questions")}`, "2026-10-03T00:00:00Z");
+		expect(whys(item("ready", { body: withQ, comments: [gate] }))).toEqual([
+			"answer open questions",
+		]);
+		expect(whys(item("ready", { body: withQ }))).toEqual([]);
+	});
+
+	test("agent-reviewed PR waits for review until feedback or approval", () => {
+		const ready = kanbot(`Done\n${marker("ready")}`, "2026-10-04T00:00:00Z");
+		const p = pr({ labels: [LABELS.agentReviewed], comments: [ready] });
+		const [w] = waitingOnHuman(snap(item("review", { prs: [p] })), config);
+		expect(w).toMatchObject({
+			why: `review PR #${p.number}`,
+			since: "2026-10-04T00:00:00Z",
+		});
+
+		const fb = pr({
+			labels: [LABELS.agentReviewed],
+			comments: [comment("Rename it")],
+		});
+		const approved = pr({
+			labels: [LABELS.agentReviewed],
+			headSha: "abc",
+			verdicts: [{ author: HUMAN, state: "APPROVED", commit: "abc" }],
+		});
+		const fresh = pr();
+		const merging = ConfigSchema.parse({
+			repo: "acme/app",
+			merge: { onApproval: true },
+		});
+		const card = item("review", { prs: [fb, approved, fresh] });
+		expect(waitingOnHuman(snap(card), merging)).toEqual([]);
+		// Without merge on approval, the human still merges it.
+		expect(whys(card)).toEqual([`merge PR #${approved.number}`]);
+	});
+
+	test("explore card with a comparison asks to pick one", () => {
+		const c = kanbot(`Pick\n${marker("compare")}`, "2026-10-06T00:00:00Z");
+		const prs = [1, 2].map((v) =>
+			pr({ headRefName: `kanbot/1-v${v}`, labels: [LABELS.agentReviewed] }),
+		);
+		expect(
+			whys(
+				item("review", {
+					labels: [`${LABELS.explorePrefix}2`],
+					comments: [c],
+					prs,
+				}),
+			),
+		).toEqual(["pick an approach"]);
+	});
+
+	test("needs-human shows kanbot's reason", () => {
+		const c = kanbot(
+			`**kanbot needs a human.** CI keeps failing\n${marker("needs-human")}`,
+			"2026-10-02T00:00:00Z",
+		);
+		expect(
+			whys(item("review", { labels: [LABELS.needsHuman], comments: [c] })),
+		).toEqual(["kanbot needs a human. CI keeps failing"]);
+		expect(whys(item("inProgress", { labels: [LABELS.needsHuman] }))).toEqual([
+			LABELS.needsHuman,
+		]);
+	});
+
+	test("oldest first, unknown age last", () => {
+		const plan = kanbot(`P\n${marker("plan")}`, "2026-10-09T00:00:00Z");
+		const ready = kanbot(`R\n${marker("ready")}`, "2026-10-01T00:00:00Z");
+		const r = waitingOnHuman(
+			snap(
+				item("inProgress", { number: 3, labels: [LABELS.needsHuman] }),
+				item("planning", { number: 1, body: planned, comments: [plan] }),
+				item("review", {
+					number: 2,
+					prs: [pr({ labels: [LABELS.agentReviewed], comments: [ready] })],
+				}),
+			),
+			config,
+		);
+		expect(r.map((w) => w.item.issue.number)).toEqual([2, 1, 3]);
+	});
+
+	test("done and closed cards never wait", () => {
+		expect(
+			whys(
+				item("done", { labels: [LABELS.needsHuman] }),
+				item("planning", { state: "CLOSED", body: planned }),
+			),
+		).toEqual([]);
 	});
 });
