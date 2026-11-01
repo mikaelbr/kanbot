@@ -165,6 +165,60 @@
 				}
 			}
 		},
+		"identity": {
+			"default": {},
+			"type": "object",
+			"properties": {
+				"mode": {
+					"default": "user",
+					"description": "Who kanbot talks as. `user`: your account. `app`: a kanbot GitHub App, so its comments and PRs show as a bot. Commits are always yours.",
+					"type": "string",
+					"enum": ["user", "app"]
+				},
+				"app": {
+					"default": null,
+					"description": "Set by `kanbot app create`. The private key lives in ~/.kanbot/apps/<id>.pem.",
+					"anyOf": [
+						{
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "integer",
+									"minimum": -9007199254740991,
+									"maximum": 9007199254740991,
+									"description": "GitHub App ID."
+								},
+								"slug": {
+									"type": "string",
+									"description": "App slug, as in github.com/apps/<slug>."
+								}
+							},
+							"required": ["id", "slug"]
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"merge": {
+			"default": {},
+			"type": "object",
+			"properties": {
+				"onApproval": {
+					"default": false,
+					"description": "Merge a kanbot PR when a collaborator approves it, checks pass and agent review is done. Merges as you. Needs identity.mode app to approve your own kanbot PRs.",
+					"type": "boolean"
+				},
+				"method": {
+					"default": "squash",
+					"description": "Merge method used for approved PRs.",
+					"type": "string",
+					"enum": ["squash", "merge", "rebase"]
+				}
+			}
+		},
 		"codex": {
 			"default": {},
 			"type": "object",

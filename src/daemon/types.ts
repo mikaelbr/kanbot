@@ -24,6 +24,21 @@ export type Checks =
 	| "EXPECTED"
 	| null;
 
+export type ReviewState =
+	| "APPROVED"
+	| "CHANGES_REQUESTED"
+	| "COMMENTED"
+	| "DISMISSED"
+	| "PENDING";
+
+/** A reviewer's latest review on a PR, body or not. */
+export type ReviewVerdict = {
+	author: string;
+	state: ReviewState;
+	/** Head commit the review was made on. */
+	commit: string | null;
+};
+
 export type PR = {
 	id: string;
 	number: number;
@@ -38,6 +53,8 @@ export type PR = {
 	comments: Comment[];
 	/** Submitted reviews that have a body. */
 	reviews: Comment[];
+	/** Latest review per reviewer, for approvals. */
+	verdicts: ReviewVerdict[];
 	threads: ReviewThread[];
 	checks: Checks;
 	/** UNKNOWN while GitHub is still computing it. */

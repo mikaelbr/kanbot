@@ -31,8 +31,9 @@ Read these in order the first time.
 7. [Providers](./07-providers.md): use Claude or Codex.
 8. [Configuration](./08-configuration.md): config file, labels and notifications.
 9. [Copilot review](./09-copilot-review.md): add GitHub Copilot as a cloud reviewer.
+10. [Identity and merging](./12-identity.md): talk as a kanbot bot, and merge by approving.
 
 ## Maintain
 
-10. [Upgrading](./10-upgrading.md): get new agents and skills, keep your edits.
-11. [CLI usage](./11-usage.md): every command and flag.
+11. [Upgrading](./10-upgrading.md): get new agents and skills, keep your edits.
+12. [CLI usage](./11-usage.md): every command and flag.

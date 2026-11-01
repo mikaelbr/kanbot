@@ -73,6 +73,7 @@ export type Action =
 	| { kind: "move"; item: Item; to: ColumnKey; why: string }
 	| { kind: "label"; number: number; add: string[]; remove: string[] }
 	| { kind: "agentReviewed"; item: Item; pr: PR }
+	| { kind: "merge"; item: Item; pr: PR; by: string }
 	| { kind: "compare"; item: Item; prs: PR[] }
 	| { kind: "needsHuman"; number: number; why: string }
 	| { kind: "resetFailures"; prefix: string }
@@ -159,6 +160,22 @@ export function copilotThreads(pr: PR) {
 		const last = t.comments.at(-1);
 		return !t.isResolved && last !== undefined && isCopilot(last.author);
 	});
+}
+
+/**
+ * Who approved the PR's current head, if anyone. A trusted reviewer's pending
+ * change request blocks it, and approvals of older commits don't count.
+ */
+export function approvedBy(
+	pr: PR,
+	trusted: ReadonlySet<string>,
+): string | null {
+	const verdicts = pr.verdicts.filter((v) => trusted.has(v.author));
+	if (verdicts.some((v) => v.state === "CHANGES_REQUESTED")) return null;
+	return (
+		verdicts.find((v) => v.state === "APPROVED" && v.commit === pr.headSha)
+			?.author ?? null
+	);
 }
 
 const fixCount = (pr: PR, kind: "ci" | "conflict") =>
@@ -263,6 +280,8 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 					const job = prJob(item, pr, trusted, ctx, blocked);
 					if (job === "agentReviewed")
 						actions.push({ kind: "agentReviewed", item, pr });
+					else if (typeof job === "object" && job && "mergeBy" in job)
+						actions.push({ kind: "merge", item, pr, by: job.mergeBy });
 					else if (job === "ciExhausted") {
 						actions.push({
 							kind: "needsHuman",
@@ -299,7 +318,13 @@ function prJob(
 	trusted: ReadonlySet<string>,
 	ctx: DeriveContext,
 	blocked: (issue: Issue, key: string) => boolean,
-): Job | "agentReviewed" | "ciExhausted" | "conflictExhausted" | null {
+):
+	| Job
+	| { mergeBy: string }
+	| "agentReviewed"
+	| "ciExhausted"
+	| "conflictExhausted"
+	| null {
 	const { issue } = item;
 	const prKey = `#${issue.number}:pr${pr.number}`;
 	// One job per PR at a time, whatever its kind.
@@ -393,6 +418,18 @@ function prJob(
 	}
 
 	if (!pr.labels.includes(LABELS.agentReviewed)) return "agentReviewed";
+
+	// 6. Approved by a human: merge. Only kanbot's own PRs, never kanbot-review ones.
+	if (
+		ctx.config.merge.onApproval &&
+		pr.headRefName.startsWith("kanbot/") &&
+		!issue.labels.includes(LABELS.needsHuman) &&
+		pr.mergeable === "MERGEABLE" &&
+		(pr.checks === "SUCCESS" || pr.checks === null)
+	) {
+		const by = approvedBy(pr, trusted);
+		if (by) return { mergeBy: by };
+	}
 	return null;
 }
 

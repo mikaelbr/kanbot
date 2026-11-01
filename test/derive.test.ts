@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { ConfigSchema, LABELS } from "../src/config.ts";
 import {
 	derive,
 	type FixJob,
@@ -6,6 +7,7 @@ import {
 	schedule,
 } from "../src/daemon/derive.ts";
 import { prItem } from "../src/daemon/snapshot.ts";
+import type { Issue, PR } from "../src/daemon/types.ts";
 import { embedJson, marker, withPlan } from "../src/github/markers.ts";
 import type { Finding } from "../src/schemas/results.ts";
 import {
@@ -499,5 +501,91 @@ describe("kanbot-review PRs without a card", () => {
 		expect(r.jobs).toMatchObject([
 			{ kind: "fix", reason: { type: "feedback" } },
 		]);
+	});
+});
+
+describe("merge on approval", () => {
+	const onApproval = ConfigSchema.parse({
+		repo: "acme/app",
+		merge: { onApproval: true },
+	});
+	const done = () => [
+		comment(`${marker("review", 1)} ${embedJson("findings", [])}`),
+		comment(`${marker("review", 2)} ${embedJson("findings", [])}`),
+	];
+	const ready = (over: Partial<PR> = {}) =>
+		pr({ labels: [LABELS.agentReviewed], comments: done(), ...over });
+	const approve = (p: PR, author = HUMAN): PR => ({
+		...p,
+		verdicts: [{ author, state: "APPROVED", commit: p.headSha }],
+	});
+	const run = (p: PR, config = onApproval, over: Partial<Issue> = {}) =>
+		derive(snap(item("review", { prs: [p], ...over })), ctx({ config }));
+
+	test("approved, reviewed and green: merge", () => {
+		const r = run(approve(ready()));
+		expect(r.jobs).toEqual([]);
+		expect(r.actions).toMatchObject([{ kind: "merge", by: HUMAN }]);
+	});
+
+	test("off by default", () => {
+		expect(run(approve(ready()), config).actions).toEqual([]);
+	});
+
+	test("waits for agent review", () => {
+		const r = run(approve(pr({ comments: done() })));
+		expect(r.actions).toMatchObject([{ kind: "agentReviewed" }]);
+	});
+
+	test("approval of an older commit doesn't count", () => {
+		const p = ready();
+		const r = run({
+			...p,
+			verdicts: [{ author: HUMAN, state: "APPROVED", commit: "old" }],
+		});
+		expect(r.actions).toEqual([]);
+	});
+
+	test("untrusted approvals don't count", () => {
+		expect(run(approve(ready(), STRANGER)).actions).toEqual([]);
+	});
+
+	test("a trusted change request blocks it", () => {
+		const p = approve(ready());
+		const blocked: PR = {
+			...p,
+			verdicts: [
+				...p.verdicts,
+				{ author: "bob", state: "CHANGES_REQUESTED", commit: p.headSha },
+			],
+		};
+		const r = derive(
+			{
+				items: [item("review", { prs: [blocked] })],
+				trusted: new Set([HUMAN, "bob"]),
+			},
+			ctx({ config: onApproval }),
+		);
+		expect(r.actions).toEqual([]);
+	});
+
+	test("pending checks wait", () => {
+		expect(run(approve(ready({ checks: "PENDING" }))).actions).toEqual([]);
+	});
+
+	test("needs-human blocks it", () => {
+		const r = run(approve(ready()), onApproval, {
+			labels: [LABELS.needsHuman],
+		});
+		expect(r.actions).toEqual([]);
+	});
+
+	test("kanbot-review PRs are never merged", () => {
+		const p = approve(ready({ headRefName: "feature/x" }));
+		const r = derive(
+			{ items: [prItem(p, 0)], trusted },
+			ctx({ config: onApproval }),
+		);
+		expect(r.actions.filter((a) => a.kind === "merge")).toEqual([]);
 	});
 });

@@ -24,10 +24,12 @@ import {
 	createPR,
 	failedCheckLogs,
 	fetchIssue,
+	mergePR,
 	postComment,
 	react,
 	removeLabel,
 	replyToThread,
+	requestReview,
 	resolveThread,
 	updateIssueBody,
 	updatePRBody,
@@ -62,7 +64,12 @@ import {
 export type JobDeps = {
 	root: string;
 	config: Config;
+	/** The user's own client: reads, board moves, merges. */
 	gh: Gh;
+	/** Who kanbot talks as: comments, labels, PRs. Same as `gh` in user mode. */
+	bot: Gh;
+	/** Login of the user running the daemon. */
+	me: string;
 	board: Board;
 	agents: AgentDef[];
 	provider: Provider;
@@ -145,9 +152,9 @@ export function runJob(job: Job, deps: JobDeps): Promise<void> {
 // ---- plan -------------------------------------------------------------------
 
 async function plan(job: PlanJob, deps: JobDeps) {
-	const { gh } = deps;
+	const { gh, bot } = deps;
 	const { issue } = job.item;
-	await Promise.all(job.comments.map((c) => react(gh, c.id, "EYES")));
+	await Promise.all(job.comments.map((c) => react(bot, c.id, "EYES")));
 	const cwd = await deps.worktrees.detached(worktreeName(job));
 	const result = await runAgent(
 		deps,
@@ -161,13 +168,13 @@ async function plan(job: PlanJob, deps: JobDeps) {
 
 	// Re-read so concurrent human edits to the description are kept.
 	const fresh = await fetchIssue(gh, issue.number);
-	await updateIssueBody(gh, issue.number, withPlan(fresh.body, result.plan));
+	await updateIssueBody(bot, issue.number, withPlan(fresh.body, result.plan));
 
 	const allowed = result.labels.filter(
 		(l) => l === LABELS.technical || l.startsWith(LABELS.typePrefix),
 	);
 	await addLabels(
-		gh,
+		bot,
 		issue.number,
 		allowed.filter((l) => !fresh.labels.includes(l)),
 	);
@@ -175,12 +182,12 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	const created: string[] = [];
 	for (const ni of result.newIssues) {
 		const res = await createIssue(
-			gh,
+			bot,
 			ni.title,
 			`${ni.body}\n\n_Split from #${issue.number} by kanbot._\n${marker("created", issue.number)}`,
 		);
 		if (!res) continue;
-		if (ni.subIssue) await addSubIssue(gh, issue.id, res.node_id);
+		if (ni.subIssue) await addSubIssue(bot, issue.id, res.node_id);
 		await addToBoard(gh, deps.board, res.node_id, ni.column);
 		created.push(`#${res.number}`);
 	}
@@ -206,18 +213,18 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	lines.push(
 		[marker("plan"), ...job.comments.map((c) => marker("re", c.id))].join("\n"),
 	);
-	await postComment(gh, issue.number, lines.join("\n\n"));
-	await Promise.all(job.comments.map((c) => react(gh, c.id, "THUMBS_UP")));
+	await postComment(bot, issue.number, lines.join("\n\n"));
+	await Promise.all(job.comments.map((c) => react(bot, c.id, "THUMBS_UP")));
 }
 
 // ---- implement ----------------------------------------------------------------
 
 async function implement(job: ImplementJob, deps: JobDeps) {
-	const { gh, config, worktrees } = deps;
+	const { gh, bot, config, worktrees } = deps;
 	const { issue } = job.item;
 	if (job.item.column === "ready") {
 		await moveItem(gh, deps.board, job.item.itemId, "inProgress");
-		await addLabels(gh, issue.number, [LABELS.working]);
+		await addLabels(bot, issue.number, [LABELS.working]);
 	}
 
 	const resumed = await worktrees.remoteHas(job.branch);
@@ -240,9 +247,9 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 			implementPrompt(job, config.baseBranch),
 		);
 		if (result.status === "blocked") {
-			await addLabels(gh, issue.number, [LABELS.needsHuman]);
+			await addLabels(bot, issue.number, [LABELS.needsHuman]);
 			await postComment(
-				gh,
+				bot,
 				issue.number,
 				`**Implementation blocked${job.variant ? ` (approach ${job.variant})` : ""}.** ${result.blockedReason ?? ""}\n\nRemove \`${LABELS.needsHuman}\` once resolved and kanbot will retry.\n${marker("blocked", job.branch)}`,
 			);
@@ -292,7 +299,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 	]
 		.filter(Boolean)
 		.join("\n\n");
-	const pr = await createPR(gh, {
+	const pr = await createPR(bot, {
 		title: `${result?.prTitle ?? issue.title}${variant}`,
 		body,
 		head: job.branch,
@@ -304,7 +311,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 		);
 		if (job.variant !== null)
 			labels.push(`${LABELS.variantPrefix}${job.variant}`);
-		await addLabels(gh, pr.number, labels);
+		await addLabels(bot, pr.number, labels);
 		log.info(`✔ opened ${pr.html_url}`);
 	}
 }
@@ -354,13 +361,13 @@ async function review(job: ReviewJob, deps: JobDeps) {
 		marker("review", job.pass),
 		embedJson("findings", result.findings),
 	].join("\n\n");
-	await postComment(deps.gh, job.pr.number, body);
+	await postComment(deps.bot, job.pr.number, body);
 }
 
 // ---- fix ----------------------------------------------------------------------
 
 async function fix(job: FixJob, deps: JobDeps) {
-	const { gh, worktrees, config } = deps;
+	const { gh, bot, worktrees, config } = deps;
 	const { pr } = job;
 	const cwd = await worktrees.checkout(worktreeName(job), pr.headRefName);
 	if (job.reason.type === "conflict") return mergeBase(job, deps, cwd);
@@ -387,7 +394,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 	if (changed) await worktrees.push(cwd, pr.headRefName);
 	if (result.prBody) {
 		const desc = absoluteImages(result.prBody, config.repo, pr.headRefName);
-		await updatePRBody(gh, pr.number, withDescription(pr.body, desc));
+		await updatePRBody(bot, pr.number, withDescription(pr.body, desc));
 	}
 	const by = new Map(result.addressed.map((a) => [a.ref, a]));
 	const pushed = changed ? "Pushed fixes." : "No code changes.";
@@ -399,7 +406,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 			return `- ${a?.resolved ? "✅" : "⏭️"} **${f.id}** ${a?.reply ?? "Not addressed."}`;
 		});
 		await postComment(
-			gh,
+			bot,
 			pr.number,
 			[
 				`**Addressed agent review ${r.pass}/${reviewPasses(job.item.issue).length}.** ${result.summary} ${pushed}`,
@@ -411,7 +418,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 	}
 	if (r.type === "ci") {
 		await postComment(
-			gh,
+			bot,
 			pr.number,
 			`**CI fix attempt.** ${result.summary} ${pushed}\n\n${marker("ci", pr.headSha)}`,
 		);
@@ -423,11 +430,11 @@ async function fix(job: FixJob, deps: JobDeps) {
 	for (const t of r.threads) {
 		const a = by.get(t.id);
 		await replyToThread(
-			gh,
+			bot,
 			t.id,
 			`${a?.reply ?? "Looked at this but made no change."}\n\n${marker("re", t.id)}`,
 		);
-		if (a?.resolved) await resolveThread(gh, t.id);
+		if (a?.resolved) await resolveThread(bot, t.id);
 		else open++;
 	}
 	if (r.type === "copilot") return;
@@ -438,7 +445,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 			return `> ${excerpt(c.body)}\n\n${a?.reply ?? "Noted."}`;
 		});
 		await postComment(
-			gh,
+			bot,
 			pr.number,
 			[
 				`**Feedback round.** ${result.summary} ${pushed}`,
@@ -452,7 +459,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 		: "All feedback addressed — ready for another look.";
 	if (!r.comments.length)
 		await postComment(
-			gh,
+			bot,
 			pr.number,
 			`${msg} ${pushed}\n\n${marker("feedback-round")}`,
 		);
@@ -469,7 +476,7 @@ const CONFLICT_MARKER = /^(<{7}|>{7})( |$)/m;
 
 /** Merge the base branch into a conflicting PR; the fixer resolves conflicts. */
 async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
-	const { gh, worktrees, config } = deps;
+	const { bot, worktrees, config } = deps;
 	const { pr } = job;
 	const base = `origin/${config.baseBranch}`;
 	const files = await worktrees.merge(cwd, base);
@@ -503,7 +510,7 @@ async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
 		throw new Error(`${base} was not merged`);
 	await worktrees.push(cwd, pr.headRefName);
 	await postComment(
-		gh,
+		bot,
 		pr.number,
 		`**Merged \`${config.baseBranch}\`.** ${summary}\n\n${marker("conflict", pr.headSha)}`,
 	);
@@ -512,35 +519,68 @@ async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
 // ---- deterministic actions ----------------------------------------------------
 
 export async function applyAction(action: Action, deps: JobDeps) {
-	const { gh } = deps;
+	const { gh, bot, config } = deps;
 	switch (action.kind) {
 		case "move":
 			log.info(`#${action.item.issue.number} → ${action.to} (${action.why})`);
 			return moveItem(gh, deps.board, action.item.itemId, action.to);
 		case "label":
-			await addLabels(gh, action.number, action.add);
-			for (const l of action.remove) await removeLabel(gh, action.number, l);
+			await addLabels(bot, action.number, action.add);
+			for (const l of action.remove) await removeLabel(bot, action.number, l);
 			return;
-		case "agentReviewed":
-			await addLabels(gh, action.pr.number, [LABELS.agentReviewed]);
+		case "agentReviewed": {
+			await addLabels(bot, action.pr.number, [LABELS.agentReviewed]);
+			const next =
+				config.merge.onApproval && action.pr.headRefName.startsWith("kanbot/")
+					? "Approve to merge."
+					: "Ready for you to test and merge.";
 			await postComment(
-				gh,
+				bot,
 				action.pr.number,
-				`**Agent review complete.** Ready for you to test and merge.\n\n${marker("ready")}`,
+				`**Agent review complete.** ${next}\n\n${marker("ready")}`,
 			);
+			// The bot opened the PR, so the user can be asked to review it.
+			if (bot.isBot)
+				await requestReview(bot, action.pr.number, [deps.me]).catch((e) =>
+					log.warn(`request review on #${action.pr.number}: ${e}`),
+				);
 			deps.notify.send(
 				`Ready to test: PR #${action.pr.number}`,
 				action.pr.title,
 				action.pr.url,
 			);
 			return;
+		}
+		case "merge": {
+			const { pr } = action;
+			log.info(`merging #${pr.number}, approved by ${action.by}`);
+			try {
+				await mergePR(gh, pr.number, pr.headSha, config.merge.method);
+			} catch (e) {
+				return applyAction(
+					{
+						kind: "needsHuman",
+						number: action.item.issue.number,
+						why: `Approved, but merging #${pr.number} failed:\n\n\`\`\`\n${String(e).slice(0, 1500)}\n\`\`\``,
+					},
+					deps,
+				);
+			}
+			await postComment(
+				bot,
+				pr.number,
+				`**Merged** after approval by @${action.by}.\n\n${marker("merged")}`,
+			);
+			deps.notify.send(`Merged PR #${pr.number}`, pr.title, pr.url);
+			return;
+		}
 		case "compare": {
 			const rows = action.prs.map(
 				(p) =>
 					`| ${p.labels.find((l) => l.startsWith(LABELS.variantPrefix)) ?? "?"} | #${p.number} | ${p.title} |`,
 			);
 			await postComment(
-				gh,
+				bot,
 				action.item.issue.number,
 				`**All ${action.prs.length} approaches are agent-reviewed.** Try them and merge the one you want; the others are closed automatically.\n\n| Variant | PR | Title |\n|---|---|---|\n${rows.join("\n")}\n\n${marker("compare")}`,
 			);
@@ -552,9 +592,9 @@ export async function applyAction(action: Action, deps: JobDeps) {
 			return;
 		}
 		case "needsHuman":
-			await addLabels(gh, action.number, [LABELS.needsHuman]);
+			await addLabels(bot, action.number, [LABELS.needsHuman]);
 			await postComment(
-				gh,
+				bot,
 				action.number,
 				`**kanbot needs a human.** ${action.why}\n\nRemove \`${LABELS.needsHuman}\` to let agents retry.\n${marker("needs-human")}`,
 			);

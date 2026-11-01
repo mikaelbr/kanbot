@@ -34,6 +34,7 @@ export function pr(over: Partial<PR> = {}): PR {
 		labels: [],
 		comments: [],
 		reviews: [],
+		verdicts: [],
 		threads: [],
 		checks: "SUCCESS",
 		mergeable: "MERGEABLE",

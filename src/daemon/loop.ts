@@ -2,6 +2,8 @@ import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { type Config, loadConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
+import { viewer } from "../github/api.ts";
+import { botClient } from "../github/app.ts";
 import { Gh } from "../github/gh.ts";
 import { loadBoard, missingColumns } from "../github/project.ts";
 import { Trust } from "../github/trust.ts";
@@ -54,10 +56,13 @@ export async function runDaemon(root: string, opts: RunOptions) {
 
 	const release = opts.dryRun ? () => {} : await acquireLock(root);
 	const state = await new State(root).load();
+	const bot = botClient(config, gh);
 	const deps: JobDeps = {
 		root,
 		config,
 		gh,
+		bot,
+		me: await viewer(gh),
 		board,
 		agents,
 		provider: providerFor(config),
@@ -82,7 +87,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	process.on("SIGTERM", stop);
 
 	log.info(
-		`kanbot: ${config.repo} · ${board.url} · provider ${config.provider} · ${config.concurrency} workers${opts.dryRun ? " · DRY RUN" : ""}`,
+		`kanbot: ${config.repo} · ${board.url} · provider ${config.provider} · ${config.concurrency} workers · talks as ${config.identity.mode === "app" ? `${config.identity.app?.slug}[bot]` : deps.me}${opts.dryRun ? " · DRY RUN" : ""}`,
 	);
 
 	try {
@@ -200,6 +205,8 @@ function describeAction(a: Action) {
 			return `label #${a.number} +[${a.add}] -[${a.remove}]`;
 		case "agentReviewed":
 			return `mark PR #${a.pr.number} agent-reviewed`;
+		case "merge":
+			return `merge PR #${a.pr.number}, approved by ${a.by}`;
 		case "compare":
 			return `post comparison on #${a.item.issue.number}`;
 		case "needsHuman":

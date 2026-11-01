@@ -26,9 +26,11 @@ Full docs: [docs/](./docs/00-index.md). Demo video: [docs/assets/demo.mp4](./doc
 | **Ready**       | Moving a card here approves the plan. Cards are picked top-down.                                                                                 |
 | **In Progress** | An agent implements it in its own worktree and opens a PR.                                                                                       |
 | **Review**      | Two agent reviews, with fixes. Then you're notified. Comment on the PR and an agent addresses it. CI failures and merge conflicts are fixed too. |
-| **Done**        | You merge.                                                                                                                                       |
+| **Done**        | You merge, or approve and kanbot merges ([`merge.onApproval`](./docs/12-identity.md#merge-on-approval)).                                         |
 
 A Bun daemon polls the board and runs one `claude -p` / `codex exec` process per job. GitHub is the only state, so you can restart it any time. Agents never get a GitHub token; the daemon makes every comment, push and PR. Only collaborators with write access can steer agents.
+
+kanbot talks as you by default. Run `kanbot app create` to have it talk as its own bot instead, so you can tell its messages apart and approve its PRs. Commits stay yours. With `merge.onApproval`, approving a PR merges it. [More](./docs/12-identity.md)
 
 ## Setup
 
@@ -45,6 +47,8 @@ kanbot run
 ```
 
 Use `kanbot run --once --dry-run` to see what it would do. Run one daemon per repo.
+
+For a guided setup, run `bunx kanbot skills install` and ask your agent "help me set up kanbot".
 
 ## Labels
 

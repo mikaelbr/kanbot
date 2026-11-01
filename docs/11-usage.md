@@ -43,6 +43,23 @@ Use an existing project. Warns about missing columns.
 | `--owner <login>` | User or org that owns the project. |
 | `--number <n>`    | Project number.                    |
 
+## `kanbot app create`
+
+Create a GitHub App for kanbot to talk as, save its key in `~/.kanbot/apps/` and set `identity.mode: app`. Opens GitHub in your browser. See [Identity and merging](./12-identity.md#app-mode).
+
+| Flag            | Default          | Description                 |
+| --------------- | ---------------- | --------------------------- |
+| `--name <name>` | `kanbot-<owner>` | App name, unique on GitHub. |
+
+## `kanbot app link`
+
+Use an app you already created, e.g. in another repo. Sets `identity` in config.
+
+| Flag            | Description                           |
+| --------------- | ------------------------------------- |
+| `--id <n>`      | GitHub App ID.                        |
+| `--slug <slug>` | App slug, as in github.com/apps/slug. |
+
 ## `kanbot sync`
 
 Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.kanbot/agents/`. Also links `.claude/skills` to `.agents/skills`. Run it after editing agents, then commit.
@@ -53,7 +70,7 @@ Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.
 
 ## `kanbot skills install`
 
-Install the skills that work outside a kanbot repo (`kanbot-idea`) for your user, in `~/.claude/skills/` and `~/.agents/skills/`. See [Capturing ideas](./03-capturing-ideas.md).
+Install the skills that work outside a kanbot repo (`kanbot-idea`, `kanbot-guide`) for your user, in `~/.claude/skills/` and `~/.agents/skills/`. See [Capturing ideas](./03-capturing-ideas.md).
 
 | Flag                               | Default | Description                     |
 | ---------------------------------- | ------- | ------------------------------- |
@@ -61,7 +78,7 @@ Install the skills that work outside a kanbot repo (`kanbot-idea`) for your user
 
 ## `kanbot doctor`
 
-Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. Prints a fix for each failed check. Exits 1 on failure.
+Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. In app mode, also the app, its key and its install on the repo. Prints a fix for each failed check. Exits 1 on failure.
 
 ## `kanbot run`
 
@@ -93,5 +110,6 @@ Print a shell completion script.
 | `.kanbot/state.json`   | Failure counts and rate-limit pause.   |
 | `.kanbot/daemon.pid`   | Lock so only one daemon runs per repo. |
 | `~/.kanbot/worktrees/` | Git worktrees, one per job.            |
+| `~/.kanbot/apps/`      | Private keys of kanbot apps.           |
 
 The first three are gitignored by `init`.

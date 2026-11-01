@@ -34,16 +34,21 @@ There are two kinds:
 
 ## Admin skills
 
-| Skill          | Used for                                                                       |
-| -------------- | ------------------------------------------------------------------------------ |
-| `kanbot-admin` | Changing the kanbot setup: agents, skills, memory, config, upgrades.           |
-| `kanbot-idea`  | Turning an idea into an issue. See [Capturing ideas](./03-capturing-ideas.md). |
+| Skill          | Used for                                                                          |
+| -------------- | --------------------------------------------------------------------------------- |
+| `kanbot-guide` | Explaining kanbot: guided setup, choosing options, finding docs, troubleshooting. |
+| `kanbot-admin` | Changing the kanbot setup: agents, skills, memory, config, identity, upgrades.    |
+| `kanbot-idea`  | Turning an idea into an issue. See [Capturing ideas](./03-capturing-ideas.md).    |
 
 Ask in plain words. Your agent finds the right skill:
 
+> Help me set up kanbot in this repo.
+> Should kanbot talk as a bot or as me?
 > Add an implementer for mobile work.
 > Make the reviewers stricter about accessibility.
 > Upgrade kanbot.
+
+`kanbot-guide` walks you through setup step by step, explains each option with a recommendation, and links the right docs page. Install it for your user with `kanbot skills install` to use it before a repo has kanbot.
 
 `kanbot-admin` knows where things live, which files are generated, and the steps for each change: edit agents and skills, update config, run `sync` and `doctor`, upgrade, and merge `.kanbot-new` files. You review the diff and commit.
 

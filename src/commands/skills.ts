@@ -6,7 +6,7 @@ import { log } from "../log.ts";
 import { listTemplates } from "../templates.ts";
 
 /** Skills that work outside a kanbot repo, so they can be installed per user. */
-export const GLOBAL_SKILLS = ["kanbot-idea"];
+export const GLOBAL_SKILLS = ["kanbot-idea", "kanbot-guide"];
 
 /** User-level skill folders: Claude Code reads the first, Codex the second. */
 export const globalSkillDirs = (home = homedir()) => ({

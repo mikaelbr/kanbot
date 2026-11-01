@@ -165,5 +165,10 @@ test("skills install copies global skills into each provider's folder", async ()
 	const dirs = globalSkillDirs(home);
 	expect(written).toContain(join(dirs.claude, "kanbot-idea", "SKILL.md"));
 	expect(written).toContain(join(dirs.codex, "kanbot-idea", "SKILL.md"));
-	expect(written.every((f) => f.includes("kanbot-idea"))).toBe(true);
+	expect(written).toContain(join(dirs.claude, "kanbot-guide", "SKILL.md"));
+	expect(
+		written.every(
+			(f) => f.includes("kanbot-idea") || f.includes("kanbot-guide"),
+		),
+	).toBe(true);
 });

@@ -112,6 +112,40 @@ export const ConfigSchema = z.object({
 				),
 		})
 		.prefault({}),
+	identity: z
+		.object({
+			mode: z
+				.enum(["user", "app"])
+				.default("user")
+				.describe(
+					"Who kanbot talks as. `user`: your account. `app`: a kanbot GitHub App, so its comments and PRs show as a bot. Commits are always yours.",
+				),
+			app: z
+				.object({
+					id: z.number().int().describe("GitHub App ID."),
+					slug: z.string().describe("App slug, as in github.com/apps/<slug>."),
+				})
+				.nullable()
+				.default(null)
+				.describe(
+					"Set by `kanbot app create`. The private key lives in ~/.kanbot/apps/<id>.pem.",
+				),
+		})
+		.prefault({}),
+	merge: z
+		.object({
+			onApproval: z
+				.boolean()
+				.default(false)
+				.describe(
+					"Merge a kanbot PR when a collaborator approves it, checks pass and agent review is done. Merges as you. Needs identity.mode app to approve your own kanbot PRs.",
+				),
+			method: z
+				.enum(["squash", "merge", "rebase"])
+				.default("squash")
+				.describe("Merge method used for approved PRs."),
+		})
+		.prefault({}),
 	codex: z
 		.object({
 			networkAccess: z

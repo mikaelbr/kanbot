@@ -8,6 +8,7 @@ const PR_FIELDS = `
 	labels(first: 30) { nodes { name } }
 	comments(last: 100) { nodes { ${COMMENT} } }
 	reviews(last: 50) { nodes { ${COMMENT} } }
+	latestReviews(last: 20) { nodes { author { login } state commit { oid } } }
 	reviewThreads(last: 100) {
 		nodes {
 			id isResolved path line
@@ -103,6 +104,12 @@ function mapPR(p: any): PR {
 		comments: p.comments.nodes.map(comment),
 		reviews: p.reviews.nodes.map(comment).filter((r: Comment) => r.body.trim()),
 		// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
+		verdicts: p.latestReviews.nodes.map((r: any) => ({
+			author: r.author?.login ?? "ghost",
+			state: r.state,
+			commit: r.commit?.oid ?? null,
+		})),
+		// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
 		threads: p.reviewThreads.nodes.map((t: any) => ({
 			id: t.id,
 			isResolved: t.isResolved,
@@ -118,12 +125,21 @@ function mapPR(p: any): PR {
 
 // ---- writes ---------------------------------------------------------------
 
+/**
+ * Visible sign on kanbot's comments when it posts as the user. In app mode
+ * GitHub's bot badge already says so.
+ */
+export const SIGNATURE = "<sub>🤖 kanbot</sub>";
+
+export const signed = (gh: Gh, body: string) =>
+	gh.isBot ? body : `${SIGNATURE}\n\n${body}`;
+
 export function postComment(gh: Gh, number: number, body: string) {
 	return gh.restWrite(
 		`comment on #${number}`,
 		"POST",
 		gh.r(`/issues/${number}/comments`),
-		{ body },
+		{ body: signed(gh, body) },
 	);
 }
 
@@ -216,6 +232,35 @@ export function updatePRBody(gh: Gh, number: number, body: string) {
 	);
 }
 
+/** Merge only if the head is still `sha`, so later pushes aren't merged unseen. */
+export function mergePR(
+	gh: Gh,
+	number: number,
+	sha: string,
+	method: "squash" | "merge" | "rebase",
+) {
+	return gh.restWrite(
+		`merge PR #${number} (${method})`,
+		"PUT",
+		gh.r(`/pulls/${number}/merge`),
+		{ sha, merge_method: method },
+	);
+}
+
+export function requestReview(gh: Gh, number: number, logins: string[]) {
+	return gh.restWrite(
+		`request review on #${number} from ${logins.join(",")}`,
+		"POST",
+		gh.r(`/pulls/${number}/requested_reviewers`),
+		{ reviewers: logins },
+	);
+}
+
+/** Login of the account `gh` is signed in as. */
+export async function viewer(gh: Gh) {
+	return (await gh.rest<{ login: string }>("user")).login;
+}
+
 export function closePR(gh: Gh, number: number) {
 	return gh.restWrite(
 		`close PR #${number}`,
@@ -231,7 +276,7 @@ export function replyToThread(gh: Gh, threadId: string, body: string) {
 		`mutation($t: ID!, $b: String!) {
 			addPullRequestReviewThreadReply(input: { pullRequestReviewThreadId: $t, body: $b }) { comment { id } }
 		}`,
-		{ t: threadId, b: body },
+		{ t: threadId, b: signed(gh, body) },
 	);
 }
 

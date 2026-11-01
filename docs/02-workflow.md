@@ -61,6 +61,8 @@ Conflicts are checked even after a PR is `agent-reviewed`. So if you push to the
 
 You test and merge. The board's built-in workflow moves the card to Done, and kanbot cleans up worktrees.
 
+With [`merge.onApproval`](./12-identity.md#merge-on-approval), approving the PR is enough: kanbot merges it as you. To approve your own kanbot PRs, kanbot must open them as its own app ([app mode](./12-identity.md#app-mode)).
+
 ## Exploring alternatives
 
 Add `explore:2`, `explore:3` or `explore:4` to an issue before planning. The plan then has N approaches, and N agents build them as N PRs (`kanbot/<issue>-v<k>`). When all are agent-reviewed, kanbot posts a comparison and notifies you. Merge one; a GitHub workflow closes the others.

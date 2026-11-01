@@ -63,6 +63,7 @@ export async function takeSnapshot(
 		...issue.prs.flatMap((p) => [
 			...p.comments.map((c) => c.author),
 			...p.reviews.map((c) => c.author),
+			...p.verdicts.map((v) => v.author),
 			...p.threads.flatMap((t) => t.comments.map((c) => c.author)),
 		]),
 	]);

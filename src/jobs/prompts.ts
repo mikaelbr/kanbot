@@ -6,6 +6,7 @@ import {
 	reviewPasses,
 } from "../daemon/derive.ts";
 import type { Comment, Issue, PR } from "../daemon/types.ts";
+import { SIGNATURE } from "../github/api.ts";
 import { extractPlan, isKanbot, stripPlan } from "../github/markers.ts";
 import type { Finding } from "../schemas/results.ts";
 
@@ -36,7 +37,10 @@ function conversation(comments: Comment[], limit = 30) {
 }
 
 function stripMarkers(body: string) {
-	return body.replace(/<!--\s*kanbot[^>]*-->/g, "").trim();
+	return body
+		.replace(SIGNATURE, "")
+		.replace(/<!--\s*kanbot[^>]*-->/g, "")
+		.trim();
 }
 
 /**

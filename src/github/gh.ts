@@ -1,14 +1,28 @@
 import { log } from "../log.ts";
 
+/** Returns a GitHub token to use instead of `gh`'s own login. */
+export type TokenSource = () => Promise<string>;
+
 /**
  * Thin wrapper over the `gh` CLI so kanbot reuses the user's existing auth.
+ * With a `token`, calls run as that identity instead (the kanbot app).
  * Reads always run; writes are skipped (and logged) in dry-run mode.
  */
 export class Gh {
 	constructor(
 		readonly repo: string,
 		readonly dryRun = false,
+		private readonly token?: TokenSource,
 	) {}
+
+	/** True when calls run as the kanbot app, not the user. */
+	get isBot() {
+		return this.token !== undefined;
+	}
+
+	private async env() {
+		return this.token ? { GH_TOKEN: await this.token() } : undefined;
+	}
 
 	get owner() {
 		return this.repo.split("/")[0] as string;
@@ -35,7 +49,11 @@ export class Gh {
 	}
 
 	private async queryOnce<T>(input: string): Promise<T> {
-		const out = await run(["api", "graphql", "--input", "-"], input);
+		const out = await run(
+			["api", "graphql", "--input", "-"],
+			input,
+			await this.env(),
+		);
 		const json = JSON.parse(out) as { data: T; errors?: { message: string }[] };
 		if (json.errors?.length) {
 			throw new Error(
@@ -58,7 +76,9 @@ export class Gh {
 	}
 
 	async rest<T = unknown>(path: string): Promise<T> {
-		return JSON.parse(await run(["api", path])) as T;
+		return JSON.parse(
+			await run(["api", path], undefined, await this.env()),
+		) as T;
 	}
 
 	async restWrite<T = unknown>(
@@ -80,6 +100,7 @@ export class Gh {
 				...(body === undefined ? [] : ["--input", "-"]),
 			],
 			body === undefined ? undefined : JSON.stringify(body),
+			await this.env(),
 		);
 		return (out.trim() ? JSON.parse(out) : null) as T;
 	}
@@ -90,9 +111,14 @@ export class Gh {
 	}
 }
 
-export async function run(args: string[], input?: string): Promise<string> {
+export async function run(
+	args: string[],
+	input?: string,
+	env?: Record<string, string>,
+): Promise<string> {
 	const proc = Bun.spawn(["gh", ...args], {
 		stdin: input === undefined ? "ignore" : new Blob([input]),
+		env: env ? { ...process.env, ...env } : undefined,
 		stdout: "pipe",
 		stderr: "pipe",
 	});

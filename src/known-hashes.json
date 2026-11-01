@@ -19,7 +19,11 @@
 	],
 	".agents/skills/kanbot-admin/SKILL.md": [
 		"3789c559be9fb6a78f82708ae9857395a5556f6b",
+		"557532f241c0fc1e04f03ce8edb69efaa7b5165b",
 		"e427c711b532963c0916f07ecc6b11e9b47cb9fa"
+	],
+	".agents/skills/kanbot-guide/SKILL.md": [
+		"cf3e95d137a5a58a273262bca6ba25fbc95fa037"
 	],
 	".agents/skills/kanbot-idea/SKILL.md": [
 		"8ab28cec8d3f30250ffe080106d0de8e3c2eaa8a"
@@ -125,6 +129,7 @@
 	"AGENTS.md": [
 		"3da9115cbf52b7b7d0feb8325503a8caf43ff2c7",
 		"b821013b5be7051327b349eda603218590a41f33",
+		"c688ed7f42f7a6f6a5ac600de857b42fb04aa613",
 		"cf7ef593ccfda953055dfb76b3e9c267fc9637f6",
 		"e5b76bcbaf155b79a8ff3f2e70977cc0c589566b"
 	],

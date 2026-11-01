@@ -49,6 +49,14 @@ review:
   copilotOnPush: false
   copilotWaitMinutes: 15
 
+identity:
+  mode: user # user | app
+  app: null # set by `kanbot app create`
+
+merge:
+  onApproval: false # merge kanbot PRs when you approve them
+  method: squash # squash | merge | rebase
+
 codex:
   networkAccess: false
 
@@ -81,9 +89,13 @@ Maps a `type:*` label to an agent. Issues without a matching label use `default`
 
 Adds GitHub Copilot as a third reviewer. See [Copilot review](./09-copilot-review.md).
 
+### Identity and merge
+
+Who kanbot talks as, and merging PRs when you approve them. See [Identity and merging](./12-identity.md).
+
 ## Notifications
 
-kanbot acts as your GitHub account, so GitHub won't notify you about agent work. kanbot notifies you when:
+In user mode, kanbot acts as your GitHub account, so GitHub won't notify you about agent work. In [app mode](./12-identity.md#app-mode) it does. kanbot also notifies you itself when:
 
 - a PR is ready to test,
 - exploratory PRs are ready to compare,
@@ -130,4 +142,4 @@ Agents fix failing CI on their PRs, up to 3 times per PR. Adjust `.github/workfl
 ## Limitations
 
 - Ready-column order is the project's manual item order, not a view's sort.
-- Workers run as your user. `gh` and `git push` are blocked by command patterns, not missing credentials.
+- Workers run as your user. `gh` and `git push` are blocked by command patterns, not missing credentials. In app mode, the app's key in `~/.kanbot/apps/` is readable by them too.

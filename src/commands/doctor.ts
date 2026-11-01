@@ -7,6 +7,7 @@ import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { describeError } from "../errors.ts";
 import { copilotReviewRule } from "../github/api.ts";
+import { appKeyPath, appTokens } from "../github/app.ts";
 import { Gh, run } from "../github/gh.ts";
 import {
 	boardWorkflows,
@@ -235,6 +236,40 @@ export default defineCommand({
 			detail: missingLabels.join(", ") || undefined,
 			fix: "kanbot board create",
 		});
+
+		const { mode, app } = config.identity;
+		if (mode === "app") {
+			add({
+				name: "kanbot app set",
+				ok: app !== null,
+				detail: app ? `${app.slug} (id ${app.id})` : undefined,
+				fix: "kanbot app create",
+			});
+			if (app) {
+				const key = appKeyPath(app.id);
+				add({
+					name: "kanbot app private key",
+					ok: existsSync(key),
+					detail: key,
+					fix: "kanbot app create, or copy the key from the machine that created the app",
+				});
+				if (existsSync(key)) {
+					try {
+						await appTokens(app, config.repo)();
+						add({ name: `kanbot app installed on ${config.repo}`, ok: true });
+					} catch (e) {
+						add({
+							name: `kanbot app installed on ${config.repo}`,
+							ok: false,
+							...explain(
+								e,
+								`https://github.com/apps/${app.slug}/installations/new`,
+							),
+						});
+					}
+				}
+			}
+		}
 
 		if (config.review.copilot) {
 			const rule = await copilotReviewRule(gh, config.baseBranch).catch(
