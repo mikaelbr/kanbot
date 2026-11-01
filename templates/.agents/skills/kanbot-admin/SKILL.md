@@ -47,7 +47,7 @@ kanbot's agents run the process; the repo's own skills and agents do the work on
 1. Make sure the skill is in `.agents/skills/<name>/` or the agent in `.kanbot/agents/`. A `.claude/agents` or `.codex/agents` agent works on one provider only.
 2. Add it under `capabilities` in config: `review: code-review`, or `{ use, when, required }` when it only applies sometimes or a miss should block acceptance review.
 3. Reserved names: `verify` (prove acceptance criteria), `review` (technical review, pass 1), `preview` (something a human can try). Any other name is the human's.
-4. `kanbot doctor` checks each `use` exists and suggests missing `verify` or `preview`.
+4. `kanbot doctor` lists what's mapped, flags a missing `use`, and names reserved needs not yet mapped.
 
 Don't add implementers or `type:*` labels. `implementers` in config is deprecated: replace it with capabilities and remove it.
 

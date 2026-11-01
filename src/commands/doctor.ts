@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents, missingSkills } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { capabilityGaps, findCapability } from "../capabilities.ts";
+import { capabilitySummary, findCapability } from "../capabilities.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { describeError } from "../errors.ts";
@@ -149,24 +149,25 @@ export default defineCommand({
 				detail: noSkill.join(", ") || undefined,
 				fix: "add them to .agents/skills or remove them from the agent's `skills`",
 			});
+			add({
+				name: "capabilities",
+				ok: true,
+				detail: capabilitySummary(config.capabilities),
+			});
+			// Only problems get their own line.
 			for (const [name, c] of Object.entries(config.capabilities)) {
 				const found = findCapability(root, agents, c.use);
-				const single = found === "claude" || found === "codex";
+				if (found === "skill" || found === "agent") continue;
 				add({
 					name: `capability ${name} → ${c.use}`,
 					ok: found !== null,
-					warn: single,
-					detail: single ? `${found} agent, works on ${found} only` : undefined,
+					warn: found !== null,
+					detail: found
+						? `${found} agent, works on ${found} only`
+						: "not found",
 					fix: "add the skill to .agents/skills or the agent to .kanbot/agents",
 				});
 			}
-			for (const gap of capabilityGaps(config.capabilities))
-				add({
-					name: "capability suggestion",
-					ok: true,
-					warn: true,
-					detail: gap,
-				});
 			const stale = await sync(root, agents, { check: true });
 			add({
 				name: "generated agent files up to date",

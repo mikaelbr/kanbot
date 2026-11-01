@@ -119,18 +119,18 @@ export function askCapabilities(
 	return caps;
 }
 
-/** Short suggestions for reserved needs nothing is mapped to. */
-export function capabilityGaps(caps: Capabilities): string[] {
-	const gaps: string[] = [];
-	if (!caps.verify)
-		gaps.push(
-			"no `verify`: map a skill that proves acceptance criteria, e.g. UI checks or end-to-end tests",
-		);
-	if (!caps.preview)
-		gaps.push(
-			"no `preview`: map a skill that gives a human something to try, e.g. a preview deploy or a test build",
-		);
-	return gaps;
+/** One line: what is mapped, and which reserved needs aren't. */
+export function capabilitySummary(caps: Capabilities): string {
+	const mapped = Object.entries(caps).map(([n, c]) => `${n} → ${c.use}`);
+	const missing = Object.keys(RESERVED).filter((n) => !caps[n]);
+	return [
+		mapped.join(", ") || "none mapped",
+		missing.length
+			? `could add ${missing.join(", ")} (kanbot-guide can help)`
+			: "",
+	]
+		.filter(Boolean)
+		.join("; ");
 }
 
 /** Capabilities as written to config: a bare name when that says it all. */

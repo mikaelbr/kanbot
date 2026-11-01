@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { parseAgent } from "../src/agents/load.ts";
 import {
 	askCapabilities,
-	capabilityGaps,
+	capabilitySummary,
 	compact,
 	findCapability,
 	ownWorkers,
@@ -69,14 +69,17 @@ test("ownWorkers lists only what kanbot didn't ship", async () => {
 	expect(await ownWorkers(root)).toEqual(["bench", "e2e"]);
 });
 
-test("gaps suggest verify and preview until mapped", () => {
-	expect(capabilityGaps({}).length).toBe(2);
+test("summary lists what is mapped and what could be added", () => {
+	expect(capabilitySummary({})).toBe(
+		"none mapped; could add verify, review, preview (kanbot-guide can help)",
+	);
 	expect(
-		capabilityGaps({
-			verify: { use: "a", required: false },
-			preview: { use: "b", required: false },
+		capabilitySummary({
+			verify: { use: "e2e", required: false },
+			review: { use: "cr", required: false },
+			preview: { use: "deploy", required: false },
 		}),
-	).toEqual([]);
+	).toBe("verify → e2e, review → cr, preview → deploy");
 });
 
 test("compact writes bare names unless when or required is set", () => {

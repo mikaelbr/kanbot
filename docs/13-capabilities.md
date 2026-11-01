@@ -57,5 +57,5 @@ Workers only see what's committed: `AGENTS.md`, `.agents/skills`, agents, and th
 ## Set up
 
 - `kanbot init` asks which of your skills fill `verify`, `review` and `preview`.
-- `kanbot doctor` checks each `use` exists and suggests what's missing.
+- `kanbot doctor` lists what's mapped, flags a `use` that doesn't exist, and names reserved needs you could add.
 - `kanbot upgrade` from an older kanbot keeps the craft skills it installed and maps them for you.
