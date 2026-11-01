@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildSpec, render, SHELLS } from "../src/completion.ts";
+import { buildSpec, render, SHELLS, type Spec } from "../src/completion.ts";
 import { main } from "../src/main.ts";
 
 // Completions are generated from the real command tree, so a new command or
@@ -15,11 +15,16 @@ describe("completion", async () => {
 		expect(provider?.options).toEqual(["claude", "codex"]);
 	});
 
+	const walk = (s: Spec): Spec[] => [s, ...s.subs.flatMap(walk)];
+	const nodes = walk(spec);
+
 	for (const shell of SHELLS)
-		test(`${shell} script names every command`, () => {
+		test(`${shell} script names every command and flag`, () => {
 			const out = render(shell, spec);
-			for (const name of ["init", "board", "link", "run", "dry-run"])
-				expect(out).toContain(name);
+			for (const node of nodes) {
+				expect(out).toContain(node.name);
+				for (const f of node.flags) expect(out).toContain(f.name);
+			}
 		});
 
 	for (const shell of ["zsh", "bash"] as const)

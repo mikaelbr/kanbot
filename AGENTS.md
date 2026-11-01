@@ -17,6 +17,7 @@ The CLI should be as helpful as possible. With every change, check that it still
 - `--help` descriptions say what each command and flag does.
 - Errors are `UserError`s with `why`, `fix` and `docs` where it helps.
 - `doctor` checks new requirements and prints a fix.
+- Shell completion (`kanbot completion`) covers it. It is built from the citty command tree, so define commands, flags and enum `options` there. Values completion can't see (positionals, dynamic values) need code in `src/completion.ts`. `test/completion.test.ts` checks every command and flag.
 - Next steps printed by `init`, `upgrade` and `board create` match the flow.
 - `docs/11-usage.md`, other docs and the `kanbot-guide` and `kanbot-admin` skills match the CLI. `test/usage-docs.test.ts` checks commands, flags and docs links.
 - Run `bun run kanbot <command> --help` to see the result.
