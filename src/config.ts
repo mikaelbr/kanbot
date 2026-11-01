@@ -19,7 +19,7 @@ export type JobKind = (typeof JOB_KINDS)[number];
 
 export const RESERVED_CAPABILITIES = ["verify", "review", "preview"] as const;
 
-export const Capability = z.object({
+const CapabilityObject = z.object({
 	use: z
 		.string()
 		.min(1)
@@ -35,7 +35,17 @@ export const Capability = z.object({
 		.default(false)
 		.describe("A miss when it applies blocks acceptance review."),
 });
-export type Capability = z.infer<typeof Capability>;
+
+/** `verify: verify-ui` is short for `verify: { use: verify-ui }`. */
+export const Capability = z.union([
+	z
+		.string()
+		.min(1)
+		.describe("Skill or agent name, short for `{ use: <name> }`.")
+		.transform((use) => CapabilityObject.parse({ use })),
+	CapabilityObject,
+]);
+export type Capability = z.output<typeof Capability>;
 
 export const ConfigSchema = z.object({
 	provider: z

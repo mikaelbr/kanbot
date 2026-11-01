@@ -136,7 +136,6 @@
 			}
 		},
 		"capabilities": {
-			"default": {},
 			"description": "Needs mapped to the repo's own skills or agents. Reserved: verify (prove acceptance criteria), review (technical review), preview (something a human can try). Other names are yours.",
 			"type": "object",
 			"propertyNames": {
@@ -144,24 +143,33 @@
 				"pattern": "^[a-z][a-z0-9-]*$"
 			},
 			"additionalProperties": {
-				"type": "object",
-				"properties": {
-					"use": {
+				"anyOf": [
+					{
 						"type": "string",
 						"minLength": 1,
-						"description": "Skill in .agents/skills or agent in .kanbot/agents that does the work."
+						"description": "Skill or agent name, short for `{ use: <name> }`."
 					},
-					"when": {
-						"description": "When it applies, e.g. `Changes to UI users see`.",
-						"type": "string"
-					},
-					"required": {
-						"default": false,
-						"description": "A miss when it applies blocks acceptance review.",
-						"type": "boolean"
+					{
+						"type": "object",
+						"properties": {
+							"use": {
+								"type": "string",
+								"minLength": 1,
+								"description": "Skill in .agents/skills or agent in .kanbot/agents that does the work."
+							},
+							"when": {
+								"description": "When it applies, e.g. `Changes to UI users see`.",
+								"type": "string"
+							},
+							"required": {
+								"default": false,
+								"description": "A miss when it applies blocks acceptance review.",
+								"type": "boolean"
+							}
+						},
+						"required": ["use"]
 					}
-				},
-				"required": ["use"]
+				]
 			}
 		},
 		"review": {

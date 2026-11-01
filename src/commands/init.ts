@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { askCapabilities, ownWorkers } from "../capabilities.ts";
+import { askCapabilities, compact, ownWorkers } from "../capabilities.ts";
 import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { run } from "../github/gh.ts";
@@ -84,7 +84,7 @@ export default defineCommand({
 			if (process.stdin.isTTY) {
 				const caps = askCapabilities(await ownWorkers(root), prompt);
 				if (Object.keys(caps).length) {
-					await saveConfig(root, { capabilities: caps });
+					await saveConfig(root, { capabilities: compact(caps) } as never);
 					log.info(
 						`~ .kanbot/config.yml (capabilities: ${Object.keys(caps).join(", ")})`,
 					);

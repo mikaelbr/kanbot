@@ -6,6 +6,7 @@ import { parseAgent } from "../src/agents/load.ts";
 import {
 	askCapabilities,
 	capabilityGaps,
+	compact,
 	findCapability,
 	ownWorkers,
 } from "../src/capabilities.ts";
@@ -76,4 +77,18 @@ test("gaps suggest verify and preview until mapped", () => {
 			preview: { use: "b", required: false },
 		}),
 	).toEqual([]);
+});
+
+test("compact writes bare names unless when or required is set", () => {
+	expect(
+		compact({
+			review: { use: "code-review", required: false },
+			verify: { use: "e2e", when: "UI", required: false },
+			preview: { use: "deploy", required: true },
+		}),
+	).toEqual({
+		review: "code-review",
+		verify: { use: "e2e", when: "UI" },
+		preview: { use: "deploy", required: true },
+	});
 });

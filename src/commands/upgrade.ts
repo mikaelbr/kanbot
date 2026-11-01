@@ -3,7 +3,7 @@ import { defineCommand } from "citty";
 import pkg from "../../package.json" with { type: "json" };
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { legacyCapabilities } from "../capabilities.ts";
+import { compact, legacyCapabilities } from "../capabilities.ts";
 import {
 	configPath,
 	loadConfig,
@@ -69,7 +69,7 @@ export default defineCommand({
 		if (args["dry-run"]) return;
 
 		await applyUpgrade(root, plan);
-		if (caps) await saveConfig(root, { capabilities: caps });
+		if (caps) await saveConfig(root, { capabilities: compact(caps) } as never);
 		const generated = await sync(root, await loadAgents(root));
 		if (await writeConfigSchema(root))
 			generated.push(".kanbot/config.schema.json");

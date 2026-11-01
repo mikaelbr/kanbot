@@ -56,6 +56,7 @@ Go step by step. Run each command, check its output, then go on. If `.kanbot/con
 capabilities:
   verify: { use: e2e-tests, when: Changes users see }
   preview: { use: deploy-preview, required: true }
+  review: code-review # bare name: no when, not required
 ```
 
 - `use`: a skill in `.agents/skills` or an agent in `.kanbot/agents`. `when`: when it applies. `required: true`: a miss blocks acceptance review.

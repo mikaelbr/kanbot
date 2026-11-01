@@ -132,3 +132,19 @@ export function capabilityGaps(caps: Capabilities): string[] {
 		);
 	return gaps;
 }
+
+/** Capabilities as written to config: a bare name when that says it all. */
+export function compact(caps: Capabilities) {
+	return Object.fromEntries(
+		Object.entries(caps).map(([name, c]) => [
+			name,
+			!c.when && !c.required
+				? c.use
+				: {
+						use: c.use,
+						...(c.when ? { when: c.when } : {}),
+						...(c.required ? { required: true } : {}),
+					},
+		]),
+	);
+}

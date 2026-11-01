@@ -95,3 +95,13 @@ test("implementers is an optional, deprecated alias", async () => {
 	await saveConfig(root, { implementers: { docs: "writer" } });
 	expect((await loadConfig(root)).implementers).toEqual({ docs: "writer" });
 });
+
+test("a bare name is short for { use }", async () => {
+	await saveConfig(root, {
+		repo: "acme/app",
+		capabilities: { review: "code-review" },
+	} as never);
+	expect((await loadConfig(root)).capabilities).toEqual({
+		review: { use: "code-review", required: false },
+	});
+});

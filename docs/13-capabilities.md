@@ -18,18 +18,17 @@ capabilities:
   preview: # something a human can try
     use: deploy-preview
     required: true
-  review: # technical review
-    use: code-review
+  review: code-review # short for { use: code-review }
   benchmark: # your own name
     use: bench
     when: Changes to the import pipeline
 ```
 
-| Field      | Meaning                                                                            |
-| ---------- | ---------------------------------------------------------------------------------- |
-| `use`      | A skill in `.agents/skills` or an agent in `.kanbot/agents`.                       |
-| `when`     | When it applies. Without it, the agent decides.                                    |
-| `required` | `true`: a miss when it applies is a blocker in acceptance review. Default `false`. |
+| Field      | Meaning                                                                                                  |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
+| `use`      | A skill in `.agents/skills` or an agent in `.kanbot/agents`. A bare name is short for `{ use: <name> }`. |
+| `when`     | When it applies. Without it, the agent decides.                                                          |
+| `required` | `true`: a miss when it applies is a blocker in acceptance review. Default `false`.                       |
 
 The table goes into the implement, review and fix prompts. Agents use a capability when its `when` fits and list what they used under **Validation** in the PR body. Needs you don't map are left to the agent.
 

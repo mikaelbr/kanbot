@@ -39,7 +39,7 @@ timeoutMinutes:
 
 capabilities: # your skills and agents for kanbot's agents to use
   verify: { use: e2e-tests, when: Changes users see }
-  review: { use: code-review }
+  review: code-review
 
 review:
   copilot: false # add GitHub Copilot as a reviewer
