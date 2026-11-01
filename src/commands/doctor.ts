@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand } from "citty";
-import { loadAgents } from "../agents/load.ts";
+import { loadAgents, missingSkills } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
@@ -117,6 +117,13 @@ export default defineCommand({
 				name: "agents referenced by config exist",
 				ok: !missing.length,
 				detail: missing.join(", ") || undefined,
+			});
+			const noSkill = missingSkills(root, agents);
+			add({
+				name: "skills referenced by agents exist",
+				ok: !noSkill.length,
+				detail: noSkill.join(", ") || undefined,
+				fix: "add them to .agents/skills or remove them from the agent's `skills`",
 			});
 			const stale = await sync(root, agents, { check: true });
 			add({

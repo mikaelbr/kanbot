@@ -84,7 +84,7 @@ Run it with `node`/`bun` from a directory where `playwright` resolves. Use `page
 
 - Implementers and fixers: `.kanbot/screenshots/<branch>/<state>-<width>.png`, committed (`chore: add screenshots for review`). Replace old screenshots of the same state rather than accumulating them.
 - Reviewers: a temp directory outside the repo. Reviewers never commit.
-- List the committed paths in the `screenshots` output field and embed them in the PR body.
+- Embed the committed paths in the PR body.
 
 ## 6. Look at them
 

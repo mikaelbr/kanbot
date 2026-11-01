@@ -2,9 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, readlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadAgents, parseAgent } from "../src/agents/load.ts";
+import { loadAgents, missingSkills, parseAgent } from "../src/agents/load.ts";
 import {
 	CLAUDE_DENY,
+	claudeTools,
 	renderAll,
 	renderClaudeAgent,
 	renderCodexAgent,
@@ -43,14 +44,15 @@ describe("template agents", () => {
 	});
 
 	test("every skill an agent lists exists in templates", async () => {
-		const agents = await loadAgents(TEMPLATES);
-		for (const s of new Set(agents.flatMap((a) => a.skills))) {
-			expect(
-				await Bun.file(
-					join(TEMPLATES, ".agents", "skills", s, "SKILL.md"),
-				).exists(),
-			).toBe(true);
-		}
+		expect(missingSkills(TEMPLATES, await loadAgents(TEMPLATES))).toEqual([]);
+	});
+
+	test("missingSkills names the agent and the missing skill", () => {
+		const agent = parseAgent(
+			"---\nname: a\ntier: sub\ndescription: x\nskills: [tdd, nope]\n---\nBody",
+			"a.md",
+		);
+		expect(missingSkills(TEMPLATES, [agent])).toEqual(["a: nope"]);
 	});
 });
 
@@ -78,6 +80,12 @@ Do the thing.`,
 		);
 		expect(out).toContain("model: sonnet");
 		expect(out).toContain("Do the thing.");
+	});
+
+	test("claude agents delegate to subagents with the Agent tool", () => {
+		expect(claudeTools({ ...agent, subagents: ["explorer"] })).toContain(
+			"Agent",
+		);
 	});
 
 	test("codex agent is valid-looking TOML with mapped effort", () => {
@@ -180,6 +188,11 @@ test("result schemas export strict JSON schemas", () => {
 		expect(s.additionalProperties).toBe(false);
 		expect(s.required.sort()).toEqual(Object.keys(s.properties).sort());
 	}
+});
+
+test("implement-result has no screenshots field", () => {
+	const s = jsonSchema("implement-result") as { properties: object };
+	expect(Object.keys(s.properties)).not.toContain("screenshots");
 });
 
 test("relative screenshots become branch URLs", () => {

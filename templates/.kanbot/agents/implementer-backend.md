@@ -52,6 +52,5 @@ Return the structured result; it is your only channel to GitHub.
 - `prTitle`: conventional-commit style, under 72 characters.
 - `prBody`: follow `pr-description`. Include example requests/responses for API changes and migration notes for schema changes. No `Closes` line.
 - `testsRun`: each command you ran with its outcome.
-- `screenshots`: empty unless the change has a visible UI effect you captured.
 - `risks`: migrations, compatibility, performance, security-sensitive spots, skipped follow-ups.
 - `blockedReason`: one concrete sentence on what is needed from a human when blocked; otherwise null.

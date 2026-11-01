@@ -35,7 +35,7 @@ export const PlanResult = z.strictObject({
 		.describe("Issues to create, e.g. when the human asks to split work."),
 	labels: z
 		.array(z.string())
-		.describe("Labels the issue should have, e.g. type:frontend or technical."),
+		.describe("Labels the issue should have, e.g. technical."),
 	questions: z
 		.array(z.string())
 		.describe(
@@ -55,9 +55,6 @@ export const ImplementResult = z.strictObject({
 	testsRun: z
 		.array(z.string())
 		.describe("One line each: command and result, e.g. `bun test`: 5 pass."),
-	screenshots: z
-		.array(z.string())
-		.describe("Repo-relative paths of screenshots committed for review."),
 	risks: z
 		.array(z.string())
 		.describe("Real risks only, one line each. Empty when none."),
@@ -98,7 +95,7 @@ export const FixResult = z.strictObject({
 		.string()
 		.nullable()
 		.describe(
-			"Full updated PR description when your changes made the current one wrong (behaviour, copy, screenshots); null otherwise.",
+			"Full updated PR description when your changes made the current one wrong (behaviour, copy, validation); null otherwise.",
 		),
 });
 export type FixResult = z.infer<typeof FixResult>;

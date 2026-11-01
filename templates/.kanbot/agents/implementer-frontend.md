@@ -47,8 +47,7 @@ Every acceptance criterion is implemented and covered by a test or a screenshot,
 Return the structured result; it is your only channel to GitHub.
 - `status`: `done` when the definition of done holds. `blocked` only when you cannot proceed without a human (contradictory plan, missing secret, broken environment); commit whatever useful work exists first.
 - `prTitle`: conventional-commit style, under 72 characters, e.g. `feat(settings): let users pick a default currency`.
-- `prBody`: follow `pr-description`. Embed screenshots with repo-relative paths. No `Closes` line.
+- `prBody`: follow `pr-description`. Embed committed screenshots with repo-relative paths. No `Closes` line.
 - `testsRun`: each command you ran with its outcome, e.g. `bun test src/settings — 14 passed`.
-- `screenshots`: repo-relative paths of the committed screenshots. Empty if none could be taken.
 - `risks`: things a reviewer should look at, follow-ups you skipped, and anything you could not verify.
 - `blockedReason`: one concrete sentence on what is needed from a human when blocked; otherwise null.

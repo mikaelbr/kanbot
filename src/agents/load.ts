@@ -63,6 +63,17 @@ export async function loadAgents(root: string): Promise<AgentDef[]> {
 	return agents;
 }
 
+/** `agent: skill` for each skill an agent lists that has no .agents/skills/<skill>/SKILL.md. */
+export function missingSkills(root: string, agents: AgentDef[]): string[] {
+	return agents.flatMap((a) =>
+		a.skills
+			.filter(
+				(s) => !existsSync(join(root, ".agents", "skills", s, "SKILL.md")),
+			)
+			.map((s) => `${a.name}: ${s}`),
+	);
+}
+
 function validate(agents: AgentDef[]) {
 	const names = new Set(agents.map((a) => a.name));
 	if (names.size !== agents.length) {

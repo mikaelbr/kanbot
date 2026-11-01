@@ -36,7 +36,8 @@
 	".agents/skills/pr-description/SKILL.md": [
 		"1db6eb751e0bb1ea0014a2b414e04f6af59b1b2d",
 		"6b0cca1be3abe8d031159c94e5d3b4f20307d600",
-		"7e477762c9c5f09ce6d5d51ccd9138ce9743baa8"
+		"7e477762c9c5f09ce6d5d51ccd9138ce9743baa8",
+		"830c94888620de0a5bb7030672c017c5fafa63e5"
 	],
 	".agents/skills/project-conventions/SKILL.md": [
 		"81d9ff980a15a6f901010646b800b3e6e379e4b0",
@@ -59,6 +60,7 @@
 	],
 	".agents/skills/verify-ui/SKILL.md": [
 		"c67a0e1d6a1c1d9adf59dd154160ccf58519ea72",
+		"ddcdf216fbe9deb5af8848ca83c898a6d4fa91fd",
 		"f4d3d07c0ec28a9961d919356d0b4e572b724b43"
 	],
 	".github/ISSUE_TEMPLATE/config.yml": [
@@ -91,17 +93,21 @@
 	],
 	".kanbot/agents/implementer-backend.md": [
 		"5d454e29260ba8df0ef6e21f1ece9d02a472d4ed",
-		"6fefffb02bb5551631839abd0863379e58bc7dcc"
+		"6fefffb02bb5551631839abd0863379e58bc7dcc",
+		"ccd6bd16fe384e8599d739992e4c97d78d4b65e8"
 	],
 	".kanbot/agents/implementer-docs.md": [
 		"082da045a20bc914f29839e026027b6715c184a9",
+		"79907e7f27233aa551e03b0adda79e7045b77776",
 		"c5f01ac3d377133caab5b13422f1e73608d6357e"
 	],
 	".kanbot/agents/implementer-frontend.md": [
 		"0aa9b0e70c3057138b4255ee3d270ac04fc8ab0e",
-		"45a6e3b8f6e6f5a95dac865126c5649dab115fc5"
+		"45a6e3b8f6e6f5a95dac865126c5649dab115fc5",
+		"4cb71eab6eced0926d92652bc59d49233cca5676"
 	],
 	".kanbot/agents/implementer-technical.md": [
+		"b38e1af6a98af621269d46f516e3bdaeb2674553",
 		"c95dff48eed5db4aadf10d0a47e7ec1285937ebf",
 		"e4bbddb0a810313fb3a6ed3983b3b9335279feef"
 	],

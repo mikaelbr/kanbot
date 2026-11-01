@@ -48,6 +48,5 @@ Return the structured result; it is your only channel to GitHub.
 - `prTitle`: conventional-commit style (`refactor:`, `build:`, `ci:`, `chore:`), under 72 characters.
 - `prBody`: follow `pr-description`; include before/after numbers when the goal is measurable (build time, bundle size, warnings) and rollout/rollback steps for infra.
 - `testsRun`: baseline and after-check commands with outcomes.
-- `screenshots`: usually empty.
 - `risks`: unverified CI/infra paths, rollout and rollback concerns, pre-existing failures.
 - `blockedReason`: one sentence when blocked; otherwise null.
