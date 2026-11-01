@@ -38,7 +38,7 @@ claude auth login
 Each job runs `claude -p` with:
 
 - Agent definitions passed in, so runs don't depend on committed files.
-- Only project settings, no user plugins, skills or MCP servers.
+- Only project settings, no user plugins, skills or MCP servers. MCP servers come from the repo's `.mcp.json`.
 - The agent's tools allowed, and `gh`, `git push`, `git remote` and `git config` denied.
 - No co-author lines on commits or PRs.
 
@@ -51,6 +51,8 @@ codex login
 ```
 
 Each job runs `codex exec`. Agents with `edit` or `bash` tools get a `workspace-write` sandbox; others get `read-only`.
+
+Workers ignore `~/.codex/config.toml`: no user plugins, MCP servers, default model or other settings. The model comes from the agent's frontmatter, and MCP servers from the repo's `.mcp.json` (stdio and HTTP; not `sse`). Login still comes from `~/.codex`.
 
 Network access is off by default. Turn it on if agents need to install packages:
 
@@ -68,7 +70,7 @@ models: { claude: opus, codex: default }
 effort: high
 ```
 
-`codex: default` uses Codex's default model. Codex has no `max` effort, so `max` maps to `xhigh`.
+`codex: default` uses Codex's built-in default model, not the one in your `~/.codex/config.toml`. Codex has no `max` effort, so `max` maps to `xhigh`.
 
 ## Rate limits
 

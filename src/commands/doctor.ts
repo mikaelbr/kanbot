@@ -107,6 +107,12 @@ export default defineCommand({
 				detail: s.out.split("\n")[0],
 				fix: "codex login",
 			});
+			add({
+				name: "codex workers ignore ~/.codex/config.toml",
+				ok: true,
+				detail:
+					"models come from agent frontmatter, MCP servers from .mcp.json",
+			});
 		}
 
 		try {
