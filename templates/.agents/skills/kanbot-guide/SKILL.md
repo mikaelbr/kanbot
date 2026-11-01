@@ -22,6 +22,7 @@ Explain in plain words. Ask before choosing for them; give a recommendation with
 | Skills and project memory?                    | `skills`            |
 | Claude or Codex?                              | `providers`         |
 | Every config field, labels, notifications     | `configuration`     |
+| Using our own skills and agents for the work  | `capabilities`      |
 | Copilot as an extra reviewer                  | `copilot-review`    |
 | Bot or user identity, merge by approving      | `identity`          |
 | Upgrading and `.kanbot-new` files             | `upgrading`         |
@@ -29,9 +30,11 @@ Explain in plain words. Ask before choosing for them; give a recommendation with
 
 ## Board flow
 
-Ideas (you write) → Planning (agent plans, you comment) → Ready (you approve by moving the card) → In Progress (agent builds, opens a PR) → Review (two agent reviews with fixes; you comment) → Done (you merge, or approve and kanbot merges).
+Ideas (you write) → Planning (agent plans, you comment) → Ready (you approve by moving the card) → In Progress (agent builds, opens a PR) → Review (technical, then acceptance review, with fixes; you comment) → Done (you merge, or approve and kanbot merges).
 
-Agents never get a GitHub token. The daemon does every comment, push and PR. Only collaborators with write access can steer agents.
+kanbot runs the process; the repo's own skills and agents do the work on code, through capabilities. Plans list assumptions about user need; open questions keep a card from starting in Ready.
+
+Agents never get a GitHub token. The daemon does every comment, push and PR. Only collaborators with write access can steer agents. Workers see only what's committed, including MCP servers in `.mcp.json`; never the user's own plugins or servers.
 
 ## Guided setup
 
@@ -102,3 +105,5 @@ Warn: never enable the branch rule "Require approval of the most recent reviewab
 3. `.kanbot/logs/*.jsonl`: full agent transcripts.
 4. `needs-human` label: the issue has a comment saying why. Fix the cause, then remove the label to retry.
 5. Nothing happens: is the daemon running, are kanbot files pushed to the base branch, is the card in an active column?
+6. Card stays in Ready: the plan has open questions. kanbot commented on the issue. Answer them in Planning, or remove them from the plan.
+7. Agent didn't use a skill: is it mapped under `capabilities`, does its `when` fit, and is it committed?
