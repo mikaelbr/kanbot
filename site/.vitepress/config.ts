@@ -263,9 +263,10 @@ export default defineConfig({
 			{
 				text: channel === "release" ? currentVersion() : "main",
 				items: [
+					// target makes the router do a full page load into the other site.
 					channel === "release"
-						? { text: "Unreleased (main)", link: mainUrl }
-						: { text: "Latest release", link: releaseUrl },
+						? { text: "Unreleased (main)", link: mainUrl, target: "_self" }
+						: { text: "Latest release", link: releaseUrl, target: "_self" },
 					{ text: "Changelog", link: "/changelog" },
 					{ text: "Releases", link: `${repo}/releases` },
 				],

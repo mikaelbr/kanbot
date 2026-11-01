@@ -8,7 +8,8 @@ const { theme } = useData();
 <template>
 	<div v-if="theme.channel === 'main'" class="main-banner">
 		Unreleased docs for <code>main</code> ·
-		<a :href="theme.releaseUrl">Latest release →</a>
+		<!-- target makes the router do a full page load into the other site. -->
+		<a :href="theme.releaseUrl" target="_self">Latest release →</a>
 	</div>
 </template>
 
