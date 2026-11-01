@@ -20,7 +20,7 @@ import {
 	withDescription,
 	withPlan,
 } from "../src/github/markers.ts";
-import { absoluteImages, excerpt } from "../src/jobs/run.ts";
+import { absoluteImages, excerpt, passAgent } from "../src/jobs/run.ts";
 import { jsonSchema, RESULT_SCHEMAS } from "../src/schemas/results.ts";
 
 const TEMPLATES = join(import.meta.dir, "..", "templates");
@@ -35,12 +35,45 @@ describe("template agents", () => {
 			"implementer-backend",
 			"implementer-docs",
 			"implementer-technical",
-			"reviewer-code",
-			"reviewer-spec",
+			"implementer",
+			"reviewer",
+			"acceptance-reviewer",
 			"fixer",
 		]) {
 			expect(names).toContain(n);
 		}
+	});
+
+	test("flow agents name no craft skills or helpers", async () => {
+		const agents = await loadAgents(TEMPLATES);
+		const craft = [
+			"tdd",
+			"verify-ui",
+			"accessibility",
+			"frontend-design",
+			"code-review",
+		];
+		for (const n of [
+			"implementer",
+			"reviewer",
+			"acceptance-reviewer",
+			"fixer",
+		]) {
+			const a = agents.find((x) => x.name === n);
+			expect(a?.skills.filter((s) => craft.includes(s))).toEqual([]);
+			expect(a?.subagents).toEqual(["explorer"]);
+		}
+	});
+
+	test("review passes use the new agents, or the old ones before upgrade", async () => {
+		const agents = await loadAgents(TEMPLATES);
+		expect(passAgent(agents, 1)).toBe("reviewer");
+		expect(passAgent(agents, 2)).toBe("acceptance-reviewer");
+		const old = agents.filter(
+			(a) => a.name !== "reviewer" && a.name !== "acceptance-reviewer",
+		);
+		expect(passAgent(old, 1)).toBe("reviewer-code");
+		expect(passAgent(old, 2)).toBe("reviewer-spec");
 	});
 
 	test("every skill an agent lists exists in templates", async () => {
@@ -134,7 +167,14 @@ Do the thing.`,
 			"repo: acme/app\nreview:\n  copilot: true\n",
 		);
 		expect(await sync(root, all)).toContain(".github/copilot-instructions.md");
-		expect(await Bun.file(file).text()).toContain("code-review/SKILL.md");
+		expect(await Bun.file(file).text()).toContain("review-findings/SKILL.md");
+		expect(await Bun.file(file).text()).not.toContain("`review` capability");
+		await Bun.write(
+			join(root, ".kanbot/config.yml"),
+			"repo: acme/app\nreview:\n  copilot: true\ncapabilities:\n  review:\n    use: my-review\n",
+		);
+		await sync(root, all);
+		expect(await Bun.file(file).text()).toContain("`my-review`");
 		await Bun.write(join(root, ".kanbot/config.yml"), "repo: acme/app\n");
 		expect(await sync(root, all)).toContain(".github/copilot-instructions.md");
 		expect(await Bun.file(file).exists()).toBe(false);

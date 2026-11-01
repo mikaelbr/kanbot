@@ -115,6 +115,16 @@ describe("capabilities in prompts", () => {
 		}
 	});
 
+	test("acceptance pass flags missed required capabilities", () => {
+		expect(reviewPrompt({ ...rev, pass: 2 }, "main", caps)).toContain(
+			"is a blocker",
+		);
+		expect(reviewPrompt(rev, "main", caps)).not.toContain("is a blocker");
+		expect(reviewPrompt({ ...rev, pass: 2 }, "main")).not.toContain(
+			"is a blocker",
+		);
+	});
+
 	test("nothing is rendered without a map", () => {
 		for (const out of [
 			implementPrompt(impl, "main"),

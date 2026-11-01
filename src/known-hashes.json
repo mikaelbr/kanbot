@@ -7,7 +7,8 @@
 		"d932ed30a58cb32dd91ec03ddd2b1c6c59f77714"
 	],
 	".agents/skills/code-review/SKILL.md": [
-		"a35bdecaeb1b6a2469a6330d2cef42a9d61409fe"
+		"a35bdecaeb1b6a2469a6330d2cef42a9d61409fe",
+		"d263ca09f3764c0d4219e4de9186a038d31f67cc"
 	],
 	".agents/skills/frontend-design/LICENSE.txt": [
 		"f433b1a53f5b830a205fd2df78e2b34974656c7b"
@@ -51,8 +52,12 @@
 	".agents/skills/project-memory/SKILL.md": [
 		"d354e11310db01362ec2bf5eec1080db77ac053d"
 	],
+	".agents/skills/review-findings/SKILL.md": [
+		"4ba188751544038ca5ab3fdeaf61f40455a3bcec"
+	],
 	".agents/skills/spec-review/SKILL.md": [
 		"03e44fe4f23b04f1b11c907936ee9f6c7c8131f0",
+		"84fbc57a8b8f4fe473258402772185944a54a81c",
 		"f455d1007d589602e5afce0dac4f00d78aa7c67a"
 	],
 	".agents/skills/tdd/SKILL.md": ["5e6b20868e02ae24f6d25824bac431143bd43021"],
@@ -82,6 +87,9 @@
 	".github/workflows/kanbot-merged.yml": [
 		"8daaea63e23cf1e0d37821bfadaf60018a448de2"
 	],
+	".kanbot/agents/acceptance-reviewer.md": [
+		"e6b65950345c686b4d219026d8d2d185e9735c12"
+	],
 	".kanbot/agents/approach-designer.md": [
 		"7e5f8c16c4d4a4e261bccc5dc8b4fff2d3046a72"
 	],
@@ -91,6 +99,7 @@
 	],
 	".kanbot/agents/fixer.md": [
 		"109c8974fe2d70f5f514f33d97761740f589a6c4",
+		"16c16692f6d2ee29bc0e4d0ca4a1b3cfc4f1ba72",
 		"7c98cf1dc3e798e0e5856fd95a3d78d378884def",
 		"810871ec49fd7be56d111c7df176d22c66748a0f"
 	],
@@ -114,6 +123,7 @@
 		"c95dff48eed5db4aadf10d0a47e7ec1285937ebf",
 		"e4bbddb0a810313fb3a6ed3983b3b9335279feef"
 	],
+	".kanbot/agents/implementer.md": ["f6000b529b1a8bed0def57af9bfa55c1ca5cd3b6"],
 	".kanbot/agents/plan-critic.md": [
 		"3d1c38922a94712d0f3a725902e3df9cee87bcda",
 		"cd6dd133f4611bd86fe27f8539a62a805e4df6c9"
@@ -125,12 +135,15 @@
 	],
 	".kanbot/agents/reviewer-code.md": [
 		"398035214b63ceb3469a3b3384b07209e4cd63dd",
-		"61f3a45642ca954c6d4a5f41083f0a25f78d2b51"
+		"61f3a45642ca954c6d4a5f41083f0a25f78d2b51",
+		"9d642fefd1b876dc61e80c6321a9acc5b1dacfdd"
 	],
 	".kanbot/agents/reviewer-spec.md": [
 		"11c86a654a0b715777b23bfb699a4f0d6cfe91de",
+		"7902b9c96281d18f1eb249871cc506f0f8367c9b",
 		"ab8951ab296e96b01f419243d8acfc99c7e64b1c"
 	],
+	".kanbot/agents/reviewer.md": ["7ff1fdd21df4442d3b82784d3e6077195b32ba5b"],
 	".kanbot/agents/test-writer.md": [
 		"dcef7f611a307229974fef4098d53816d7db0555",
 		"ec81c44c021053fae0612683a61e8414634359a0"
@@ -140,6 +153,7 @@
 		"a73abf7e72c654fde41df51b43a5879170978cb0"
 	],
 	"AGENTS.md": [
+		"0dd205961831f0082e74a3c03b79036e2114c072",
 		"3da9115cbf52b7b7d0feb8325503a8caf43ff2c7",
 		"b821013b5be7051327b349eda603218590a41f33",
 		"c688ed7f42f7a6f6a5ac600de857b42fb04aa613",

@@ -338,8 +338,17 @@ export function absoluteImages(md: string, repo: string, branch: string) {
 
 // ---- review -------------------------------------------------------------------
 
-const PASS_AGENT = { 1: "reviewer-code", 2: "reviewer-spec" } as const;
-const PASS_NAME = { 1: "code", 2: "spec" } as const;
+/** Agent per review pass. The second name serves installs not yet upgraded. */
+export const PASS_AGENTS = {
+	1: ["reviewer", "reviewer-code"],
+	2: ["acceptance-reviewer", "reviewer-spec"],
+} as const;
+const PASS_NAME = { 1: "technical", 2: "acceptance" } as const;
+
+export function passAgent(agents: AgentDef[], pass: 1 | 2): string {
+	const [name, legacy] = PASS_AGENTS[pass];
+	return agents.some((a) => a.name === name) ? name : legacy;
+}
 
 async function review(job: ReviewJob, deps: JobDeps) {
 	const cwd = await deps.worktrees.checkout(
@@ -349,7 +358,7 @@ async function review(job: ReviewJob, deps: JobDeps) {
 	const result = await runAgent(
 		deps,
 		job,
-		PASS_AGENT[job.pass],
+		passAgent(deps.agents, job.pass),
 		"review-result",
 		cwd,
 		reviewPrompt(job, deps.config.baseBranch, deps.config.capabilities),

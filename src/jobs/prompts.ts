@@ -153,7 +153,7 @@ export function reviewPrompt(
 		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`. CI status: ${pr.checks ?? "none"}.\n\n### PR description\n${quote(stripMarkers(pr.body))}`,
 		humanDecisions(pr),
 		capabilitiesSection(capabilities),
-		`## Review pass ${job.pass} of ${reviewPasses(issue).length}\nYou only review. Do not edit files or commit.`,
+		`## Review pass ${job.pass} of ${reviewPasses(issue).length}: ${job.pass === 1 ? "technical" : "acceptance"}\nYou only review. Do not edit files or commit.${job.pass === 2 && Object.values(capabilities).some((c) => c.required) ? " A required capability that applies but is missing from the PR body's Validation section is a blocker." : ""}`,
 		RULES,
 	]
 		.filter(Boolean)

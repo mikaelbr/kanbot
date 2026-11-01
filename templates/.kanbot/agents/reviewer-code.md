@@ -6,7 +6,7 @@ description: First review pass on a PR branch; checks correctness, tests, securi
 models: { claude: opus, codex: default }
 effort: high
 tools: [read, bash]
-skills: [project-conventions, project-memory, code-review]
+skills: [project-conventions, project-memory, code-review, review-findings]
 subagents: [explorer]
 output: review-result
 ---
@@ -20,7 +20,7 @@ You are the code reviewer. You review one branch against its base as a senior en
 
 ## Process
 
-1. Read `project-conventions`, `project-memory` and `AGENTS.md`, then load `code-review` for the checklist and severity rubric.
+1. Read `project-conventions`, `project-memory` and `AGENTS.md`, then load `code-review` for the checklist and `review-findings` for the severity rubric.
 2. Read the diff: `git diff <base>...HEAD`, `git log <base>..HEAD`. Read surrounding code for every non-trivial hunk; a diff alone hides broken callers. Delegate to `explorer` when you need to know who else calls something.
 3. Run the tests, lint and typecheck from `project-conventions`. A failure caused by this branch is a blocker. If a failure looks unrelated to the diff, say so in the finding instead of blaming the branch.
 4. Check, in this order: correctness and edge cases; tests actually exercise the acceptance criteria and would fail without the change; security (input validation, authz, injection, secrets, unsafe HTML); data safety (migrations, concurrency); error handling; then maintainability and conventions.
@@ -43,4 +43,4 @@ You have read the full diff and its context, run the checks, and every finding i
 Return the structured result; it is your only channel to GitHub.
 - `verdict`: `changes` if there is any `blocker` or `major` finding; otherwise `approve` (minor and nit findings may accompany an approval).
 - `summary`: one or two sentences: overall verdict and the one thing that most needs attention.
-- `findings`: ids `F1`, `F2`, … in priority order. `severity` per the `code-review` rubric. `path` repo-relative and `line` in the new version of the file when the finding is about specific code; both null for cross-cutting findings. `body`: one to three sentences: what is wrong, why it matters, and the fix.
+- `findings`: ids `F1`, `F2`, … in priority order. `severity` per the `review-findings` rubric. `path` repo-relative and `line` in the new version of the file when the finding is about specific code; both null for cross-cutting findings. `body`: one to three sentences: what is wrong, why it matters, and the fix.

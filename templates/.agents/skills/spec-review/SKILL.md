@@ -1,7 +1,7 @@
 ---
 
 name: spec-review
-description: "Verify a change against its plan: every acceptance criterion with evidence, fit with the user need, UX states, accessibility, scope creep and docs. Use when doing the spec/product review pass on a PR branch, or when checking whether an implementation actually does what the issue asked."
+description: "Verify a change against its plan: every acceptance criterion with evidence, fit with the user need, scope creep and docs. Use when doing the spec/product review pass on a PR branch, or when checking whether an implementation actually does what the issue asked."
 ---
 
 # Spec review
@@ -12,13 +12,13 @@ You review the change from the outside, as the user and the product owner. The q
 
 For each acceptance criterion in the plan, record:
 
-| #   | Criterion (short)              | Evidence                                                                                    | Verdict          |
-| --- | ------------------------------ | ------------------------------------------------------------------------------------------- | ---------------- |
-| 1   | Missing-project entries listed | `MissingProjectSection.test.tsx` "lists entries newest first"; screenshot `filled-1280.png` | met              |
-| 2   | Count updates after assignment | test asserts count; not visible in screenshots                                              | met              |
-| 3   | Section hidden when none       | no test; no screenshot of empty state                                                       | **not verified** |
+| #   | Criterion (short)              | Evidence                                                      | Verdict          |
+| --- | ------------------------------ | ------------------------------------------------------------- | ---------------- |
+| 1   | Missing-project entries listed | `MissingProjectSection.test.tsx` "lists entries newest first" | met              |
+| 2   | Count updates after assignment | test asserts count                                            | met              |
+| 3   | Section hidden when none       | no test; not observed                                         | **not verified** |
 
-Valid evidence: a test that asserts the behaviour (read it, and check it would fail without the feature), a screenshot of the state, or behaviour you observed by running the app or the command. The PR body's claims alone are not evidence.
+Valid evidence: a test that asserts the behaviour (read it, and check it would fail without the feature), output of the `verify` capability, or behaviour you observed by running the app or the command. The PR body's claims alone are not evidence.
 
 "Not verified" is a finding. "Not met" is a `blocker`.
 
@@ -32,24 +32,7 @@ Re-read the user story and problem. Then walk through the change as that user:
 - Any dead ends: a state with no way forward or back?
 - Does it solve the problem in the plan, or only satisfy the letter of the criteria?
 
-## 3. UX states (UI changes)
-
-Check each state exists and looks right at 390px and 1280px:
-
-- [ ] Loading (no layout jump when content arrives)
-- [ ] Empty (explains why and what to do)
-- [ ] Error (says what went wrong and offers a way to recover)
-- [ ] Success / filled, including long text and many items
-- [ ] Disabled and in-progress controls
-- [ ] No horizontal scroll at 390px; tap targets at least 24x24px (44 preferred)
-
-Use committed screenshots under `.kanbot/screenshots/<branch>/` first. Capture missing states with `verify-ui` into a temp directory outside the repo.
-
-## 4. Accessibility
-
-Run through the `accessibility` checklist for the changed UI. WCAG 2.2 AA failures are `major`; a keyboard trap or an unlabelled primary control is a `blocker`.
-
-## 5. Scope
+## 3. Scope
 
 - Diff against the plan's implementation steps: files changed that no step explains?
 - Features, options or settings nobody asked for?
@@ -58,7 +41,7 @@ Run through the `accessibility` checklist for the changed UI. WCAG 2.2 AA failur
 
 Scope creep is `major` when it adds risk or review burden, `minor` otherwise. Ask for it to be removed or moved to a follow-up issue.
 
-## 6. Docs and communication
+## 4. Docs and communication
 
 - User-facing behaviour changed: are help text, README, changelog or docs updated where the project keeps them?
 - Does the PR body explain how to test, with steps a human can follow?
@@ -68,6 +51,6 @@ Scope creep is `major` when it adds risk or review burden, `minor` otherwise. As
 
 Quote the criterion or plan line, state what you observed and your evidence, and say what would satisfy it:
 
-> Criterion 3 ("Given all entries have a project … the section is not shown") has no test and no screenshot. Add a component test for the empty case and an `empty-390.png` / `empty-1280.png` screenshot.
+> Criterion 3 ("Given all entries have a project … the section is not shown") has no test and no other evidence. Add a test for the empty case.
 
 Lead the summary with the tally ("4/5 criteria met, 1 not verified") so a human can scan it.

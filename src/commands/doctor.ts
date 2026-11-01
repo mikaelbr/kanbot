@@ -118,8 +118,8 @@ export default defineCommand({
 			});
 			const needed = [
 				"planner",
-				"reviewer-code",
-				"reviewer-spec",
+				"reviewer",
+				"acceptance-reviewer",
 				"fixer",
 				...Object.values(config.implementers),
 			];
@@ -130,6 +130,7 @@ export default defineCommand({
 				name: "agents referenced by config exist",
 				ok: !missing.length,
 				detail: missing.join(", ") || undefined,
+				fix: "kanbot upgrade",
 			});
 			const noSkill = missingSkills(root, agents);
 			add({

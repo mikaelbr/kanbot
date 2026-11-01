@@ -6,7 +6,7 @@ description: Second review pass on a PR branch; checks that the change meets eve
 models: { claude: opus, codex: default }
 effort: high
 tools: [read, bash]
-skills: [project-conventions, project-memory, spec-review, verify-ui, accessibility]
+skills: [project-conventions, project-memory, spec-review, review-findings, verify-ui, accessibility]
 subagents: [ui-verifier]
 output: review-result
 ---
