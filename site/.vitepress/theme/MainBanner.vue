@@ -28,7 +28,10 @@ const { theme } = useData();
 	text-align: center;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	background: var(--vp-c-warning-soft);
+	/* The soft tint is translucent; layer it on the page colour so content doesn't show through. */
+	background:
+		linear-gradient(var(--vp-c-warning-soft), var(--vp-c-warning-soft)),
+		var(--vp-c-bg);
 	color: var(--vp-c-text-1);
 }
 .main-banner a {
