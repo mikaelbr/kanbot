@@ -4,9 +4,10 @@ import { defineCommand } from "citty";
 import { loadAgents, missingSkills } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { capabilitySummary, findCapability } from "../capabilities.ts";
+import { color } from "../color.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
-import { describeError } from "../errors.ts";
+import { DOCS_URL, describeError } from "../errors.ts";
 import { copilotReviewRule } from "../github/api.ts";
 import { appKeyPath, appTokens } from "../github/app.ts";
 import { Gh, run } from "../github/gh.ts";
@@ -29,7 +30,11 @@ type Check = {
 	/** Shown with a warning mark; never fails doctor. */
 	warn?: boolean;
 	detail?: string;
+	/** Why it matters. Shown only when the check fails or warns. */
+	why?: string;
 	fix?: string;
+	/** Docs page and anchor, e.g. "configuration#config-file". */
+	docs?: string;
 };
 
 async function cmd(args: string[]) {
@@ -45,11 +50,67 @@ async function cmd(args: string[]) {
 /** Failure detail and fix for a check, from a thrown error. */
 function explain(e: unknown, fallback?: string) {
 	const d = describeError(e);
-	const detail = [d.message, d.why].filter(Boolean).join("\n");
 	return {
-		detail: detail.replace(/\n/g, "\n    "),
+		detail: d.message,
+		why: d.why,
 		fix: d.fix ?? fallback,
+		docs: d.docs,
 	};
+}
+
+const indent = (s: string, pad: string) => s.replace(/^(?=.)/gm, pad);
+
+function print(c: Check) {
+	const state = c.warn ? "warn" : c.ok ? "ok" : "fail";
+	const mark = {
+		ok: color.green("✔"),
+		warn: color.yellow("!"),
+		fail: color.red("✖"),
+	}[state];
+	if (state === "ok") {
+		const detail = c.detail ? color.dim(` — ${c.detail}`) : "";
+		console.log(`  ${mark} ${c.name}${detail}`);
+		return;
+	}
+	const paint = state === "warn" ? color.yellow : color.red;
+	const lines = [`  ${mark} ${paint(c.name)}`];
+	if (c.detail) lines.push(indent(c.detail, "      "));
+	if (c.why) lines.push(color.dim(indent(c.why, "      ")));
+	if (c.fix) lines.push(`      ${color.bold("Fix:")}  ${color.cyan(c.fix)}`);
+	if (c.docs)
+		lines.push(
+			`      ${color.bold("Docs:")} ${color.dim(`${DOCS_URL}/${c.docs}`)}`,
+		);
+	console.log(lines.join("\n"));
+}
+
+function section(title: string) {
+	console.log(`\n${color.bold(title)}`);
+}
+
+/** Print totals and next step, then exit 1 if anything failed. */
+function summary(checks: Check[]) {
+	const failed = checks.filter((c) => !c.ok).length;
+	const warned = checks.filter((c) => c.ok && c.warn).length;
+	const passed = checks.length - failed - warned;
+	const parts = [color.green(`${passed} passed`)];
+	if (warned)
+		parts.push(
+			color.yellow(`${warned} ${warned === 1 ? "warning" : "warnings"}`),
+		);
+	if (failed) parts.push(color.red(`${failed} failed`));
+	console.log(`\n${parts.join(color.dim(" · "))}`);
+	if (failed) {
+		console.log(
+			`Fix the ${color.red("✖")} items above, top to bottom, then run ${color.cyan("kanbot doctor")} again.`,
+		);
+		process.exit(1);
+	}
+	if (warned)
+		console.log(
+			`Ready to run. The ${color.yellow("!")} items are worth a look, but won't stop kanbot.`,
+		);
+	else console.log(`All set. Start kanbot with ${color.cyan("kanbot run")}.`);
 }
 
 export default defineCommand({
@@ -62,18 +123,31 @@ export default defineCommand({
 		const checks: Check[] = [];
 		const add = (c: Check) => {
 			checks.push(c);
-			console.log(
-				`${c.warn ? "!" : c.ok ? "✔" : "✖"} ${c.name}${c.detail ? ` — ${c.detail}` : ""}${!c.ok && c.fix ? `\n    fix: ${c.fix}` : ""}`,
-			);
+			print(c);
 		};
 
+		console.log(
+			`${color.bold("kanbot doctor")} ${color.dim("checks that everything kanbot needs is in place.")}`,
+		);
+
+		section("GitHub CLI");
 		const auth = await cmd(["gh", "auth", "status"]);
-		add({ name: "gh logged in", ok: auth.ok, fix: "gh auth login" });
+		add({
+			name: "gh logged in",
+			ok: auth.ok,
+			why: "kanbot talks to GitHub through gh.",
+			fix: "gh auth login",
+			docs: "getting-started#requirements",
+		});
 		add({
 			name: "gh token has project scope",
 			ok: /'project'/.test(auth.out),
+			why: "Needed to read and move cards on the project board.",
 			fix: "gh auth refresh -s project",
+			docs: "getting-started#requirements",
 		});
+
+		section("Config");
 
 		let config: Awaited<ReturnType<typeof loadConfig>>;
 		try {
@@ -85,27 +159,34 @@ export default defineCommand({
 			});
 		} catch (e) {
 			add({ name: "config", ok: false, ...explain(e, "kanbot init") });
-			return process.exit(1);
+			console.log(
+				color.dim("\n  The other checks need a config, so doctor stops here."),
+			);
+			return summary(checks);
 		}
 
 		if (config.provider === "claude") {
+			section("Claude Code");
 			const s = await cmd(["claude", "auth", "status"]);
 			const sub = /"authMethod":\s*"claude\.ai"/.test(s.out);
 			add({
 				name: "claude CLI logged in with a subscription",
 				ok: s.ok && sub,
-				detail: sub
-					? undefined
-					: "not using a claude.ai login (would bill API usage)",
+				detail: sub ? undefined : "Not using a claude.ai login.",
+				why: "Workers run `claude`. An API key login bills per token instead of your plan.",
 				fix: "claude auth login",
+				docs: "providers#claude-code",
 			});
 		} else {
+			section("Codex");
 			const s = await cmd(["codex", "login", "status"]);
 			add({
 				name: "codex CLI logged in with ChatGPT",
 				ok: s.ok && /ChatGPT/i.test(s.out),
 				detail: s.out.split("\n")[0],
+				why: "Workers run `codex` on your ChatGPT plan.",
 				fix: "codex login",
+				docs: "providers#codex",
 			});
 			add({
 				name: "codex workers ignore ~/.codex/config.toml",
@@ -115,6 +196,7 @@ export default defineCommand({
 			});
 		}
 
+		section("Agents and skills");
 		try {
 			const agents = await loadAgents(root);
 			add({
@@ -137,6 +219,7 @@ export default defineCommand({
 				name: "agents referenced by config exist",
 				ok: !missing.length,
 				detail: missing.join(", ") || undefined,
+				why: "Columns hand work to these agents, but .kanbot/agents has no file for them.",
 				fix: "kanbot upgrade",
 			});
 			if (config.implementers)
@@ -153,6 +236,7 @@ export default defineCommand({
 				name: "skills referenced by agents exist",
 				ok: !noSkill.length,
 				detail: noSkill.join(", ") || undefined,
+				why: "Agents list these skills, but .agents/skills has none by that name.",
 				fix: "add them to .agents/skills or remove them from the agent's `skills`",
 			});
 			add({
@@ -171,6 +255,9 @@ export default defineCommand({
 					detail: found
 						? `${found} agent, works on ${found} only`
 						: "not found",
+					why: found
+						? undefined
+						: "Jobs that need this capability can't load it.",
 					fix: "add the skill to .agents/skills or the agent to .kanbot/agents",
 				});
 			}
@@ -179,12 +266,15 @@ export default defineCommand({
 				name: "generated agent files up to date",
 				ok: !stale.length,
 				detail: stale.join(", ") || undefined,
+				why: "Workers read .claude/agents and .codex/agents, which are generated from .kanbot/agents.",
 				fix: "kanbot sync",
 			});
 			add({
 				name: "config schema up to date",
 				ok: !(await writeConfigSchema(root, { check: true })),
+				why: "Editors use it for autocomplete and errors in config.yml.",
 				fix: "kanbot sync",
+				docs: "configuration",
 			});
 		} catch (e) {
 			add({ name: "agents", ok: false, ...explain(e) });
@@ -208,6 +298,7 @@ export default defineCommand({
 				.join("; "),
 		});
 
+		section("Templates");
 		const plan = await planUpgrade(root);
 		const behind = plan.changes.filter((c) =>
 			["add", "update", "conflict"].includes(c.action),
@@ -218,16 +309,21 @@ export default defineCommand({
 			detail: behind.length
 				? `${behind.length} file(s) differ from this kanbot version`
 				: undefined,
+			why: "You get fixes to agents, skills and workflows by upgrading.",
 			fix: "kanbot upgrade",
+			docs: "upgrading",
 		});
 		const merges = await pendingMerges(root);
 		add({
 			name: `no unmerged ${NEW_SUFFIX} files`,
 			ok: !merges.length,
 			detail: merges.join(", ") || undefined,
+			why: "upgrade put the new version next to files you changed.",
+			docs: "upgrading",
 			fix: `merge each into the file next to it and delete it (kanbot-admin skill can help)`,
 		});
 
+		section(`Pushed to origin/${config.baseBranch}`);
 		await git(root, "fetch", "origin", config.baseBranch).catch(() => {});
 		const tree = await git(
 			root,
@@ -245,15 +341,18 @@ export default defineCommand({
 			add({
 				name: `${path} committed on origin/${config.baseBranch}`,
 				ok: tree.split("\n").some((f) => f.startsWith(path)),
-				detail: "worktrees are created from the base branch",
+				why: "Workers run in worktrees made from the base branch, so they only see what is pushed.",
 				fix: "commit and push the kanbot files",
 			});
 		}
 		add({
 			name: ".github/workflows/kanbot-merged.yml",
 			ok: existsSync(join(root, ".github/workflows/kanbot-merged.yml")),
+			why: "Closes the other approaches' PRs when one is merged.",
+			fix: "kanbot upgrade",
 		});
 
+		section("Project board");
 		const gh = new Gh(config.repo);
 		try {
 			const board = await loadBoard(gh, config);
@@ -264,7 +363,11 @@ export default defineCommand({
 				detail: missing.length
 					? `missing columns: ${missing.join(", ")}`
 					: board.url,
+				why: missing.length
+					? "kanbot moves cards by the column names in config.yml."
+					: undefined,
 				fix: "kanbot board create",
+				docs: "getting-started#create-the-board",
 			});
 			// Moving cards to Done on close/merge and adding new issues are left to GitHub.
 			const workflows = await boardWorkflows(gh, board);
@@ -276,6 +379,7 @@ export default defineCommand({
 				add({
 					name: `board workflow "${name}" enabled`,
 					ok: workflows.some((w) => w.name === name && w.enabled),
+					why: "kanbot leaves adding new issues and moving closed ones to Done to GitHub.",
 					fix: `enable it in ${board.url} → ⋯ → Workflows`,
 				});
 			}
@@ -307,16 +411,21 @@ export default defineCommand({
 		add({
 			name: "labels",
 			ok: !missingLabels.length,
-			detail: missingLabels.join(", ") || undefined,
+			detail: missingLabels.length
+				? `missing: ${missingLabels.join(", ")}`
+				: undefined,
+			why: "kanbot tags issues and PRs with these labels.",
 			fix: "kanbot board create",
 		});
 
 		const { mode, app } = config.identity;
 		if (mode === "app") {
+			section("GitHub App");
 			add({
 				name: "kanbot app set",
 				ok: app !== null,
 				detail: app ? `${app.slug} (id ${app.id})` : undefined,
+				why: "identity.mode is app, so kanbot acts as a GitHub App.",
 				fix: "kanbot app create",
 			});
 			if (app) {
@@ -325,6 +434,7 @@ export default defineCommand({
 					name: "kanbot app private key",
 					ok: existsSync(key),
 					detail: key,
+					why: "kanbot signs in as the app with this key.",
 					fix: "kanbot app create, or copy the key from the machine that created the app",
 				});
 				if (existsSync(key)) {
@@ -346,6 +456,7 @@ export default defineCommand({
 		}
 
 		if (config.review.copilot) {
+			section("Copilot review");
 			const rule = await copilotReviewRule(gh, config.baseBranch).catch(
 				() => null,
 			);
@@ -356,14 +467,16 @@ export default defineCommand({
 					? `re-review on push: ${rule.parameters?.review_on_push ? "on" : "off"}`
 					: "review.copilot is on, but no ruleset requests Copilot review",
 				fix: "kanbot board create",
+				docs: "copilot-review",
 			});
 			add({
 				name: ".github/copilot-instructions.md committed",
+				why: "Copilot reads it to review the way your team wants.",
 				ok: tree.split("\n").includes(".github/copilot-instructions.md"),
 				fix: "kanbot sync, then commit and push",
 			});
 		}
 
-		if (checks.some((c) => !c.ok)) process.exit(1);
+		summary(checks);
 	},
 });
