@@ -8,7 +8,7 @@ export default defineCommand({
 	meta: {
 		name: "sync",
 		description:
-			"Generate .claude/agents, .codex/agents, permissions and the config schema",
+			"Generate .claude/agents, .codex/agents, permissions and the config schema from .kanbot/agents",
 	},
 	args: {
 		check: {

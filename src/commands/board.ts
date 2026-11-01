@@ -1,5 +1,6 @@
 import { defineCommand } from "citty";
 import { LABELS, loadConfig, saveConfig } from "../config.ts";
+import { UserError } from "../errors.ts";
 import { ensureCopilotRuleset, ensureLabel } from "../github/api.ts";
 import { Gh } from "../github/gh.ts";
 import { createBoard, loadBoard, missingColumns } from "../github/project.ts";
@@ -58,7 +59,7 @@ const create = defineCommand({
 	meta: {
 		name: "create",
 		description:
-			"Create a GitHub Project board for this repo with the kanbot columns",
+			"Create a GitHub Project board for this repo with the kanbot columns and labels",
 	},
 	args: {
 		title: {
@@ -105,7 +106,11 @@ ${board.url}`);
 });
 
 const link = defineCommand({
-	meta: { name: "link", description: "Use an existing project board" },
+	meta: {
+		name: "link",
+		description:
+			"Use an existing project board, e.g. github.com/users/<owner>/projects/<number>",
+	},
 	args: {
 		owner: {
 			type: "string",
@@ -116,8 +121,14 @@ const link = defineCommand({
 	},
 	async run({ args }) {
 		const root = process.cwd();
+		const number = Number(args.number);
+		if (!Number.isInteger(number))
+			throw new UserError("--number must be a number.", {
+				why: "It's the number at the end of the project URL.",
+				docs: "getting-started#create-the-board",
+			});
 		await saveConfig(root, {
-			project: { owner: args.owner, number: Number(args.number) },
+			project: { owner: args.owner, number },
 		});
 		const config = await loadConfig(root);
 		const board = await loadBoard(new Gh(config.repo), config);

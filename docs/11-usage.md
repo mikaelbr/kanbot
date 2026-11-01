@@ -13,6 +13,8 @@ Run commands from the repository root. `kanbot --help` and `kanbot <command> --h
 
 Scaffold agents, skills, config and GitHub files into the repo. Also writes `.kanbot/manifest.json` and `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`. Existing files are kept; where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`.
 
+In a terminal, it asks which of your skills fill the `verify`, `review` and `preview` [capabilities](./13-capabilities.md). Pick by number or name, or press Enter to skip.
+
 | Flag                         | Default  | Description                                |
 | ---------------------------- | -------- | ------------------------------------------ |
 | `--provider <claude\|codex>` | `claude` | Agent provider.                            |
@@ -20,7 +22,7 @@ Scaffold agents, skills, config and GitHub files into the repo. Also writes `.ka
 
 ## `kanbot upgrade`
 
-Update agents, skills and workflows to this kanbot version, keeping your edits. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./10-upgrading.md).
+Update agents, skills and workflows to this kanbot version, keeping your edits. Maps kanbot's old craft skills to capabilities if you have no `capabilities` yet. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./10-upgrading.md).
 
 | Flag        | Default | Description                         |
 | ----------- | ------- | ----------------------------------- |
@@ -28,7 +30,7 @@ Update agents, skills and workflows to this kanbot version, keeping your edits. 
 
 ## `kanbot board create`
 
-Create a GitHub Project with the kanbot columns, save it to config and add the repo labels. If a project is already set, it only ensures labels. Prints the built-in workflows to enable.
+Create a GitHub Project with the kanbot columns, save it to config and add the repo labels. With `review.copilot`, also adds the Copilot review ruleset. If a project is already set, it only ensures labels and the ruleset. Prints the built-in workflows to enable.
 
 | Flag              | Default   | Description    |
 | ----------------- | --------- | -------------- |
@@ -62,7 +64,7 @@ Use an app you already created, e.g. in another repo. Sets `identity` in config.
 
 ## `kanbot sync`
 
-Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.kanbot/agents/`. Also links `.claude/skills` to `.agents/skills`. Run it after editing agents, then commit.
+Generate `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` from `.kanbot/agents/`. Also links `.claude/skills` to `.agents/skills`, writes `.kanbot/config.schema.json` and, with `review.copilot`, `.github/copilot-instructions.md`. Run it after editing agents, then commit.
 
 | Flag      | Description                          |
 | --------- | ------------------------------------ |
@@ -78,7 +80,7 @@ Install the skills that work outside a kanbot repo (`kanbot-idea`, `kanbot-guide
 
 ## `kanbot doctor`
 
-Check that everything is in place: `gh` auth and scope, provider login, agents, generated files, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. In app mode, also the app, its key and its install on the repo. Prints a fix for each failed check. Exits 1 on failure.
+Check that everything is in place: `gh` auth and scope, provider login, agents and the skills they use, capabilities, generated files and config schema, MCP servers for workers, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. In app mode, also the app, its key and its install on the repo. With `review.copilot`, also the ruleset and `.github/copilot-instructions.md`. Prints a fix for each failed check. Lines marked `!` are warnings. Exits 1 on failure.
 
 ## `kanbot run`
 
@@ -96,7 +98,7 @@ Show the board by column, daemon PID, provider, `needs-human` issues, local fail
 
 ## `kanbot completion`
 
-Print a shell completion script.
+Print a shell completion script. See [Shell completion](./01-getting-started.md#shell-completion).
 
 | Flag                        | Default  | Description   |
 | --------------------------- | -------- | ------------- |

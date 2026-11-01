@@ -10,6 +10,17 @@
 - Use Bun to run and test: `bun test`, `bun run typecheck`.
 - Format and lint with Biome: `bun run fix`. Run `bun run check` before committing.
 
+## CLI
+
+The CLI should be as helpful as possible. With every change, check that it still guides the user:
+
+- `--help` descriptions say what each command and flag does.
+- Errors are `UserError`s with `why`, `fix` and `docs` where it helps.
+- `doctor` checks new requirements and prints a fix.
+- Next steps printed by `init`, `upgrade` and `board create` match the flow.
+- `docs/11-usage.md`, other docs and the `kanbot-guide` and `kanbot-admin` skills match the CLI. `test/usage-docs.test.ts` checks commands, flags and docs links.
+- Run `bun run kanbot <command> --help` to see the result.
+
 ## Templates
 
 - After editing anything in `templates/`, run `bun run fix`, then `bun run hashes`, and commit `src/known-hashes.json`. A test fails otherwise.

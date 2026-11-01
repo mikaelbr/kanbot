@@ -112,11 +112,11 @@ export default defineCommand({
 Next steps:
   1. Review AGENTS.md and fill in .agents/skills/project-conventions/SKILL.md
   2. Adjust .github/workflows/ci.yml to your stack (agents fix failing CI)
-     Map your own skills under capabilities in .kanbot/config.yml (kanbot-guide can help)
-  3. kanbot board create        # creates the project board and labels
-  4. kanbot doctor              # checks auth, board, generated files
+  3. Map your own skills under capabilities in .kanbot/config.yml (kanbot-guide can help)
+  4. kanbot board create        # board and labels; enable the workflows it prints
   5. Commit and push these files to the default branch (agents work from it)
-  6. kanbot run                 # start the loop (or kanbot run --once --dry-run)`);
+  6. kanbot doctor              # checks auth, board, generated files
+  7. kanbot run                 # start the loop (or kanbot run --once --dry-run)`);
 	},
 });
 
