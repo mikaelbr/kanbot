@@ -13,6 +13,7 @@ import {
 	type ReviewJob,
 	reviewPasses,
 	variantOf,
+	withOpenQuestions,
 } from "../daemon/derive.ts";
 import type { Worktrees } from "../daemon/git.ts";
 import type { Notifier } from "../daemon/notify.ts";
@@ -168,7 +169,11 @@ async function plan(job: PlanJob, deps: JobDeps) {
 
 	// Re-read so concurrent human edits to the description are kept.
 	const fresh = await fetchIssue(gh, issue.number);
-	await updateIssueBody(bot, issue.number, withPlan(fresh.body, result.plan));
+	await updateIssueBody(
+		bot,
+		issue.number,
+		withPlan(fresh.body, withOpenQuestions(result.plan, result.questions)),
+	);
 
 	const allowed = result.labels.filter((l) => l === LABELS.technical);
 	await addLabels(

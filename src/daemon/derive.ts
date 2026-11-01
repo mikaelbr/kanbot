@@ -179,14 +179,22 @@ export function approvedBy(
 	);
 }
 
+const OPEN_QUESTIONS = /^##\s+Open questions\s*$[\s\S]*?(?=^##\s|(?![\s\S]))/im;
+
+/** The plan with its "## Open questions" section set to `questions`, last. */
+export function withOpenQuestions(plan: string, questions: string[]): string {
+	const rest = plan.replace(OPEN_QUESTIONS, "").trimEnd();
+	if (!questions.length) return rest;
+	return `${rest}\n\n## Open questions\n\n${questions.map((q) => `- ${q}`).join("\n")}`;
+}
+
 /** Bullets under the plan's "## Open questions". */
 export function openQuestions(plan: string | null): string[] {
-	const m = plan?.match(
-		/^##\s+Open questions\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/im,
-	);
+	const m = plan?.match(OPEN_QUESTIONS);
 	if (!m) return [];
-	return (m[1] as string)
+	return m[0]
 		.split("\n")
+		.slice(1)
 		.map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim())
 		.filter((q): q is string => Boolean(q));
 }

@@ -6,6 +6,7 @@ import {
 	type ImplementJob,
 	openQuestions,
 	schedule,
+	withOpenQuestions,
 } from "../src/daemon/derive.ts";
 import { prItem } from "../src/daemon/snapshot.ts";
 import type { Issue, PR } from "../src/daemon/types.ts";
@@ -611,6 +612,17 @@ describe("ready gate on open questions", () => {
 			"Last one?",
 		]);
 		expect(openQuestions(null)).toEqual([]);
+	});
+
+	test("withOpenQuestions makes questions the one source", () => {
+		const plan =
+			"## User story\nx\n\n## Open questions\n\n- Old?\n\n## Notes\ny";
+		const out = withOpenQuestions(plan, ["New?"]);
+		expect(openQuestions(out)).toEqual(["New?"]);
+		expect(out).toContain("## Notes\ny");
+		expect(out).not.toContain("Old?");
+		expect(openQuestions(withOpenQuestions(plan, []))).toEqual([]);
+		expect(withOpenQuestions("## User story\nx", [])).toBe("## User story\nx");
 	});
 
 	test("open questions block implement and comment once", () => {

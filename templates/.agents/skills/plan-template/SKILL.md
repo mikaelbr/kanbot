@@ -23,7 +23,7 @@ Need: <one or two sentences: what hurts today and how we'll know it worked.>
 ## Assumptions
 
 - <What the plan assumes about the user's need or the business value.> Confirm: <ask, data, or a user test>.
-<!-- 1-4 items. Risky, unconfirmed ones also go in Open questions. -->
+<!-- 1-4 items. Risky, unconfirmed ones also go in `questions`. -->
 
 ## Out of scope
 
@@ -44,15 +44,14 @@ Need: <one or two sentences: what hurts today and how we'll know it worked.>
 
 ## Open questions
 
-- <Only what blocks approval, with the default you assume. Omit if none.>
-<!-- Open questions keep the issue out of Ready until answered or removed. -->
+<!-- Don't write this section. kanbot fills it from your `questions` output. Open questions keep the issue out of Ready. -->
 ```
 
 ## Rules
 
 - Required: User story (or Technical goal), Acceptance criteria, Implementation steps. Omit other sections when empty; don't write "None."
 - Assumptions are about user need and business value, not code. Technical unknowns go in `explore:N` or a spike.
-- Put a question in Open questions only if building on a wrong guess would waste the work. kanbot won't start while any are open.
+- Ask a question (`questions` output) only if building on a wrong guess would waste the work. kanbot won't start while any are open.
 - One line per bullet. No prose paragraphs, no repeating the issue text.
 - Acceptance criteria are shared by all approaches. Approach-specific steps go inside each `### Approach k`.
 - File paths come from reading the code, not guesses. Mark new files "(new)".
@@ -91,8 +90,4 @@ List sits above the calendar, collapsed to 5 rows with "Show all (n)". Reuse `Pr
 1. Add `missingProject` filter to `GET /entries`, with tests. Files: `api/entries/routes.ts`
 2. Add `MissingProjectSection` with its states and tests. Files: `web/entries/MissingProjectSection.tsx` (new)
 3. Mount it in the month view and refresh after assignment. Files: `web/month/MonthView.tsx`
-
-## Open questions
-
-- Include earlier months? Default: current month only.
 ```
