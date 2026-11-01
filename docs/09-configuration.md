@@ -78,11 +78,11 @@ Rename columns to match your board's Status field. `kanbot doctor` reports missi
 
 Each exploratory variant counts as one worker. `priority` orders waiting jobs by kind; board order decides within a kind.
 
+`maxAttempts` counts failed agent jobs. Failing CI and merge conflicts have their own fixed limit of 3 fix attempts per PR.
+
 ### Capabilities
 
 Maps needs to your repo's own skills and agents. See [Capabilities](./05-capabilities.md).
-
-`implementers` is deprecated. While set, it still picks an agent by `type:<key>` label, and `doctor` warns. Remove it and map craft under `capabilities` instead.
 
 ### Review
 
@@ -94,13 +94,15 @@ Who kanbot talks as, and merging PRs when you approve them. See [Identity and me
 
 ## Notifications
 
-In user mode, kanbot acts as your GitHub account, so GitHub won't notify you about agent work. In [app mode](./11-identity.md#app-mode) it does. kanbot also notifies you itself when:
+kanbot notifies you when:
 
 - a PR is ready to test,
 - exploratory PRs are ready to compare,
 - an agent answered your PR feedback or needs input,
 - an implementer is blocked,
 - an issue needs a human.
+
+In user mode, these are your only notifications about agent work. See [Identity](./11-identity.md#user-mode).
 
 Turn off desktop notifications with `notify.desktop: false`. To get them elsewhere, set a webhook. It receives a JSON `POST` with `title`, `message` and `url`, plus `Title` and `Click` headers, so an [ntfy.sh](https://ntfy.sh) topic URL works as is:
 
@@ -133,11 +135,6 @@ notify:
 
 ## CI
 
-Agents fix failing CI on their PRs, up to 3 times per PR. Adjust `.github/workflows/ci.yml` to run your tests, lint and typecheck.
+Agents fix failing CI on their PRs. Adjust `.github/workflows/ci.yml` to run your tests, lint and typecheck.
 
 `.github/workflows/kanbot-merged.yml` closes sibling PRs when one exploratory PR is merged. It runs on GitHub, so it works when the daemon is off.
-
-## Limitations
-
-- Ready-column order is the project's manual item order, not a view's sort.
-- Workers run as your user. `gh` and `git push` are blocked by command patterns, not missing credentials. In app mode, the app's key in `~/.kanbot/apps/` is readable by them too.

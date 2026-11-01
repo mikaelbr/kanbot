@@ -27,7 +27,7 @@ kanbot can talk on GitHub as you, or as its own GitHub App. Either way, code is 
 
 kanbot posts with your `gh` login. Its comments start with a small `🤖 kanbot` line, and hidden markers tell kanbot which comments are its own. GitHub doesn't notify you about your own activity, so kanbot sends [its own notifications](./09-configuration.md#notifications).
 
-### App mode
+## App mode
 
 kanbot posts as a GitHub App you own, so the conversation reads as kanbot talking to you. You get the usual benefits of a second participant:
 
@@ -36,8 +36,6 @@ kanbot posts as a GitHub App you own, so the conversation reads as kanbot talkin
 - **Approvals.** The app opened the PR, so you can approve it. With [`merge.onApproval`](#merge-on-approval), approving merges it.
 
 Board moves stay on your account, since GitHub Apps can't use Projects owned by a personal account.
-
-## App mode
 
 ### Set it up
 
@@ -105,13 +103,11 @@ If the merge fails, for example because of a branch rule, the issue gets `needs-
 
 You can't approve a PR you opened. In user mode, kanbot opens PRs as you, so only another collaborator can approve them. To approve your own kanbot PRs, use app mode.
 
+With `explore:N`, approve the approach you want. kanbot merges it, and the `kanbot-merged` workflow closes the others.
+
 ### Branch rules
 
 Merging works on any plan, without branch protection. If you add rules:
 
 - **Require approvals** works well with app mode.
 - **Don't** turn on "Require approval of the most recent reviewable push". Your account pushes kanbot's commits, so it blocks your own approval.
-
-## Exploring alternatives
-
-With `explore:N`, approve the approach you want. kanbot merges it, and the `kanbot-merged` workflow closes the others.

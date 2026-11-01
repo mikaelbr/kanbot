@@ -64,7 +64,7 @@ For a guided setup, run `bunx kanbot skills install` and ask your agent "help me
 
 - **Capture ideas by chatting.** Ask your agent to file an idea; the `kanbot-idea` skill shapes it and puts it in Ideas. [More](./docs/03-capturing-ideas.md)
 - **Your own PRs.** Label a PR `kanbot-review` for agent review without a card. Commits to `main` that break kanbot PRs get merged in and fixed. [More](./docs/04-outside-the-board.md)
-- **Project memory.** Corrections you give on PRs become facts agents read on every job. [More](./docs/07-skills.md#project-memory)
+- **Project memory.** Corrections you give on PRs become facts agents read on every job. [More](./docs/08-project-memory.md)
 - **Copilot review.** Optionally add GitHub Copilot as a cloud reviewer. [More](./docs/12-copilot-review.md)
 
 ## Customizing

@@ -39,7 +39,7 @@ Each job runs `claude -p` with:
 
 - Agent definitions passed in, so runs don't depend on committed files.
 - Only project settings, no user plugins, skills or MCP servers. MCP servers come from the repo's `.mcp.json`.
-- The agent's tools allowed, and `gh`, `git push`, `git remote` and `git config` denied.
+- The agent's tools allowed, and `gh`, `git push`, `git remote` and `git config` denied. See [Safety](./02-workflow.md#safety).
 - No co-author lines on commits or PRs.
 
 ## Codex

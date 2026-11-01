@@ -30,7 +30,7 @@ Comment on the issue to steer it. Each round, the planner answers every new comm
 
 ## 3. Ready
 
-Moving a card to Ready approves the plan. Cards are picked top-down, in the project's manual item order.
+Moving a card to Ready approves the plan. Cards are picked top-down, in the project's manual item order, not a view's sort.
 
 A plan with open questions doesn't start. kanbot comments once; move the card back to Planning and answer them, or remove them from the plan.
 
@@ -47,7 +47,7 @@ If the agent reports it is blocked, you get a notification.
 Each PR goes through, in order:
 
 1. **Your feedback.** Comments and review threads from you are handled first, by the `fixer`.
-2. **Merge conflicts.** If the base branch moved and the PR no longer merges, the `fixer` merges the base branch in and resolves the conflicts. It tries up to 3 times. Then the issue gets `needs-human`.
+2. **Merge conflicts.** If the base branch moved and the PR no longer merges, the `fixer` merges the base branch in and resolves the conflicts. It merges rather than rebases, so the PR's history is never rewritten. This runs even after a PR is `agent-reviewed`. It tries up to 3 times. Then the issue gets `needs-human`.
 3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
 4. **Technical review** by `reviewer`, through your `review` capability, then a fix if it found problems.
 5. **Acceptance review** by `acceptance-reviewer`: every criterion has evidence, required capabilities were used, nothing out of scope. Then a fix if it found problems.
@@ -58,8 +58,6 @@ Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
 
 Want the same review for a PR you opened yourself? Label it `kanbot-review`. See [Working outside the board](./04-outside-the-board.md).
-
-Conflicts are checked even after a PR is `agent-reviewed`. So if you push to the base branch yourself, or merge another PR, open kanbot PRs are kept mergeable. Kanbot merges rather than rebases, so history on the PR branch is never rewritten.
 
 ## 6. Done
 
@@ -73,7 +71,7 @@ Add `explore:2`, `explore:3` or `explore:4` to an issue before planning. The pla
 
 ## When agents give up
 
-A job that fails `maxAttempts` times labels the issue `needs-human`. Fix the cause, then remove the label to retry.
+A job that fails `maxAttempts` times (default 2) labels the issue `needs-human`. Failing CI and merge conflicts have their own limit of 3 fix attempts per PR. Fix the cause, then remove the label to retry.
 
 ## Who can steer
 
@@ -85,4 +83,4 @@ Only collaborators with write access can steer agents. Comments from others are 
 - `gh`, `git push`, `git remote` and `git config` are denied for agents.
 - GitHub is the only state. You can stop and restart the daemon any time.
 
-Workers run as your user, and commands are blocked by pattern, not missing credentials. A determined prompt injection could get around that.
+Workers run as your user, and commands are blocked by pattern, not missing credentials. In [app mode](./11-identity.md#app-mode), the app's key in `~/.kanbot/apps/` is readable by them too. A determined prompt injection could get around that.

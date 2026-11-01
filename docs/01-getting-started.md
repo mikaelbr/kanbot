@@ -43,22 +43,20 @@ cd your-repo
 kanbot init --provider claude   # or codex
 ```
 
-`init` adds:
+In a terminal, `init` asks which of your skills to use for verifying, reviewing and previewing changes. Press Enter to skip. See [Capabilities](./05-capabilities.md).
 
-| Path                                  | What                                                                                    |
-| ------------------------------------- | --------------------------------------------------------------------------------------- |
-| `.kanbot/config.yml`                  | Config. See [Configuration](./09-configuration.md).                                     |
-| `.kanbot/agents/*.md`                 | Agent definitions. See [Agents](./06-agents.md).                                        |
-| `.agents/skills/`                     | Shared skills. See [Skills](./07-skills.md).                                            |
-| `.claude/`, `.codex/`                 | Generated from `.kanbot/agents`. Don't edit.                                            |
-| `AGENTS.md`, `CLAUDE.md`              | Rules every agent follows.                                                              |
-| `.github/ISSUE_TEMPLATE/`             | User need and technical task issue templates.                                           |
-| `.github/workflows/ci.yml`            | CI. Agents fix failing CI, so adjust it to your stack.                                  |
-| `.github/workflows/kanbot-merged.yml` | Closes sibling PRs when one exploratory PR is merged.                                   |
-| `.github/CODEOWNERS`                  | You, as owner.                                                                          |
-| `.kanbot/manifest.json`               | What kanbot installed, so upgrades keep your edits. See [Upgrading](./13-upgrading.md). |
+`init` adds, among others:
 
-Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them.
+| Path                       | What                                                |
+| -------------------------- | --------------------------------------------------- |
+| `.kanbot/config.yml`       | Config. See [Configuration](./09-configuration.md). |
+| `.kanbot/agents/*.md`      | Agent definitions. See [Agents](./06-agents.md).    |
+| `.agents/skills/`          | Shared skills. See [Skills](./07-skills.md).        |
+| `.claude/`, `.codex/`      | Generated from `.kanbot/agents`. Don't edit.        |
+| `AGENTS.md`, `CLAUDE.md`   | Rules every agent follows.                          |
+| `.github/workflows/ci.yml` | CI. Agents fix failing CI, so adjust it.            |
+
+Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them. [`kanbot init`](./14-usage.md#kanbot-init) lists the rest.
 
 ## Fill in project conventions
 
@@ -101,7 +99,7 @@ kanbot run --once --dry-run  # shows what it would do
 kanbot run                   # starts the daemon
 ```
 
-Run one daemon per repo. Next, read the [development flow](./02-workflow.md).
+Run one daemon per repo. Next, read the [development flow](./02-workflow.md). To have kanbot talk as its own bot, so you can approve its PRs, see [Identity and merging](./11-identity.md).
 
 ## Shell completion
 

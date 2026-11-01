@@ -19,7 +19,8 @@ Explain in plain words. Ask before choosing for them; give a recommendation with
 | How do I file ideas by chatting?              | `capturing-ideas`   |
 | My own PRs, local sessions, direct commits?   | `outside-the-board` |
 | Which agents are there, how do I change them? | `agents`            |
-| Skills and project memory?                    | `skills`            |
+| Skills?                                       | `skills`            |
+| Project memory, facts from corrections        | `project-memory`    |
 | Claude or Codex?                              | `providers`         |
 | Every config field, labels, notifications     | `configuration`     |
 | Using our own skills and agents for the work  | `capabilities`      |

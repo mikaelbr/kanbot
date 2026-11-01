@@ -41,6 +41,8 @@ Files you deleted stay deleted. Files kanbot no longer ships are listed, but lef
 
 Newer kanbot versions no longer ship craft skills (`verify-ui`, `code-review`, `tdd`…). If you have them and no `capabilities` in config, `upgrade` maps them for you, e.g. `verify: verify-ui`. See [Capabilities](./05-capabilities.md).
 
+The `implementers` config field is deprecated. While set, it still picks an agent by `type:<key>` label, and `doctor` warns. Remove it and map craft under `capabilities` instead.
+
 After writing files, `upgrade` runs `kanbot sync`, so generated `.claude/` and `.codex/` files match.
 
 ## Merging `.kanbot-new` files

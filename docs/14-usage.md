@@ -80,7 +80,17 @@ Install the skills that work outside a kanbot repo (`kanbot-idea`, `kanbot-guide
 
 ## `kanbot doctor`
 
-Check that everything is in place: `gh` auth and scope, provider login, agents and the skills they use, capabilities, generated files and config schema, MCP servers for workers, templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, board columns, board workflows and labels. In app mode, also the app, its key and its install on the repo. With `review.copilot`, also the ruleset and `.github/copilot-instructions.md`. Checks are grouped by area. Each failed check says why it matters, how to fix it and, where it helps, a docs link. Lines marked `!` are warnings and don't fail doctor. Ends with a count and the next step. Exits 1 on failure. Colors turn off when output is piped or `NO_COLOR` is set.
+Check that everything is in place:
+
+- `gh` auth and scope, and provider login.
+- Agents, the skills they use, and capabilities.
+- Generated files, config schema and MCP servers for workers.
+- Templates up to date, leftover `.kanbot-new` files, and files pushed to the base branch.
+- Board columns, board workflows and labels.
+- In app mode: the app, its key and its install on the repo.
+- With `review.copilot`: the ruleset and `.github/copilot-instructions.md`.
+
+Each failed check says why it matters, how to fix it and, where it helps, a docs link. Lines marked `!` are warnings and don't fail doctor. Exits 1 on failure. Colors turn off when output is piped or `NO_COLOR` is set.
 
 ## `kanbot run`
 

@@ -34,17 +34,17 @@ Failing CI and merge conflicts are fixed too, as on kanbot PRs. Remove the label
 
 ## Commits straight to the base branch
 
-Push to `main` whenever you like. If that makes an open kanbot PR conflict, the `fixer` merges `main` into the PR and resolves the conflicts. It never rebases, so the PR's history stays intact. After 3 failed attempts, the issue gets `needs-human`.
+Push to `main` whenever you like. If that makes an open kanbot PR conflict, the `fixer` merges `main` in and resolves it. See [Review](./02-workflow.md#5-review).
 
 Cards in Planning or Ready need nothing: agents always start from the latest base branch.
 
 ## When to use what
 
-| You want to…                                | Do this                                                         |
-| ------------------------------------------- | --------------------------------------------------------------- |
-| Hand off a whole piece of work              | Card on the board                                               |
-| Get a quick fix in                          | Commit or PR yourself                                           |
-| Get agent review on your own PR             | Add `kanbot-review`                                             |
-| Work with an agent at your side             | Normal Claude Code or Codex session in the repo                 |
-| Note an idea for later while working        | Ask your agent to file it (`kanbot-idea`)                       |
-| Teach agents something for every future job | Add a fact to [`project-memory`](./07-skills.md#project-memory) |
+| You want to…                                | Do this                                                  |
+| ------------------------------------------- | -------------------------------------------------------- |
+| Hand off a whole piece of work              | Card on the board                                        |
+| Get a quick fix in                          | Commit or PR yourself                                    |
+| Get agent review on your own PR             | Add `kanbot-review`                                      |
+| Work with an agent at your side             | Normal Claude Code or Codex session in the repo          |
+| Note an idea for later while working        | Ask your agent to file it (`kanbot-idea`)                |
+| Teach agents something for every future job | Add a fact to [`project-memory`](./08-project-memory.md) |
