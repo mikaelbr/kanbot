@@ -11,6 +11,7 @@ import {
 	renderCodexAgent,
 	sync,
 } from "../src/agents/sync.ts";
+import { ConfigSchema } from "../src/config.ts";
 import {
 	embedJson,
 	extractPlan,
@@ -20,7 +21,12 @@ import {
 	withDescription,
 	withPlan,
 } from "../src/github/markers.ts";
-import { absoluteImages, excerpt, passAgent } from "../src/jobs/run.ts";
+import {
+	absoluteImages,
+	excerpt,
+	implementerFor,
+	passAgent,
+} from "../src/jobs/run.ts";
 import { jsonSchema, RESULT_SCHEMAS } from "../src/schemas/results.ts";
 
 const TEMPLATES = join(import.meta.dir, "..", "templates");
@@ -63,6 +69,25 @@ describe("template agents", () => {
 			expect(a?.skills.filter((s) => craft.includes(s))).toEqual([]);
 			expect(a?.subagents).toEqual(["explorer"]);
 		}
+	});
+
+	test("implement uses implementer unless the deprecated map routes it", async () => {
+		const agents = await loadAgents(TEMPLATES);
+		const cfg = ConfigSchema.parse({ repo: "acme/app" });
+		expect(implementerFor(cfg, agents, ["type:frontend"])).toBe("implementer");
+		const legacy = {
+			...cfg,
+			implementers: {
+				frontend: "implementer-frontend",
+				default: "implementer-backend",
+			},
+		};
+		expect(implementerFor(legacy, agents, ["type:frontend"])).toBe(
+			"implementer-frontend",
+		);
+		expect(implementerFor(legacy, agents, [])).toBe("implementer-backend");
+		const old = agents.filter((a) => a.name !== "implementer");
+		expect(implementerFor(cfg, old, [])).toBe("implementer-backend");
 	});
 
 	test("review passes use the new agents, or the old ones before upgrade", async () => {

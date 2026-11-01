@@ -12,10 +12,6 @@ export const REPO_LABELS: [name: string, color: string, description: string][] =
 			"5319e7",
 			"Technical work; planned as a technical goal instead of a user story",
 		],
-		["type:frontend", "1d76db", "User-facing UI work"],
-		["type:backend", "0e8a16", "Server, data or API work"],
-		["type:docs", "c5def5", "Documentation"],
-		["type:infra", "bfd4f2", "Tooling, CI, infrastructure"],
 		[
 			"explore:2",
 			"fbca04",

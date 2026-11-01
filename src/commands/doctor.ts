@@ -121,7 +121,8 @@ export default defineCommand({
 				"reviewer",
 				"acceptance-reviewer",
 				"fixer",
-				...Object.values(config.implementers),
+				"implementer",
+				...Object.values(config.implementers ?? {}),
 			];
 			const missing = [...new Set(needed)].filter(
 				(n) => !agents.some((a) => a.name === n),
@@ -132,6 +133,15 @@ export default defineCommand({
 				detail: missing.join(", ") || undefined,
 				fix: "kanbot upgrade",
 			});
+			if (config.implementers)
+				add({
+					name: "implementers is deprecated",
+					ok: true,
+					warn: true,
+					detail:
+						"implement uses `implementer`; map craft with capabilities instead",
+					fix: "remove implementers from .kanbot/config.yml",
+				});
 			const noSkill = missingSkills(root, agents);
 			add({
 				name: "skills referenced by agents exist",

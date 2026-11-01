@@ -22,13 +22,15 @@
 	".agents/skills/kanbot-admin/SKILL.md": [
 		"3789c559be9fb6a78f82708ae9857395a5556f6b",
 		"557532f241c0fc1e04f03ce8edb69efaa7b5165b",
+		"a7a7b2f55be7235ea17ffd092755af8493c8ef76",
 		"e427c711b532963c0916f07ecc6b11e9b47cb9fa"
 	],
 	".agents/skills/kanbot-guide/SKILL.md": [
 		"cf3e95d137a5a58a273262bca6ba25fbc95fa037"
 	],
 	".agents/skills/kanbot-idea/SKILL.md": [
-		"8ab28cec8d3f30250ffe080106d0de8e3c2eaa8a"
+		"8ab28cec8d3f30250ffe080106d0de8e3c2eaa8a",
+		"9d47113a299a75514a00993060bf6afebb049c6c"
 	],
 	".agents/skills/plan-template/SKILL.md": [
 		"47a5dbbd2870883ca42dd9410d224ef9c0c9979f",
@@ -131,7 +133,8 @@
 	".kanbot/agents/planner.md": [
 		"2283cf8bf6d27b8bbf721f97bb45cd40eaa6d39d",
 		"a4a65d240ab4b23737f4d68d8765cca89cf08864",
-		"bdb111213cced70583157edad658247972dcbe45"
+		"bdb111213cced70583157edad658247972dcbe45",
+		"dc50d048164ade2926b58dee48c3919c6b7d9558"
 	],
 	".kanbot/agents/reviewer-code.md": [
 		"398035214b63ceb3469a3b3384b07209e4cd63dd",

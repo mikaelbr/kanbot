@@ -43,7 +43,7 @@ Back to user mode: set `identity.mode: user`.
 
 1. Copy the closest existing agent. `name` must match the filename.
 2. Column agents (`tier: column`) need an `output` schema; subagents (`tier: sub`) are reached through a column agent's `subagents`.
-3. A new implementer also needs an entry under `implementers` in config and a matching `type:<x>` label on GitHub. Tell the human to create the label.
+3. To have board agents use a new agent or skill, map it under `capabilities` in config (`use`, `when`, `required`).
 4. The body says _how_ to work. The daemon's prompt carries the task.
 
 ### Add a skill

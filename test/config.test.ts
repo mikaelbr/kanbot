@@ -88,3 +88,10 @@ test("capability names must be kebab-case", async () => {
 	} as never);
 	await expect(loadConfig(root)).rejects.toThrow("invalid values");
 });
+
+test("implementers is an optional, deprecated alias", async () => {
+	await saveConfig(root, { repo: "acme/app" });
+	expect((await loadConfig(root)).implementers).toBeUndefined();
+	await saveConfig(root, { implementers: { docs: "writer" } });
+	expect((await loadConfig(root)).implementers).toEqual({ docs: "writer" });
+});

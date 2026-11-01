@@ -49,5 +49,5 @@ Return the structured result; it is your only channel to GitHub.
 - `summary`: one sentence to the human on what changed this round.
 - `replies`: exactly one entry per input human comment, keyed by its `commentId`. Answer the question or say what you changed in the plan. One or two sentences; disagreeing is fine if you give the reason.
 - `newIssues`: slices split from this issue (`subIssue: true`, `column: planning` when ready to plan next, `ideas` otherwise) and unrelated ideas you noticed (`subIssue: false`, `column: ideas`). Each body is a user story, a one-line need and draft acceptance criteria. Empty when there is nothing to split.
-- `labels`: the full set this issue should carry from what you control: exactly one `type:frontend|backend|docs|infra`, plus `technical` when it is not a user-facing story. Keep any `explore:N` label that is present.
+- `labels`: `technical` when it is not a user-facing story; otherwise empty. Keep any `explore:N` label that is present.
 - `questions`: questions only the human can answer, each answerable in one line. Same as the plan's Open questions. Empty if none.

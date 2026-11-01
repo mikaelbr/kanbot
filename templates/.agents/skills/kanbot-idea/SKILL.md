@@ -45,7 +45,7 @@ Match the repo's issue template, so the issue reads like one filed through GitHu
 <notes, or _None._>
 ```
 
-Title: the outcome in under 70 characters. Technical issues get the `technical` label. Leave `type:*` labels to the planner.
+Title: the outcome in under 70 characters. Technical issues get the `technical` label.
 
 Show the title and body. File it only after the human says yes.
 

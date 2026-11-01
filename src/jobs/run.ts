@@ -170,9 +170,7 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	const fresh = await fetchIssue(gh, issue.number);
 	await updateIssueBody(bot, issue.number, withPlan(fresh.body, result.plan));
 
-	const allowed = result.labels.filter(
-		(l) => l === LABELS.technical || l.startsWith(LABELS.typePrefix),
-	);
+	const allowed = result.labels.filter((l) => l === LABELS.technical);
 	await addLabels(
 		bot,
 		issue.number,
@@ -221,6 +219,28 @@ async function plan(job: PlanJob, deps: JobDeps) {
 
 // ---- implement ----------------------------------------------------------------
 
+/**
+ * Always `implementer`. The deprecated `implementers` map still routes by
+ * type:<key> label, and `implementer-backend` serves installs not yet upgraded.
+ */
+export function implementerFor(
+	config: Config,
+	agents: AgentDef[],
+	labels: string[],
+): string {
+	if (config.implementers) {
+		const type = labels
+			.find((l) => l.startsWith(LABELS.typePrefix))
+			?.slice(LABELS.typePrefix.length);
+		const name =
+			config.implementers[type ?? "default"] ?? config.implementers.default;
+		if (name) return name;
+	}
+	return agents.some((a) => a.name === "implementer")
+		? "implementer"
+		: "implementer-backend";
+}
+
 async function implement(job: ImplementJob, deps: JobDeps) {
 	const { gh, bot, config, worktrees } = deps;
 	const { issue } = job.item;
@@ -233,13 +253,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 	const cwd = await worktrees.checkout(worktreeName(job), job.branch);
 	let result: z.infer<typeof ImplementResult> | null = null;
 	if (!resumed) {
-		const typeLabel = issue.labels
-			.find((l) => l.startsWith(LABELS.typePrefix))
-			?.slice(LABELS.typePrefix.length);
-		const agentName =
-			config.implementers[typeLabel ?? "default"] ??
-			config.implementers.default ??
-			"implementer-backend";
+		const agentName = implementerFor(config, deps.agents, issue.labels);
 		result = await runAgent(
 			deps,
 			job,
@@ -308,9 +322,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 		base: config.baseBranch,
 	});
 	if (pr) {
-		const labels = issue.labels.filter(
-			(l) => l.startsWith(LABELS.typePrefix) || l === LABELS.technical,
-		);
+		const labels: string[] = issue.labels.filter((l) => l === LABELS.technical);
 		if (job.variant !== null)
 			labels.push(`${LABELS.variantPrefix}${job.variant}`);
 		await addLabels(bot, pr.number, labels);

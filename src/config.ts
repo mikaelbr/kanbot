@@ -98,15 +98,9 @@ export const ConfigSchema = z.object({
 		.describe("Per-job timeout in minutes."),
 	implementers: z
 		.record(z.string(), z.string())
-		.default({
-			frontend: "implementer-frontend",
-			backend: "implementer-backend",
-			docs: "implementer-docs",
-			infra: "implementer-technical",
-			default: "implementer-backend",
-		})
+		.optional()
 		.describe(
-			"Maps a type:<key> label to an agent. `default` is the fallback.",
+			"Deprecated: implement always uses `implementer`. While set, maps a type:<key> label to an agent, with `default` as the fallback. Use capabilities instead.",
 		),
 	capabilities: z
 		.record(z.string().regex(/^[a-z][a-z0-9-]*$/), Capability)
