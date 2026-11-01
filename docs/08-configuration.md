@@ -37,12 +37,9 @@ timeoutMinutes:
   review: 30
   fix: 45
 
-implementers: # type:<key> label → agent
-  frontend: implementer-frontend
-  backend: implementer-backend
-  docs: implementer-docs
-  infra: implementer-technical
-  default: implementer-backend
+capabilities: # your skills and agents for kanbot's agents to use
+  verify: { use: e2e-tests, when: Changes users see }
+  review: { use: code-review }
 
 review:
   copilot: false # add GitHub Copilot as a reviewer
@@ -81,9 +78,11 @@ Rename columns to match your board's Status field. `kanbot doctor` reports missi
 
 Each exploratory variant counts as one worker. `priority` orders waiting jobs by kind; board order decides within a kind.
 
-### Implementers
+### Capabilities
 
-Maps a `type:*` label to an agent. Issues without a matching label use `default`. See [Agents](./05-agents.md#common-changes).
+Maps needs to your repo's own skills and agents. See [Capabilities](./13-capabilities.md).
+
+`implementers` is deprecated. While set, it still picks an agent by `type:<key>` label, and `doctor` warns. Remove it and map craft under `capabilities` instead.
 
 ### Review
 
@@ -114,16 +113,15 @@ notify:
 
 `kanbot board create` adds these labels.
 
-| Label                                 | Set by  | Meaning                                     |
-| ------------------------------------- | ------- | ------------------------------------------- |
-| `technical`                           | you     | Plan as a technical goal, not a user story. |
-| `type:frontend\|backend\|docs\|infra` | planner | Picks the implementer.                      |
-| `explore:2..4`                        | you     | Build N approaches as N PRs.                |
-| `variant:1..4`                        | kanbot  | Marks which approach a PR is.               |
-| `kanbot:working`                      | kanbot  | An agent is working on it.                  |
-| `agent-reviewed`                      | kanbot  | Passed agent review. Ready for you.         |
-| `needs-human`                         | kanbot  | Agents stopped. Remove it to retry.         |
-| `kanbot-review`                       | you     | Agent review for a PR without a card.       |
+| Label            | Set by       | Meaning                                     |
+| ---------------- | ------------ | ------------------------------------------- |
+| `technical`      | you, planner | Plan as a technical goal, not a user story. |
+| `explore:2..4`   | you          | Build N approaches as N PRs.                |
+| `variant:1..4`   | kanbot       | Marks which approach a PR is.               |
+| `kanbot:working` | kanbot       | An agent is working on it.                  |
+| `agent-reviewed` | kanbot       | Passed agent review. Ready for you.         |
+| `needs-human`    | kanbot       | Agents stopped. Remove it to retry.         |
+| `kanbot-review`  | you          | Agent review for a PR without a card.       |
 
 ## Shared agent rules
 

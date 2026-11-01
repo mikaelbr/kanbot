@@ -52,14 +52,13 @@ For a guided setup, run `bunx kanbot skills install` and ask your agent "help me
 
 ## Labels
 
-| Label                                 | Meaning                                           |
-| ------------------------------------- | ------------------------------------------------- |
-| `technical`                           | Plan as a technical goal, not a user story        |
-| `type:frontend\|backend\|docs\|infra` | Picks the implementer agent (the planner sets it) |
-| `explore:2..4`                        | Build N alternative approaches as N PRs           |
-| `agent-reviewed`                      | Passed agent review; ready for you                |
-| `needs-human`                         | Agents gave up. Remove it to retry.               |
-| `kanbot-review`                       | Agent review for your own PR, without a card      |
+| Label            | Meaning                                      |
+| ---------------- | -------------------------------------------- |
+| `technical`      | Plan as a technical goal, not a user story   |
+| `explore:2..4`   | Build N alternative approaches as N PRs      |
+| `agent-reviewed` | Passed agent review; ready for you           |
+| `needs-human`    | Agents gave up. Remove it to retry.          |
+| `kanbot-review`  | Agent review for your own PR, without a card |
 
 ## Beyond the board
 
@@ -73,6 +72,7 @@ For a guided setup, run `bunx kanbot skills install` and ask your agent "help me
 - `.kanbot/config.yml`: concurrency, timeouts, notifications, column names.
 - `.kanbot/agents/*.md`: agent definitions. Run `kanbot sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
 - `.agents/skills/`: skills shared by agents. Fill in `project-conventions` first.
+- `capabilities` in config: your own skills and agents for building, testing and reviewing. [More](./docs/13-capabilities.md)
 
 ## Upgrading
 

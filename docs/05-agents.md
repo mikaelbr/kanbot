@@ -21,23 +21,20 @@ The generated files also let you use the same agents in normal Claude Code or Co
 
 ## Default team
 
-| Agent                   | Tier   | Role                                                           |
-| ----------------------- | ------ | -------------------------------------------------------------- |
-| `planner`               | column | Writes and revises the plan.                                   |
-| `implementer-frontend`  | column | Builds UI work.                                                |
-| `implementer-backend`   | column | Builds server, API and data work.                              |
-| `implementer-docs`      | column | Writes docs.                                                   |
-| `implementer-technical` | column | Refactors, infra, tooling and CI.                              |
-| `reviewer-code`         | column | Review pass 1: correctness and code quality.                   |
-| `reviewer-spec`         | column | Review pass 2: acceptance criteria and UX.                     |
-| `fixer`                 | column | Fixes findings, your comments, failing CI and merge conflicts. |
-| `explorer`              | sub    | Maps the codebase for a change.                                |
-| `plan-critic`           | sub    | Critiques a draft plan.                                        |
-| `approach-designer`     | sub    | Designs N approaches for `explore:N`.                          |
-| `test-writer`           | sub    | Writes failing tests first.                                    |
-| `ui-verifier`           | sub    | Takes screenshots with Playwright.                             |
+kanbot's agents run the process. The work on code is done by your repo's own skills and agents, through [capabilities](./13-capabilities.md).
 
-`planner`, `reviewer-code`, `reviewer-spec` and `fixer` are required. Implementers are picked through [`implementers`](./08-configuration.md#implementers) in config.
+| Agent                 | Tier   | Role                                                                 |
+| --------------------- | ------ | -------------------------------------------------------------------- |
+| `planner`             | column | Writes and revises the plan.                                         |
+| `implementer`         | column | Builds the plan, using your capabilities.                            |
+| `reviewer`            | column | Review pass 1: technical review, through the `review` capability.    |
+| `acceptance-reviewer` | column | Review pass 2: acceptance criteria, required capabilities and scope. |
+| `fixer`               | column | Fixes findings, your comments, failing CI and merge conflicts.       |
+| `explorer`            | sub    | Maps the codebase for a change.                                      |
+| `plan-critic`         | sub    | Critiques a draft plan.                                              |
+| `approach-designer`   | sub    | Designs N approaches for `explore:N`.                                |
+
+All column agents are required.
 
 ## File format
 
@@ -46,18 +43,18 @@ YAML frontmatter, then markdown instructions:
 ```markdown
 ---
 
-name: implementer-backend
+name: implementer
 tier: column
-description: Implements an approved plan for server, API and data work.
+description: Implements an approved plan on the current branch.
 models: { claude: sonnet, codex: default }
 effort: high
 tools: [read, edit, bash]
-skills: [project-conventions, tdd, pr-description]
-subagents: [explorer, test-writer]
+skills: [project-conventions, project-memory, pr-description]
+subagents: [explorer]
 output: implement-result
 ---
 
-You are the backend implementer. ...
+You turn an approved plan into a committed change. ...
 ```
 
 ## Frontmatter
@@ -87,12 +84,12 @@ Tools map to provider tools:
 
 Column agents answer with JSON. The daemon turns it into comments, PRs and labels.
 
-| Output             | Used by      | Main fields                                                      |
-| ------------------ | ------------ | ---------------------------------------------------------------- |
-| `plan-result`      | planner      | `plan`, `summary`, `replies`, `newIssues`, `labels`, `questions` |
-| `implement-result` | implementers | `status`, `prTitle`, `prBody`, `testsRun`, `risks`               |
-| `review-result`    | reviewers    | `verdict`, `summary`, `findings`                                 |
-| `fix-result`       | fixer        | `addressed`, `summary`, `prBody`                                 |
+| Output             | Used by     | Main fields                                                      |
+| ------------------ | ----------- | ---------------------------------------------------------------- |
+| `plan-result`      | planner     | `plan`, `summary`, `replies`, `newIssues`, `labels`, `questions` |
+| `implement-result` | implementer | `status`, `prTitle`, `prBody`, `testsRun`, `risks`               |
+| `review-result`    | reviewers   | `verdict`, `summary`, `findings`                                 |
+| `fix-result`       | fixer       | `addressed`, `summary`, `prBody`                                 |
 
 Schemas are defined in `src/schemas/results.ts` and can't be changed per repo. Agents must match the one they declare.
 
@@ -102,20 +99,7 @@ Schemas are defined in `src/schemas/results.ts` and can't be changed per repo. A
 
 **Change behaviour.** Edit the markdown body. Keep it about _how_ to work; the daemon's prompt carries the task.
 
-**Add an implementer.** Copy an implementer file, rename it, then map a label to it:
-
-```yaml
-# .kanbot/config.yml
-implementers:
-  frontend: implementer-frontend
-  backend: implementer-backend
-  docs: implementer-docs
-  infra: implementer-technical
-  mobile: implementer-mobile # used for type:mobile
-  default: implementer-backend
-```
-
-Create the `type:mobile` label in GitHub too.
+**Add craft.** Don't add implementers. Add a skill or agent for the work and map it under [`capabilities`](./13-capabilities.md). kanbot's agents use it when its `when` fits.
 
 **Add a subagent.** Create a `tier: sub` file and add its name to a column agent's `subagents`.
 

@@ -24,13 +24,11 @@ There are two kinds:
 | `user-stories`        | User stories and Given/When/Then criteria.                    |
 | `issue-splitting`     | Splitting large issues.                                       |
 | `approach-designer`   | Writing N approaches for `explore:N`.                         |
-| `tdd`                 | Test-first loop.                                              |
-| `code-review`         | Review checklist and severity rubric.                         |
+| `review-findings`     | Severity rubric, finding format and review rounds.            |
 | `spec-review`         | Checking a change against its plan.                           |
 | `pr-description`      | PR title and body format.                                     |
-| `frontend-design`     | Visual design direction.                                      |
-| `accessibility`       | WCAG 2.2 AA checklist.                                        |
-| `verify-ui`           | Playwright screenshots at 390px and 1280px.                   |
+
+These skills cover the process only. Skills for building, testing and reviewing code are yours: add them to `.agents/skills` and map them under [capabilities](./13-capabilities.md).
 
 ## Admin skills
 
@@ -44,8 +42,8 @@ Ask in plain words. Your agent finds the right skill:
 
 > Help me set up kanbot in this repo.
 > Should kanbot talk as a bot or as me?
-> Add an implementer for mobile work.
-> Make the reviewers stricter about accessibility.
+> Map our e2e skill as the verify capability.
+> Make the acceptance review stricter about scope.
 > Upgrade kanbot.
 
 `kanbot-guide` walks you through setup step by step, explains each option with a recommendation, and links the right docs page. Install it for your user with `kanbot skills install` to use it before a repo has kanbot.

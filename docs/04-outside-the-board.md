@@ -26,7 +26,7 @@ Want agent review on a PR you opened yourself? Add the `kanbot-review` label. Yo
 
 The daemon then treats it like a kanbot PR in Review, with three differences:
 
-- **The PR description is the spec.** There is no plan, so only `reviewer-code` runs. The spec review is skipped.
+- **The PR description is the spec.** There is no plan, so only the technical review runs. The acceptance review is skipped.
 - **Your comments are instructions.** Comments and review threads from collaborators go to the `fixer`, which pushes commits to your branch.
 - **No card moves.** When review is done, the PR gets `agent-reviewed` and you're notified.
 

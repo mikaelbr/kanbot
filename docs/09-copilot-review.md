@@ -27,7 +27,7 @@ It's off by default, because it costs money: Copilot code review needs a paid Co
    ```
 
 2. Run `kanbot board create`. With a board already set, it only adds what's missing, here a branch ruleset named **kanbot: Copilot review**. The ruleset asks Copilot to review every PR to the default branch.
-3. Run `kanbot sync`. It writes `.github/copilot-instructions.md`, which tells Copilot to use your `code-review` skill, `AGENTS.md`, `project-conventions` and `project-memory`.
+3. Run `kanbot sync`. It writes `.github/copilot-instructions.md`, which tells Copilot to use the `review-findings` rubric, your `review` capability if mapped, `AGENTS.md`, `project-conventions` and `project-memory`.
 4. Commit, push, and restart the daemon.
 5. Run `kanbot doctor` to check the ruleset and the instructions file.
 

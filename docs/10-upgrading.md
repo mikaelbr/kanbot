@@ -39,6 +39,8 @@ Commit the manifest. Without it, the next upgrade can't tell your edits apart.
 
 Files you deleted stay deleted. Files kanbot no longer ships are listed, but left in place.
 
+Newer kanbot versions no longer ship craft skills (`verify-ui`, `code-review`, `tdd`…). If you have them and no `capabilities` in config, `upgrade` maps them for you, e.g. `verify: verify-ui`. See [Capabilities](./13-capabilities.md).
+
 After writing files, `upgrade` runs `kanbot sync`, so generated `.claude/` and `.codex/` files match.
 
 ## Merging `.kanbot-new` files

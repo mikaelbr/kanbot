@@ -24,7 +24,7 @@ Write issues. Use the **User need** or **Technical task** issue template, or tal
 
 ## 2. Planning
 
-Move a card here to get a plan. The `planner` writes the plan into the issue body and sets a `type:*` label.
+Move a card here to get a plan. The `planner` writes the plan into the issue body: user story, acceptance criteria, and the assumptions it rests on about user need and business value. Risky assumptions become open questions for you.
 
 Comment on the issue to steer it. Each round, the planner answers every new comment and updates the plan. It can also split work into new issues or sub-issues when you ask.
 
@@ -32,9 +32,11 @@ Comment on the issue to steer it. Each round, the planner answers every new comm
 
 Moving a card to Ready approves the plan. Cards are picked top-down, in the project's manual item order.
 
+A plan with open questions doesn't start. kanbot comments once; move the card back to Planning and answer them, or remove them from the plan.
+
 ## 4. In Progress
 
-An implementer builds the plan on branch `kanbot/<issue>` in its own worktree, commits, and the daemon opens a PR. The `type:*` label picks the implementer. When all PRs are open, the card moves to Review.
+The `implementer` builds the plan on branch `kanbot/<issue>` in its own worktree, using your repo's skills and [capabilities](./13-capabilities.md). It commits, and the daemon opens a PR. When all PRs are open, the card moves to Review.
 
 If the agent reports it is blocked, you get a notification.
 
@@ -45,8 +47,8 @@ Each PR goes through, in order:
 1. **Your feedback.** Comments and review threads from you are handled first, by the `fixer`.
 2. **Merge conflicts.** If the base branch moved and the PR no longer merges, the `fixer` merges the base branch in and resolves the conflicts. It tries up to 3 times. Then the issue gets `needs-human`.
 3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
-4. **Code review** by `reviewer-code`, then a fix if it found problems.
-5. **Spec review** by `reviewer-spec`, then a fix if it found problems.
+4. **Technical review** by `reviewer`, through your `review` capability, then a fix if it found problems.
+5. **Acceptance review** by `acceptance-reviewer`: every criterion has evidence, required capabilities were used, nothing out of scope. Then a fix if it found problems.
 6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./09-copilot-review.md).
 
 Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
