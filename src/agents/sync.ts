@@ -42,7 +42,7 @@ export const CLAUDE_ATTRIBUTION = {
 export function claudeTools(agent: AgentDef): string[] {
 	const tools = agent.tools.flatMap((t) => CLAUDE_TOOLS[t] ?? []);
 	if (agent.skills.length) tools.push("Skill");
-	if (agent.subagents.length) tools.push("Task");
+	if (agent.subagents.length) tools.push("Agent");
 	return [...new Set(tools)];
 }
 

@@ -50,6 +50,5 @@ Return the structured result; it is your only channel to GitHub.
 - `prTitle`: `docs(<area>): …`, under 72 characters.
 - `prBody`: follow `pr-description`; under "How to test", tell the reviewer which pages to read and what task to try.
 - `testsRun`: docs tooling and any commands/samples you executed, with outcomes.
-- `screenshots`: usually empty.
 - `risks`: inaccuracies found elsewhere, claims you could not verify.
 - `blockedReason`: one sentence when blocked; otherwise null.

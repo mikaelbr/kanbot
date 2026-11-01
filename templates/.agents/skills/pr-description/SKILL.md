@@ -27,8 +27,12 @@ Conventional commit, imperative, under 72 characters, naming the user-visible ef
 
 ## Screenshots
 
-![<state, width>](.kanbot/screenshots/<branch>/<name>.png)
-<!-- UI changes only; 1-3 images that show the change. -->
+![<state>](repo-relative path to a committed image)
+<!-- Optional. Only when the change is visible; 1-3 images. -->
+
+## Validation
+
+- <What you used to prove it works (tests, skills, preview) and what it showed. 1-3 bullets.>
 
 ## Notes for reviewer
 
@@ -40,5 +44,5 @@ Conventional commit, imperative, under 72 characters, naming the user-visible ef
 - One line per bullet. No "Why" section; the issue has it.
 - Describe what the code does now, not how you got there.
 - Anything you could not verify goes in `risks`, not the body.
-- Screenshot paths must match the `screenshots` output field.
+- Omit Screenshots when there is nothing to show.
 - Aim for under 20 lines.

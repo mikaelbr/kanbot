@@ -87,12 +87,12 @@ Tools map to provider tools:
 
 Column agents answer with JSON. The daemon turns it into comments, PRs and labels.
 
-| Output             | Used by      | Main fields                                                       |
-| ------------------ | ------------ | ----------------------------------------------------------------- |
-| `plan-result`      | planner      | `plan`, `summary`, `replies`, `newIssues`, `labels`, `questions`  |
-| `implement-result` | implementers | `status`, `prTitle`, `prBody`, `testsRun`, `screenshots`, `risks` |
-| `review-result`    | reviewers    | `verdict`, `summary`, `findings`                                  |
-| `fix-result`       | fixer        | `addressed`, `summary`, `prBody`                                  |
+| Output             | Used by      | Main fields                                                      |
+| ------------------ | ------------ | ---------------------------------------------------------------- |
+| `plan-result`      | planner      | `plan`, `summary`, `replies`, `newIssues`, `labels`, `questions` |
+| `implement-result` | implementers | `status`, `prTitle`, `prBody`, `testsRun`, `risks`               |
+| `review-result`    | reviewers    | `verdict`, `summary`, `findings`                                 |
+| `fix-result`       | fixer        | `addressed`, `summary`, `prBody`                                 |
 
 Schemas are defined in `src/schemas/results.ts` and can't be changed per repo. Agents must match the one they declare.
 
