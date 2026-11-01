@@ -36,8 +36,9 @@ const answers =
 
 test("init maps the answers to capabilities", () => {
 	const caps = askCapabilities(
-		["e2e", "deploy-preview"],
-		answers("y", "e2e", "", "deploy-preview"),
+		["deploy-preview", "e2e"],
+		answers("y", "e2e", "", "1"),
+		() => {},
 	);
 	expect(caps).toEqual({
 		verify: { use: "e2e", required: false },
@@ -46,10 +47,13 @@ test("init maps the answers to capabilities", () => {
 });
 
 test("init skips the map when declined, unknown or nothing to map", () => {
-	expect(askCapabilities(["e2e"], answers("n"))).toEqual({});
-	expect(askCapabilities(["e2e"], answers("y", "nope", null, null))).toEqual(
-		{},
-	);
+	const said: string[] = [];
+	const say = (l: string) => said.push(l);
+	expect(askCapabilities(["e2e"], answers("n"), say)).toEqual({});
+	expect(
+		askCapabilities(["e2e"], answers("y", "nope", "7", null), say),
+	).toEqual({});
+	expect(said.filter((l) => l.includes("not found"))).toHaveLength(2);
 	let asked = false;
 	expect(
 		askCapabilities([], () => {

@@ -105,16 +105,23 @@ export async function ownWorkers(root: string): Promise<string[]> {
 export function askCapabilities(
 	workers: string[],
 	ask: (question: string) => string | null,
+	say: (line: string) => void = console.log,
 ): Capabilities {
 	const caps: Capabilities = {};
 	if (!workers.length) return caps;
-	const yes = ask(
-		`Map your own skills and agents to kanbot capabilities now? Found: ${workers.join(", ")} [y/N]`,
+	say(
+		`Your skills and agents:\n${workers.map((w, i) => `  ${i + 1}. ${w}`).join("\n")}`,
 	);
+	const yes = ask("Map them to kanbot capabilities now? [y/N]");
 	if (!/^y/i.test(yes?.trim() ?? "")) return caps;
 	for (const [name, what] of Object.entries(RESERVED)) {
-		const use = ask(`${name} (${what}): skill or agent, Enter to skip`)?.trim();
-		if (use && workers.includes(use)) caps[name] = { use, required: false };
+		const answer = ask(
+			`${name} (${what}): number or name, Enter to skip`,
+		)?.trim();
+		if (!answer) continue;
+		const use = workers[Number(answer) - 1] ?? answer;
+		if (workers.includes(use)) caps[name] = { use, required: false };
+		else say(`  "${answer}" not found, skipped ${name}.`);
 	}
 	return caps;
 }
