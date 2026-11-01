@@ -244,7 +244,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 			agentName,
 			"implement-result",
 			cwd,
-			implementPrompt(job, config.baseBranch),
+			implementPrompt(job, config.baseBranch, config.capabilities),
 		);
 		if (result.status === "blocked") {
 			await addLabels(bot, issue.number, [LABELS.needsHuman]);
@@ -350,7 +350,7 @@ async function review(job: ReviewJob, deps: JobDeps) {
 		PASS_AGENT[job.pass],
 		"review-result",
 		cwd,
-		reviewPrompt(job, deps.config.baseBranch),
+		reviewPrompt(job, deps.config.baseBranch, deps.config.capabilities),
 	);
 	ReviewResult.parse(result);
 	const icon = result.verdict === "approve" ? "✅" : "🛠️";
@@ -382,7 +382,7 @@ async function fix(job: FixJob, deps: JobDeps) {
 		"fixer",
 		"fix-result",
 		cwd,
-		fixPrompt(job, config.baseBranch, logs),
+		fixPrompt(job, config.baseBranch, logs, config.capabilities),
 	);
 	FixResult.parse(result);
 
@@ -488,7 +488,12 @@ async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
 			"fixer",
 			"fix-result",
 			cwd,
-			fixPrompt(job, config.baseBranch, files.map((f) => `- ${f}`).join("\n")),
+			fixPrompt(
+				job,
+				config.baseBranch,
+				files.map((f) => `- ${f}`).join("\n"),
+				config.capabilities,
+			),
 		);
 		FixResult.parse(result);
 		const left: string[] = [];

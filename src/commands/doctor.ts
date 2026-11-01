@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents, missingSkills } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
+import { findCapability } from "../capabilities.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { describeError } from "../errors.ts";
@@ -17,7 +18,14 @@ import {
 import { NEW_SUFFIX, pendingMerges, planUpgrade } from "../templates.ts";
 import { REPO_LABELS } from "./board.ts";
 
-type Check = { name: string; ok: boolean; detail?: string; fix?: string };
+type Check = {
+	name: string;
+	ok: boolean;
+	/** Shown with a warning mark; never fails doctor. */
+	warn?: boolean;
+	detail?: string;
+	fix?: string;
+};
 
 async function cmd(args: string[]) {
 	const p = Bun.spawn(args, { stdout: "pipe", stderr: "pipe" });
@@ -50,7 +58,7 @@ export default defineCommand({
 		const add = (c: Check) => {
 			checks.push(c);
 			console.log(
-				`${c.ok ? "✔" : "✖"} ${c.name}${c.detail ? ` — ${c.detail}` : ""}${!c.ok && c.fix ? `\n    fix: ${c.fix}` : ""}`,
+				`${c.warn ? "!" : c.ok ? "✔" : "✖"} ${c.name}${c.detail ? ` — ${c.detail}` : ""}${!c.ok && c.fix ? `\n    fix: ${c.fix}` : ""}`,
 			);
 		};
 
@@ -125,6 +133,17 @@ export default defineCommand({
 				detail: noSkill.join(", ") || undefined,
 				fix: "add them to .agents/skills or remove them from the agent's `skills`",
 			});
+			for (const [name, c] of Object.entries(config.capabilities)) {
+				const found = findCapability(root, agents, c.use);
+				const single = found === "claude" || found === "codex";
+				add({
+					name: `capability ${name} → ${c.use}`,
+					ok: found !== null,
+					warn: single,
+					detail: single ? `${found} agent, works on ${found} only` : undefined,
+					fix: "add the skill to .agents/skills or the agent to .kanbot/agents",
+				});
+			}
 			const stale = await sync(root, agents, { check: true });
 			add({
 				name: "generated agent files up to date",

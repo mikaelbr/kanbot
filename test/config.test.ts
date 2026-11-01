@@ -65,3 +65,26 @@ test("writeConfigSchema check reports stale without writing", async () => {
 	expect(await writeConfigSchema(root)).toBe(true);
 	expect(await writeConfigSchema(root, { check: true })).toBe(false);
 });
+
+test("capabilities default to empty and parse use, when and required", async () => {
+	await saveConfig(root, { repo: "acme/app" });
+	expect((await loadConfig(root)).capabilities).toEqual({});
+	await saveConfig(root, {
+		capabilities: {
+			verify: { use: "verify-ui", when: "UI changes", required: true },
+			bench: { use: "bench" },
+		},
+	} as never);
+	expect((await loadConfig(root)).capabilities).toEqual({
+		verify: { use: "verify-ui", when: "UI changes", required: true },
+		bench: { use: "bench", required: false },
+	});
+});
+
+test("capability names must be kebab-case", async () => {
+	await saveConfig(root, {
+		repo: "acme/app",
+		capabilities: { "Not OK": { use: "x" } },
+	} as never);
+	await expect(loadConfig(root)).rejects.toThrow("invalid values");
+});

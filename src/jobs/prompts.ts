@@ -1,3 +1,4 @@
+import { type Capabilities, capabilitiesSection } from "../capabilities.ts";
 import {
 	type FixJob,
 	type ImplementJob,
@@ -20,6 +21,8 @@ const RULES = `## Ground rules
 - Never use \`gh\`, never \`git push\`, never contact GitHub. kanbot applies your output.
 - Your final answer must be the structured JSON result. Put everything the human should see in it.
 - Write short and plain: only what the reader needs to act or understand. Don't restate the input or narrate your process.`;
+
+const VALIDATION = "List what you used under Validation in the PR body.";
 
 function quote(text: string) {
 	return text.trim() ? text.trim() : "_(empty)_";
@@ -109,7 +112,11 @@ export function planPrompt(job: PlanJob, explore: number | null) {
 	return parts.join("\n\n");
 }
 
-export function implementPrompt(job: ImplementJob, base: string) {
+export function implementPrompt(
+	job: ImplementJob,
+	base: string,
+	capabilities: Capabilities = {},
+) {
 	const { issue } = job.item;
 	const parts = [
 		issueHeader(issue),
@@ -126,13 +133,18 @@ export function implementPrompt(job: ImplementJob, base: string) {
 			`## Recent human comments on the issue\n${conversation(humanNotes)}`,
 		);
 	parts.push(
+		capabilitiesSection(capabilities, VALIDATION),
 		`## Workspace\n- Branch \`${job.branch}\`, created from \`origin/${base}\`.\n- Commit your work with conventional commit messages. Uncommitted changes are committed for you, but prefer small commits.\n- Run the project's tests and linters before finishing and report them in \`testsRun\`.`,
 		RULES,
 	);
-	return parts.join("\n\n");
+	return parts.filter(Boolean).join("\n\n");
 }
 
-export function reviewPrompt(job: ReviewJob, base: string) {
+export function reviewPrompt(
+	job: ReviewJob,
+	base: string,
+	capabilities: Capabilities = {},
+) {
 	const { issue } = job.item;
 	const { pr } = job;
 	return [
@@ -140,6 +152,7 @@ export function reviewPrompt(job: ReviewJob, base: string) {
 		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
 		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`. CI status: ${pr.checks ?? "none"}.\n\n### PR description\n${quote(stripMarkers(pr.body))}`,
 		humanDecisions(pr),
+		capabilitiesSection(capabilities),
 		`## Review pass ${job.pass} of ${reviewPasses(issue).length}\nYou only review. Do not edit files or commit.`,
 		RULES,
 	]
@@ -148,7 +161,12 @@ export function reviewPrompt(job: ReviewJob, base: string) {
 }
 
 /** `details`: CI logs for a CI fix, the conflicted files for a conflict fix. */
-export function fixPrompt(job: FixJob, base: string, details: string | null) {
+export function fixPrompt(
+	job: FixJob,
+	base: string,
+	details: string | null,
+	capabilities: Capabilities = {},
+) {
 	const { issue } = job.item;
 	const { pr } = job;
 	const parts = [
@@ -156,6 +174,8 @@ export function fixPrompt(job: FixJob, base: string, details: string | null) {
 		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
 		`## Pull request #${pr.number}: ${pr.title}\nBranch \`${pr.headRefName}\` (checked out). Diff with: \`git diff origin/${base}...HEAD\`.\n\n### Current PR description\n${quote(stripMarkers(pr.body))}`,
 	];
+	const caps = capabilitiesSection(capabilities, VALIDATION);
+	if (caps) parts.push(caps);
 	const r = job.reason;
 	const decisions = r.type === "feedback" ? null : humanDecisions(pr);
 	if (decisions) parts.push(decisions);

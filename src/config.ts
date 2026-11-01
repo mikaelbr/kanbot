@@ -17,6 +17,26 @@ export type ColumnKey = (typeof COLUMN_KEYS)[number];
 export const JOB_KINDS = ["fix", "review", "plan", "implement"] as const;
 export type JobKind = (typeof JOB_KINDS)[number];
 
+export const RESERVED_CAPABILITIES = ["verify", "review", "preview"] as const;
+
+export const Capability = z.object({
+	use: z
+		.string()
+		.min(1)
+		.describe(
+			"Skill in .agents/skills or agent in .kanbot/agents that does the work.",
+		),
+	when: z
+		.string()
+		.optional()
+		.describe("When it applies, e.g. `Changes to UI users see`."),
+	required: z
+		.boolean()
+		.default(false)
+		.describe("A miss when it applies blocks acceptance review."),
+});
+export type Capability = z.infer<typeof Capability>;
+
 export const ConfigSchema = z.object({
 	provider: z
 		.enum(["claude", "codex"])
@@ -87,6 +107,12 @@ export const ConfigSchema = z.object({
 		})
 		.describe(
 			"Maps a type:<key> label to an agent. `default` is the fallback.",
+		),
+	capabilities: z
+		.record(z.string().regex(/^[a-z][a-z0-9-]*$/), Capability)
+		.default({})
+		.describe(
+			"Needs mapped to the repo's own skills or agents. Reserved: verify (prove acceptance criteria), review (technical review), preview (something a human can try). Other names are yours.",
 		),
 	review: z
 		.object({
