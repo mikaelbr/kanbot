@@ -208,7 +208,9 @@ async function plan(job: PlanJob, deps: JobDeps) {
 		);
 	}
 	lines.push(
-		"_Comment to refine. Drag the card to **Ready** when the plan is approved._",
+		result.questions.length
+			? "_Answer the questions to refine. kanbot won't start while the plan has open questions._"
+			: "_Comment to refine. Drag the card to **Ready** when the plan is approved._",
 	);
 	lines.push(
 		[marker("plan"), ...job.comments.map((c) => marker("re", c.id))].join("\n"),
@@ -556,6 +558,12 @@ export async function applyAction(action: Action, deps: JobDeps) {
 			);
 			return;
 		}
+		case "openQuestions":
+			return postComment(
+				bot,
+				action.item.issue.number,
+				`**Not started: the plan has open questions.**\n\n${action.questions.map((q) => `- ${q}`).join("\n")}\n\nMove the card to **Planning** and answer them, or remove them from the plan. Then move it back to **Ready**.\n${marker("questions")}`,
+			);
 		case "merge": {
 			const { pr } = action;
 			log.info(`merging #${pr.number}, approved by ${action.by}`);

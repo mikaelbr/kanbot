@@ -74,7 +74,7 @@ Do not use `technical` to dodge user framing. If users will notice the change, i
 | System as user          | "As the system, I want to cache…"            | Use `technical` with a technical goal, or find the human. |
 | Hollow "so that"        | "so that I can use the feature"              | Ask "why?" until you reach an outcome.                    |
 | Untestable criteria     | "The page is intuitive"                      | Name the observable behaviour.                            |
-| Horizontal slice        | "Build the database tables for X"            | Slice vertically through UI → API → data.                 |
+| Horizontal slice        | "Build the database tables for X"            | Slice vertically through every layer the user touches.    |
 | Epic disguised as story | 10+ criteria, many screens                   | Split with `issue-splitting`.                             |
 
 ## New issues you propose

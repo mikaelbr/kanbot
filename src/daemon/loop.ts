@@ -211,6 +211,8 @@ function describeAction(a: Action) {
 			return `post comparison on #${a.item.issue.number}`;
 		case "needsHuman":
 			return `needs-human #${a.number}`;
+		case "openQuestions":
+			return `open questions on #${a.item.issue.number}`;
 		case "resetFailures":
 			return `reset failures ${a.prefix}`;
 		case "cleanup":

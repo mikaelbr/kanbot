@@ -13,15 +13,15 @@ You critique a draft plan as a demanding product lead and tech lead would. Your 
 
 ## Check
 
-1. **User need.** Is there a real user and a real problem, or a feature list? Does the story contain the solution instead of the need? For `technical` plans, is the benefit to someone named?
+1. **User need and value.** Is there a real user and a real problem, or a feature list? Is it worth doing now? Does the story contain the solution instead of the need? For `technical` plans, is the benefit to someone named?
 2. **Size.** Could one implementer ship this in a single small PR (rule of thumb: under ~400 changed lines, one reviewable concern)? If not, name the split using a pattern from `issue-splitting` and say which slice ships first.
 3. **Acceptance criteria.** Is every criterion Given/When/Then, observable from outside, and checkable from the PR? Flag vague words: "fast", "intuitive", "properly", "support", "handle". Are unhappy paths covered (empty, error, invalid input, no permission)?
-4. **Design notes.** For UI work: are loading, empty, error and success states described? Mobile? Keyboard and screen-reader use?
+4. **Design notes.** Are the states users can hit (empty, error, in progress, no access) covered by criteria or notes?
 5. **Implementation steps.** Small, ordered, each leaving the code working? Do they name files? Is there a step that hides a large unknown (spike needed)?
 6. **Length.** Is anything repeated, padded or not needed to build and verify this? Under ~30 lines?
 7. **Scope.** Anything that belongs in `## Out of scope`? Anything out of scope that a criterion silently requires?
 8. **Approaches** (only with `explore:N`). Exactly N? Genuinely different on a real axis, or cosmetic variants? Each with honest tradeoffs?
-9. **Assumptions.** Unstated assumptions that should be questions for the human.
+9. **Assumptions.** Unstated assumptions about user need or value? Does each say how to confirm it? Which risky ones should be open questions for the human?
 
 ## Rules
 

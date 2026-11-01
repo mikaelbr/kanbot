@@ -4,11 +4,17 @@ import {
 	derive,
 	type FixJob,
 	type ImplementJob,
+	openQuestions,
 	schedule,
 } from "../src/daemon/derive.ts";
 import { prItem } from "../src/daemon/snapshot.ts";
 import type { Issue, PR } from "../src/daemon/types.ts";
-import { embedJson, marker, withPlan } from "../src/github/markers.ts";
+import {
+	embedJson,
+	extractPlan as extractPlanOf,
+	marker,
+	withPlan,
+} from "../src/github/markers.ts";
 import type { Finding } from "../src/schemas/results.ts";
 import {
 	comment,
@@ -587,5 +593,64 @@ describe("merge on approval", () => {
 			ctx({ config: onApproval }),
 		);
 		expect(r.actions.filter((a) => a.kind === "merge")).toEqual([]);
+	});
+});
+
+describe("ready gate on open questions", () => {
+	const withQuestions = withPlan(
+		"Users need a thing",
+		"## User story\nAs a user…\n\n## Open questions\n\n- Include old months? Default: no.\n\n## Notes\n- not a question",
+	);
+
+	test("openQuestions reads only the Open questions section", () => {
+		expect(openQuestions(extractPlanOf(withQuestions))).toEqual([
+			"Include old months? Default: no.",
+		]);
+		expect(openQuestions("## User story\nx")).toEqual([]);
+		expect(openQuestions("## Open questions\n\n- Last one?")).toEqual([
+			"Last one?",
+		]);
+		expect(openQuestions(null)).toEqual([]);
+	});
+
+	test("open questions block implement and comment once", () => {
+		const r = derive(snap(item("ready", { body: withQuestions })), ctx());
+		expect(r.jobs).toEqual([]);
+		expect(r.actions).toMatchObject([
+			{
+				kind: "openQuestions",
+				questions: ["Include old months? Default: no."],
+			},
+		]);
+	});
+
+	test("no second comment for the same plan", () => {
+		const comments = [
+			comment(`Plan drafted. ${marker("plan")}`),
+			comment(`Not started. ${marker("questions")}`),
+		];
+		const r = derive(
+			snap(item("ready", { body: withQuestions, comments })),
+			ctx(),
+		);
+		expect(r.jobs).toEqual([]);
+		expect(r.actions).toEqual([]);
+	});
+
+	test("a new plan round posts the gate again", () => {
+		const comments = [
+			comment(`Not started. ${marker("questions")}`),
+			comment(`Plan updated. ${marker("plan")}`),
+		];
+		const r = derive(
+			snap(item("ready", { body: withQuestions, comments })),
+			ctx(),
+		);
+		expect(r.actions).toMatchObject([{ kind: "openQuestions" }]);
+	});
+
+	test("in progress runs on despite open questions", () => {
+		const r = derive(snap(item("inProgress", { body: withQuestions })), ctx());
+		expect(r.jobs).toMatchObject([{ kind: "implement" }]);
 	});
 });

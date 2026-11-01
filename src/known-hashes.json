@@ -3,7 +3,8 @@
 		"bb8c5148899685168324b8fda3524937e3943b32"
 	],
 	".agents/skills/approach-designer/SKILL.md": [
-		"7fbf6e80562b59e94c8b9615d777afca8a769d29"
+		"7fbf6e80562b59e94c8b9615d777afca8a769d29",
+		"d932ed30a58cb32dd91ec03ddd2b1c6c59f77714"
 	],
 	".agents/skills/code-review/SKILL.md": [
 		"a35bdecaeb1b6a2469a6330d2cef42a9d61409fe"
@@ -31,7 +32,8 @@
 	".agents/skills/plan-template/SKILL.md": [
 		"47a5dbbd2870883ca42dd9410d224ef9c0c9979f",
 		"79cfd0bf36110b5d6f452e6400161609b11df0d6",
-		"7bfde45995efaf515e45ccec09c204178203fdb7"
+		"7bfde45995efaf515e45ccec09c204178203fdb7",
+		"e6b6e55a42bfc42d0c9ff1a5cdf3a0573ab665c0"
 	],
 	".agents/skills/pr-description/SKILL.md": [
 		"1db6eb751e0bb1ea0014a2b414e04f6af59b1b2d",
@@ -56,7 +58,8 @@
 	".agents/skills/tdd/SKILL.md": ["5e6b20868e02ae24f6d25824bac431143bd43021"],
 	".agents/skills/user-stories/SKILL.md": [
 		"1b37f8e59c15b934d555070a63d4f0d3939a007f",
-		"1b5d229d043c1bfbd84aecd9ee6191b1d473f1d8"
+		"1b5d229d043c1bfbd84aecd9ee6191b1d473f1d8",
+		"73455bec36bd5677cdf3c081677ad2856c434954"
 	],
 	".agents/skills/verify-ui/SKILL.md": [
 		"c67a0e1d6a1c1d9adf59dd154160ccf58519ea72",
@@ -111,9 +114,13 @@
 		"c95dff48eed5db4aadf10d0a47e7ec1285937ebf",
 		"e4bbddb0a810313fb3a6ed3983b3b9335279feef"
 	],
-	".kanbot/agents/plan-critic.md": ["cd6dd133f4611bd86fe27f8539a62a805e4df6c9"],
+	".kanbot/agents/plan-critic.md": [
+		"3d1c38922a94712d0f3a725902e3df9cee87bcda",
+		"cd6dd133f4611bd86fe27f8539a62a805e4df6c9"
+	],
 	".kanbot/agents/planner.md": [
 		"2283cf8bf6d27b8bbf721f97bb45cd40eaa6d39d",
+		"a4a65d240ab4b23737f4d68d8765cca89cf08864",
 		"bdb111213cced70583157edad658247972dcbe45"
 	],
 	".kanbot/agents/reviewer-code.md": [

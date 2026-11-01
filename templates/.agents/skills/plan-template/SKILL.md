@@ -20,13 +20,18 @@ Need: <one or two sentences: what hurts today and how we'll know it worked.>
 - [ ] Given <context>, when <action>, then <observable result>.
 <!-- 2-6 items. Cover the happy path plus the edge cases that matter. -->
 
+## Assumptions
+
+- <What the plan assumes about the user's need or the business value.> Confirm: <ask, data, or a user test>.
+<!-- 1-4 items. Risky, unconfirmed ones also go in Open questions. -->
+
 ## Out of scope
 
 - <Only what a reader would otherwise expect. Omit the section if nothing.>
 
 ## Design notes
 
-<UI: placement, key copy, states that differ from the obvious. Non-UI: API or data shape. 1-4 lines. Omit if nothing beyond the criteria.>
+<Decisions the criteria don't settle: what users see or call, key copy, data shape. 1-4 lines. Omit if nothing beyond the criteria.>
 
 ## Implementation steps
 
@@ -39,12 +44,15 @@ Need: <one or two sentences: what hurts today and how we'll know it worked.>
 
 ## Open questions
 
-- <Only what blocks the human's approval, with the default you assume. Omit if none.>
+- <Only what blocks approval, with the default you assume. Omit if none.>
+<!-- Open questions keep the issue out of Ready until answered or removed. -->
 ```
 
 ## Rules
 
 - Required: User story (or Technical goal), Acceptance criteria, Implementation steps. Omit other sections when empty; don't write "None."
+- Assumptions are about user need and business value, not code. Technical unknowns go in `explore:N` or a spike.
+- Put a question in Open questions only if building on a wrong guess would waste the work. kanbot won't start while any are open.
 - One line per bullet. No prose paragraphs, no repeating the issue text.
 - Acceptance criteria are shared by all approaches. Approach-specific steps go inside each `### Approach k`.
 - File paths come from reading the code, not guesses. Mark new files "(new)".
@@ -64,6 +72,11 @@ Need: entries without a project silently drop off invoices; users find out when 
 - [ ] Given I assign a project in that list, when it saves, then the entry leaves the list without a reload.
 - [ ] Given every entry has a project, when I open the month view, then the list is hidden.
 - [ ] Given loading fails, when I open the month view, then the list shows "Couldn't load entries" and "Try again".
+
+## Assumptions
+
+- Users fix missing projects before invoicing, not after. Confirm: ask two users how they invoice.
+- Most months have under 20 such entries. Confirm: query last quarter's data.
 
 ## Out of scope
 

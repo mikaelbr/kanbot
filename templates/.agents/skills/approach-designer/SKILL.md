@@ -17,7 +17,7 @@ Pick the axis where the decision matters most for this problem, then spread appr
 | Interaction model | Search box · faceted filters · timeline browsing                            |
 | Where logic lives | Client-side filtering of loaded data · server query endpoint · search index |
 | Data model        | Denormalised read model · query on existing tables · materialised view      |
-| Build vs. reuse   | Custom component · existing design-system table · third-party library       |
+| Build vs. reuse   | Build it · reuse what the project has · third-party library                 |
 | Timing            | Synchronous · background job with notification · precomputed nightly        |
 | Scope of change   | Minimal tweak to the current screen · new dedicated screen                  |
 

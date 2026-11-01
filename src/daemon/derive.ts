@@ -76,6 +76,7 @@ export type Action =
 	| { kind: "merge"; item: Item; pr: PR; by: string }
 	| { kind: "compare"; item: Item; prs: PR[] }
 	| { kind: "needsHuman"; number: number; why: string }
+	| { kind: "openQuestions"; item: Item; questions: string[] }
 	| { kind: "resetFailures"; prefix: string }
 	| { kind: "cleanup"; number: number };
 
@@ -178,6 +179,28 @@ export function approvedBy(
 	);
 }
 
+/** Bullets under the plan's "## Open questions". */
+export function openQuestions(plan: string | null): string[] {
+	const m = plan?.match(
+		/^##\s+Open questions\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/im,
+	);
+	if (!m) return [];
+	return (m[1] as string)
+		.split("\n")
+		.map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim())
+		.filter((q): q is string => Boolean(q));
+}
+
+/** Was the open-questions gate already posted for the latest plan? */
+function gatePosted(comments: Comment[]) {
+	for (let i = comments.length - 1; i >= 0; i--) {
+		const body = (comments[i] as Comment).body;
+		if (hasMarker(body, "questions")) return true;
+		if (hasMarker(body, "plan")) return false;
+	}
+	return false;
+}
+
 const fixCount = (pr: PR, kind: "ci" | "conflict") =>
 	pr.comments.reduce((n, c) => n + markerValues(c.body, kind).length, 0);
 
@@ -228,6 +251,16 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 
 			case "ready":
 			case "inProgress": {
+				// Open questions keep a plan out of Ready. Once started, it runs on.
+				const questions =
+					item.column === "ready" && !issue.prs.length
+						? openQuestions(extractPlan(issue.body))
+						: [];
+				if (questions.length) {
+					if (!gatePosted(issue.comments))
+						actions.push({ kind: "openQuestions", item, questions });
+					break;
+				}
 				const n = exploreCount(issue.labels);
 				const variants =
 					n === null ? [null] : Array.from({ length: n }, (_, i) => i + 1);
