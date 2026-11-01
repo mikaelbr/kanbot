@@ -26,13 +26,15 @@ Write issues. Use the **User need** or **Technical task** issue template, or tal
 
 Move a card here to get a plan. The `planner` writes the plan into the issue body: user story, acceptance criteria, and the assumptions it rests on about user need and business value. Risky assumptions become open questions for you.
 
-Comment on the issue to steer it. Each round, the planner answers every new comment and updates the plan. It can also split work into new issues or sub-issues when you ask.
+Comment on the issue to steer it. Each round, the planner answers every new comment and updates the plan. It can also split work into new issues or sub-issues when you ask. Split slices are linked as [blocked by](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-issue-dependencies) the slice before, so they are built in order.
 
 ## 3. Ready
 
 Moving a card to Ready approves the plan. Cards are picked top-down, in the project's manual item order.
 
 A plan with open questions doesn't start. kanbot comments once; move the card back to Planning and answer them, or remove them from the plan.
+
+A card that is blocked by open issues waits, and the next card is picked. kanbot comments once and starts it when the blockers close. Remove the link on the issue to start it anyway.
 
 ## 4. In Progress
 

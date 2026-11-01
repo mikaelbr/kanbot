@@ -61,6 +61,7 @@ export function item(
 			labels: [],
 			comments: [],
 			prs: [],
+			blockedBy: [],
 			...over,
 		},
 	};

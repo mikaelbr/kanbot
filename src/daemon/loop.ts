@@ -213,6 +213,8 @@ function describeAction(a: Action) {
 			return `needs-human #${a.number}`;
 		case "openQuestions":
 			return `open questions on #${a.item.issue.number}`;
+		case "waiting":
+			return `#${a.item.issue.number} waits on ${a.blockers.join(", ")}`;
 		case "resetFailures":
 			return `reset failures ${a.prefix}`;
 		case "cleanup":

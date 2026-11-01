@@ -19,6 +19,7 @@ import type { Worktrees } from "../daemon/git.ts";
 import type { Notifier } from "../daemon/notify.ts";
 import type { State } from "../daemon/state.ts";
 import {
+	addBlockedBy,
 	addLabels,
 	addSubIssue,
 	createIssue,
@@ -152,6 +153,25 @@ export function runJob(job: Job, deps: JobDeps): Promise<void> {
 
 // ---- plan -------------------------------------------------------------------
 
+/**
+ * [issue, blocker] node id pairs for the planner's `blockedBy` indexes.
+ * `ids[0]` is the planned issue, `ids[n]` the nth new issue (undefined if not
+ * created). Bad indexes and self-links are dropped.
+ */
+export function blockedByLinks(
+	newIssues: { blockedBy: number[] }[],
+	ids: (string | undefined)[],
+): [string, string][] {
+	return newIssues.flatMap((ni, i) => {
+		const id = ids[i + 1];
+		if (!id) return [];
+		return ni.blockedBy
+			.map((b) => ids[b])
+			.filter((b): b is string => !!b && b !== id)
+			.map((b): [string, string] => [id, b]);
+	});
+}
+
 async function plan(job: PlanJob, deps: JobDeps) {
 	const { gh, bot } = deps;
 	const { issue } = job.item;
@@ -183,16 +203,24 @@ async function plan(job: PlanJob, deps: JobDeps) {
 	);
 
 	const created: string[] = [];
+	// Node ids by blockedBy index: 0 is this issue, n the nth new issue.
+	const ids: (string | undefined)[] = [issue.id];
 	for (const ni of result.newIssues) {
 		const res = await createIssue(
 			bot,
 			ni.title,
 			`${ni.body}\n\n_Split from #${issue.number} by kanbot._\n${marker("created", issue.number)}`,
 		);
+		ids.push(res?.node_id);
 		if (!res) continue;
 		if (ni.subIssue) await addSubIssue(bot, issue.id, res.node_id);
 		await addToBoard(gh, deps.board, res.node_id, ni.column);
 		created.push(`#${res.number}`);
+	}
+	for (const [id, blocker] of blockedByLinks(result.newIssues, ids)) {
+		await addBlockedBy(bot, id, blocker).catch((e) =>
+			log.warn(`blocked-by link: ${e}`),
+		);
 	}
 
 	const lines = [
@@ -589,6 +617,12 @@ export async function applyAction(action: Action, deps: JobDeps) {
 				bot,
 				action.item.issue.number,
 				`**Not started: the plan has open questions.**\n\n${action.questions.map((q) => `- ${q}`).join("\n")}\n\nMove the card to **Planning** and answer them, or remove them from the plan. Then move it back to **Ready**.\n${marker("questions")}`,
+			);
+		case "waiting":
+			return postComment(
+				bot,
+				action.item.issue.number,
+				`**Waiting: blocked by ${action.blockers.join(", ")}.** kanbot starts it when they close.\n${marker("waiting", action.blockers.join(","))}`,
 			);
 		case "merge": {
 			const { pr } = action;

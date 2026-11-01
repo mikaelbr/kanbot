@@ -77,6 +77,7 @@ export type Action =
 	| { kind: "compare"; item: Item; prs: PR[] }
 	| { kind: "needsHuman"; number: number; why: string }
 	| { kind: "openQuestions"; item: Item; questions: string[] }
+	| { kind: "waiting"; item: Item; blockers: string[] }
 	| { kind: "resetFailures"; prefix: string }
 	| { kind: "cleanup"; number: number };
 
@@ -199,6 +200,22 @@ export function openQuestions(plan: string | null): string[] {
 		.filter((q): q is string => Boolean(q));
 }
 
+/** Open "blocked by" issues, as `#12` or `owner/repo#12`. */
+export function openBlockers(issue: Issue): string[] {
+	return issue.blockedBy
+		.filter((b) => b.state === "OPEN")
+		.map((b) => `${b.repo ?? ""}#${b.number}`);
+}
+
+/** Was the waiting comment already posted for these blockers? */
+function waitingPosted(comments: Comment[], blockers: string[]) {
+	for (let i = comments.length - 1; i >= 0; i--) {
+		const [last] = markerValues((comments[i] as Comment).body, "waiting");
+		if (last) return last === blockers.join(",");
+	}
+	return false;
+}
+
 /** Was the open-questions gate already posted for the latest plan? */
 function gatePosted(comments: Comment[]) {
 	for (let i = comments.length - 1; i >= 0; i--) {
@@ -267,6 +284,16 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 				if (questions.length) {
 					if (!gatePosted(issue.comments))
 						actions.push({ kind: "openQuestions", item, questions });
+					break;
+				}
+				// Open blockers keep it waiting; the next Ready card is picked.
+				const blockers =
+					item.column === "ready" && !issue.prs.length
+						? openBlockers(issue)
+						: [];
+				if (blockers.length) {
+					if (!waitingPosted(issue.comments, blockers))
+						actions.push({ kind: "waiting", item, blockers });
 					break;
 				}
 				const n = exploreCount(issue.labels);

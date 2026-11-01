@@ -21,7 +21,7 @@ Split when any of these hold:
 
 ## INVEST check for each slice
 
-- **Independent**: can merge in any order relative to sibling slices, or the order is explicit.
+- **Independent**: can merge in any order relative to sibling slices, or the order is explicit in `blockedBy`.
 - **Negotiable**: describes the need, leaves room in how.
 - **Valuable**: a user or operator notices something, even if small.
 - **Estimable**: no unbounded unknowns; otherwise spike first.
@@ -60,6 +60,10 @@ Ask: what is the least we could ship that someone would use or that teaches us s
 - **Sub-issue** (`subIssue: true`): a slice of this issue's need that someone should build next. Column `planning` if it is clear enough to plan now, `ideas` if it needs the human to prioritise first.
 - **Idea** (`subIssue: false`, column `ideas`): related but a different need, a nice-to-have you noticed, or tech debt discovered along the way.
 - **Neither**: things that are just part of doing this slice well. Keep them in the plan.
+
+## Order
+
+kanbot won't start a Ready card while its `blockedBy` issues are open. Set `blockedBy` on each slice to what must merge first; usually the previous slice. Leave it empty only when the slice truly stands alone.
 
 When splitting, this issue keeps the first slice. Rewrite its plan to cover only that slice and list the other slices under `## Out of scope` with a note that they were proposed as new issues.
 

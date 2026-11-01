@@ -666,3 +666,82 @@ describe("ready gate on open questions", () => {
 		expect(r.jobs).toMatchObject([{ kind: "implement" }]);
 	});
 });
+
+describe("ready gate on blockers", () => {
+	const open = { number: 7, repo: null, state: "OPEN" } as const;
+	const closed = { number: 8, repo: null, state: "CLOSED" } as const;
+
+	test("open blocker waits, comments once, and the next card is picked", () => {
+		const r = derive(
+			snap(
+				item("ready", { number: 1, body: planned, blockedBy: [open] }, 0),
+				item("ready", { number: 2, body: planned }, 1),
+			),
+			ctx(),
+		);
+		expect(kinds(r)).toEqual(["implement:#2:1"]);
+		expect(r.actions).toMatchObject([{ kind: "waiting", blockers: ["#7"] }]);
+	});
+
+	test("closed blockers don't block", () => {
+		const r = derive(
+			snap(item("ready", { body: planned, blockedBy: [closed] })),
+			ctx(),
+		);
+		expect(r.jobs).toMatchObject([{ kind: "implement" }]);
+		expect(r.actions).toEqual([]);
+	});
+
+	test("other repos are named", () => {
+		const r = derive(
+			snap(
+				item("ready", {
+					body: planned,
+					blockedBy: [{ number: 3, repo: "acme/api", state: "OPEN" }],
+				}),
+			),
+			ctx(),
+		);
+		expect(r.actions).toMatchObject([{ blockers: ["acme/api#3"] }]);
+	});
+
+	test("no second comment for the same blockers", () => {
+		const comments = [comment(`Waiting. ${marker("waiting", "#7")}`)];
+		const r = derive(
+			snap(item("ready", { body: planned, blockedBy: [open], comments })),
+			ctx(),
+		);
+		expect(r.jobs).toEqual([]);
+		expect(r.actions).toEqual([]);
+	});
+
+	test("changed blockers comment again", () => {
+		const comments = [comment(`Waiting. ${marker("waiting", "#6")}`)];
+		const r = derive(
+			snap(item("ready", { body: planned, blockedBy: [open], comments })),
+			ctx(),
+		);
+		expect(r.actions).toMatchObject([{ kind: "waiting", blockers: ["#7"] }]);
+	});
+
+	test("started cards run on despite blockers", () => {
+		const inProgress = derive(
+			snap(item("inProgress", { body: planned, blockedBy: [open] })),
+			ctx(),
+		);
+		expect(inProgress.jobs).toMatchObject([{ kind: "implement" }]);
+		const withPR = derive(
+			snap(
+				item("ready", {
+					body: planned,
+					blockedBy: [open],
+					prs: [pr({ headRefName: "kanbot/1", state: "CLOSED" })],
+				}),
+			),
+			ctx(),
+		);
+		expect(withPR.actions).not.toContainEqual(
+			expect.objectContaining({ kind: "waiting" }),
+		);
+	});
+});

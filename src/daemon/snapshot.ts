@@ -50,6 +50,7 @@ export async function takeSnapshot(
 					labels: [],
 					comments: [],
 					prs: [],
+					blockedBy: [],
 				},
 			};
 		},
@@ -86,6 +87,7 @@ export function prItem(pr: PR, position: number): Item {
 			labels: pr.labels,
 			comments: [],
 			prs: [pr],
+			blockedBy: [],
 			prOnly: true,
 		},
 	};

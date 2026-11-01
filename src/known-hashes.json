@@ -4,7 +4,8 @@
 		"d932ed30a58cb32dd91ec03ddd2b1c6c59f77714"
 	],
 	".agents/skills/issue-splitting/SKILL.md": [
-		"01625372d68a81347bf401e8603084420922d04e"
+		"01625372d68a81347bf401e8603084420922d04e",
+		"8d8651621721c530522d83edb9530b622df275df"
 	],
 	".agents/skills/kanbot-admin/SKILL.md": [
 		"3789c559be9fb6a78f82708ae9857395a5556f6b",
@@ -20,6 +21,7 @@
 		"2c6c77a225c5b880eff023d4b3c1305bfc91bfb3",
 		"2ccb86b12e5af121b79ef9f53c2a35dbbdb2ddeb",
 		"a24c0a655d6485e65bd5dea2a71f3afe67f04404",
+		"bde0364d60525598bbb28f1648d06d1407c62a73",
 		"cf3e95d137a5a58a273262bca6ba25fbc95fa037"
 	],
 	".agents/skills/kanbot-idea/SKILL.md": [
@@ -104,6 +106,7 @@
 	".kanbot/agents/planner.md": [
 		"2283cf8bf6d27b8bbf721f97bb45cd40eaa6d39d",
 		"6500bea6691685d2b74ea73095f11643e0fcc937",
+		"6def83eade7a3e8ca3bde6a3458c3b4921b3b3ac",
 		"a4a65d240ab4b23737f4d68d8765cca89cf08864",
 		"bdb111213cced70583157edad658247972dcbe45",
 		"dc50d048164ade2926b58dee48c3919c6b7d9558"

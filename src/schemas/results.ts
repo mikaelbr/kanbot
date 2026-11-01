@@ -30,6 +30,11 @@ export const PlanResult = z.strictObject({
 					.boolean()
 					.describe("true when it is split out of this issue"),
 				column: z.enum(["ideas", "planning"]),
+				blockedBy: z
+					.array(z.number().int().min(0))
+					.describe(
+						"What must merge first: 0 is this issue, n is the nth entry in newIssues (1-based). Empty when independent.",
+					),
 			}),
 		)
 		.describe("Issues to create, e.g. when the human asks to split work."),

@@ -61,6 +61,13 @@ export type PR = {
 	mergeable: "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
 };
 
+/** An issue this one links to. `repo` is null for the same repo. */
+export type IssueRef = {
+	number: number;
+	repo: string | null;
+	state: "OPEN" | "CLOSED";
+};
+
 export type Issue = {
 	id: string;
 	number: number;
@@ -71,6 +78,8 @@ export type Issue = {
 	labels: string[];
 	comments: Comment[];
 	prs: PR[];
+	/** GitHub "blocked by" links. */
+	blockedBy: IssueRef[];
 	/** A PR labeled `kanbot-review`, reviewed without a card. Fields mirror the PR. */
 	prOnly?: boolean;
 };

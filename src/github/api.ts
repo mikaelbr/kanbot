@@ -1,4 +1,4 @@
-import type { Checks, Comment, Issue, PR } from "../daemon/types.ts";
+import type { Checks, Comment, Issue, IssueRef, PR } from "../daemon/types.ts";
 import type { Gh } from "./gh.ts";
 
 const COMMENT = "id databaseId author { login } body createdAt";
@@ -24,6 +24,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 			id number url title body state
 			labels(first: 50) { nodes { name } }
 			comments(last: 100) { nodes { ${COMMENT} } }
+			blockedBy(first: 20) { nodes { number state repository { nameWithOwner } } }
 			closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
 				nodes { ${PR_FIELDS} }
 			}
@@ -69,6 +70,15 @@ export async function fetchIssue(gh: Gh, number: number): Promise<Issue> {
 		labels: names(i.labels),
 		comments: i.comments.nodes.map(comment),
 		prs: i.closedByPullRequestsReferences.nodes.map(mapPR),
+		// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
+		blockedBy: i.blockedBy.nodes.map((b: any): IssueRef => {
+			const repo = b.repository.nameWithOwner;
+			return {
+				number: b.number,
+				repo: repo === gh.repo ? null : repo,
+				state: b.state,
+			};
+		}),
 	};
 }
 
@@ -202,6 +212,14 @@ export function addSubIssue(gh: Gh, parentId: string, childId: string) {
 		"add sub-issue",
 		`mutation($p: ID!, $c: ID!) { addSubIssue(input: { issueId: $p, subIssueId: $c }) { issue { id } } }`,
 		{ p: parentId, c: childId },
+	);
+}
+
+export function addBlockedBy(gh: Gh, issueId: string, blockerId: string) {
+	return gh.mutate(
+		"add blocked-by",
+		`mutation($i: ID!, $b: ID!) { addBlockedBy(input: { issueId: $i, blockingIssueId: $b }) { issue { id } } }`,
+		{ i: issueId, b: blockerId },
 	);
 }
 
