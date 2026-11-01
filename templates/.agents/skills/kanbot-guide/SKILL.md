@@ -40,11 +40,24 @@ Go step by step. Run each command, check its output, then go on. If `.kanbot/con
 1. **Requirements.** Bun 1.3+, `gh` logged in, `claude` or `codex` logged in with a subscription (not an API key). Run `gh auth refresh -s project`.
 2. **Provider.** Ask which subscription they have, then `bunx kanbot init --provider claude|codex` in the repo root.
 3. **Conventions.** Fill in `.agents/skills/project-conventions/SKILL.md` with them: stack, commands to test, lint and typecheck. Adjust `.github/workflows/ci.yml` to run the same. Every agent reads this first.
-4. **Board.** `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
-5. **Options.** Go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
-6. **Commit and push** the kanbot files. Agents only see what's on the pushed base branch.
-7. **Check.** `kanbot doctor` until it passes, then `kanbot run --once --dry-run`, then `kanbot run`.
-8. **First card.** Have them write an issue, put it in Planning and read the plan. Point to `workflow`.
+4. **Capabilities.** kanbot runs the process; the repo's own skills and agents do the work. Ask which skills they have for proving acceptance criteria (`verify`), technical review (`review`) and something a human can try (`preview`), and map them under `capabilities` in `.kanbot/config.yml`. See [Capabilities](#capabilities).
+5. **Board.** `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
+6. **Options.** Go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
+7. **Commit and push** the kanbot files. Agents only see what's on the pushed base branch.
+8. **Check.** `kanbot doctor` until it passes, then `kanbot run --once --dry-run`, then `kanbot run`.
+9. **First card.** Have them write an issue, put it in Planning and read the plan. Point to `workflow`.
+
+## Capabilities
+
+```yaml
+capabilities:
+  verify: { use: e2e-tests, when: Changes users see }
+  preview: { use: deploy-preview, required: true }
+```
+
+- `use`: a skill in `.agents/skills` or an agent in `.kanbot/agents`. `when`: when it applies. `required: true`: a miss blocks acceptance review.
+- Any other name is theirs (`benchmark`, `security`…). Unmapped needs are left to the agent.
+- Suggest, don't install: no `verify` → a skill that runs the app or end-to-end tests; no `preview` → a preview deploy or test build; no `review` → a review skill with their checklist. `kanbot doctor` lists the gaps.
 
 ## Choose options
 

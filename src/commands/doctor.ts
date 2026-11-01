@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents, missingSkills } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { findCapability } from "../capabilities.ts";
+import { capabilityGaps, findCapability } from "../capabilities.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
 import { describeError } from "../errors.ts";
@@ -160,6 +160,13 @@ export default defineCommand({
 					fix: "add the skill to .agents/skills or the agent to .kanbot/agents",
 				});
 			}
+			for (const gap of capabilityGaps(config.capabilities))
+				add({
+					name: "capability suggestion",
+					ok: true,
+					warn: true,
+					detail: gap,
+				});
 			const stale = await sync(root, agents, { check: true });
 			add({
 				name: "generated agent files up to date",

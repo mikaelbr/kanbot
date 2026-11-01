@@ -1,7 +1,9 @@
 import { existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { AgentDef } from "./agents/load.ts";
-import type { Config } from "./config.ts";
+import type { Config, RESERVED_CAPABILITIES } from "./config.ts";
+import { TEMPLATES } from "./templates.ts";
 
 export type Capabilities = Config["capabilities"];
 
@@ -68,4 +70,65 @@ export function legacyCapabilities(
 			{ use, ...(when ? { when } : {}), required: false },
 		]),
 	);
+}
+
+export const RESERVED: Record<(typeof RESERVED_CAPABILITIES)[number], string> =
+	{
+		verify: "prove acceptance criteria",
+		review: "technical review",
+		preview: "something a human can try",
+	};
+
+/** Skills and agents in the repo that kanbot didn't ship. */
+export async function ownWorkers(root: string): Promise<string[]> {
+	const list = async (dir: string, ext?: string) =>
+		existsSync(dir)
+			? (await readdir(dir, { withFileTypes: true }))
+					.filter((e) => (ext ? e.name.endsWith(ext) : e.isDirectory()))
+					.map((e) => (ext ? e.name.slice(0, -ext.length) : e.name))
+			: [];
+	const shipped = new Set([
+		...(await list(join(TEMPLATES, ".agents", "skills"))),
+		...(await list(join(TEMPLATES, ".kanbot", "agents"), ".md")),
+	]);
+	const all = [
+		...(await list(join(root, ".agents", "skills"))),
+		...(await list(join(root, ".kanbot", "agents"), ".md")),
+	];
+	return [...new Set(all)].filter((n) => !shipped.has(n)).sort();
+}
+
+/**
+ * Asks which of the repo's own skills or agents fill each reserved need.
+ * `ask` returns the answer, or null/empty to skip.
+ */
+export function askCapabilities(
+	workers: string[],
+	ask: (question: string) => string | null,
+): Capabilities {
+	const caps: Capabilities = {};
+	if (!workers.length) return caps;
+	const yes = ask(
+		`Map your own skills and agents to kanbot capabilities now? Found: ${workers.join(", ")} [y/N]`,
+	);
+	if (!/^y/i.test(yes?.trim() ?? "")) return caps;
+	for (const [name, what] of Object.entries(RESERVED)) {
+		const use = ask(`${name} (${what}): skill or agent, Enter to skip`)?.trim();
+		if (use && workers.includes(use)) caps[name] = { use, required: false };
+	}
+	return caps;
+}
+
+/** Short suggestions for reserved needs nothing is mapped to. */
+export function capabilityGaps(caps: Capabilities): string[] {
+	const gaps: string[] = [];
+	if (!caps.verify)
+		gaps.push(
+			"no `verify`: map a skill that proves acceptance criteria, e.g. UI checks or end-to-end tests",
+		);
+	if (!caps.preview)
+		gaps.push(
+			"no `preview`: map a skill that gives a human something to try, e.g. a preview deploy or a test build",
+		);
+	return gaps;
 }

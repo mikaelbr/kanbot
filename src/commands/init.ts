@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { defineCommand } from "citty";
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
+import { askCapabilities, ownWorkers } from "../capabilities.ts";
 import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { run } from "../github/gh.ts";
@@ -79,6 +80,16 @@ export default defineCommand({
 			log.info(
 				`+ .kanbot/config.yml (${repo.nameWithOwner}, base ${repo.defaultBranchRef.name})`,
 			);
+			// Only ask when someone can answer.
+			if (process.stdin.isTTY) {
+				const caps = askCapabilities(await ownWorkers(root), prompt);
+				if (Object.keys(caps).length) {
+					await saveConfig(root, { capabilities: caps });
+					log.info(
+						`~ .kanbot/config.yml (capabilities: ${Object.keys(caps).join(", ")})`,
+					);
+				}
+			}
 		}
 
 		const codeowners = join(root, ".github", "CODEOWNERS");
@@ -101,6 +112,7 @@ export default defineCommand({
 Next steps:
   1. Review AGENTS.md and fill in .agents/skills/project-conventions/SKILL.md
   2. Adjust .github/workflows/ci.yml to your stack (agents fix failing CI)
+     Map your own skills under capabilities in .kanbot/config.yml (kanbot-guide can help)
   3. kanbot board create        # creates the project board and labels
   4. kanbot doctor              # checks auth, board, generated files
   5. Commit and push these files to the default branch (agents work from it)
