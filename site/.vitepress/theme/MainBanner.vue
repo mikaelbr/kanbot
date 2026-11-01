@@ -7,8 +7,8 @@ const { theme } = useData();
 
 <template>
 	<div v-if="theme.channel === 'main'" class="main-banner">
-		Docs for unreleased changes on <code>main</code>.
-		<a :href="theme.releaseUrl">Docs for the latest release →</a>
+		Unreleased docs for <code>main</code> ·
+		<a :href="theme.releaseUrl">Latest release →</a>
 	</div>
 </template>
 
@@ -20,12 +20,13 @@ const { theme } = useData();
 	left: 0;
 	z-index: var(--vp-z-index-layout-top);
 	height: var(--vp-layout-top-height);
-	display: flex;
-	gap: 8px;
-	align-items: center;
-	justify-content: center;
 	padding: 0 16px;
-	font-size: 14px;
+	overflow: hidden;
+	font-size: 13px;
+	line-height: var(--vp-layout-top-height);
+	text-align: center;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	background: var(--vp-c-warning-soft);
 	color: var(--vp-c-text-1);
 }
