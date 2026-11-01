@@ -23,7 +23,7 @@ describe("completion", async () => {
 		});
 
 	for (const shell of ["zsh", "bash"] as const)
-		test(`${shell} script parses`, async () => {
+		test.skipIf(!Bun.which(shell))(`${shell} script parses`, async () => {
 			const p = Bun.spawn([shell, "-n"], {
 				stdin: new Blob([render(shell, spec)]),
 				stderr: "pipe",
