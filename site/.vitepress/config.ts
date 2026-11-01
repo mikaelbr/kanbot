@@ -1,4 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { defineConfig, type HeadConfig, type PageData } from "vitepress";
@@ -11,6 +12,20 @@ const siteUrl = (process.env.DOCS_URL ?? "http://localhost:4173").replace(
 	/\/$/,
 	"",
 );
+
+// Latest tag, else package.json (clones without tags).
+function currentVersion(): string {
+	try {
+		return execSync("git describe --tags --abbrev=0", {
+			stdio: ["ignore", "pipe", "ignore"],
+		})
+			.toString()
+			.trim();
+	} catch {
+		const pkg = new URL("../../package.json", import.meta.url);
+		return `v${JSON.parse(readFileSync(pkg, "utf8")).version}`;
+	}
+}
 
 const vueDir = dirname(
 	createRequire(import.meta.url).resolve("vue/package.json"),
@@ -227,7 +242,16 @@ export default defineConfig({
 	themeConfig: {
 		logo: { light: "/logo.svg", dark: "/logo-dark.svg" },
 		// Not a page, so VitePress won't add base itself.
-		nav: [{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" }],
+		nav: [
+			{ text: "llms.txt", link: `${base}llms.txt`, target: "_blank" },
+			{
+				text: currentVersion(),
+				items: [
+					{ text: "Changelog", link: "/changelog" },
+					{ text: "Releases", link: `${repo}/releases` },
+				],
+			},
+		],
 		sidebar: [
 			{ text: "Overview", link: "/" },
 			...docSections(docs).map((s) => ({

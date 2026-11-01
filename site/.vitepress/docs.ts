@@ -48,10 +48,13 @@ export function docSections(docs: Doc[]): { text: string; docs: Doc[] }[] {
 	return sections.filter((s) => s.docs.length > 0);
 }
 
+// Site-only pages, not part of the docs.
+const sitePages = new Set(["changelog.md"]);
+
 // Docs in file order. Slug comes from frontmatter, else the name without its number prefix.
 export function loadDocs(): Doc[] {
 	return readdirSync(docsDir)
-		.filter((file) => file.endsWith(".md"))
+		.filter((file) => file.endsWith(".md") && !sitePages.has(file))
 		.sort()
 		.map((file) => {
 			const raw = readFileSync(join(docsDir, file), "utf8");

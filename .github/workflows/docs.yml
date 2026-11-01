@@ -36,6 +36,7 @@ jobs:
         env:
           DOCS_BASE: /
           DOCS_URL: https://kanbot.mib.im
+          GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/.vitepress/dist
