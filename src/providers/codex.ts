@@ -1,8 +1,10 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { AgentDef } from "../agents/load.ts";
 import { agentInstructions } from "../agents/sync.ts";
 import { git } from "../daemon/git.ts";
+import { codexMcpArgs, type McpServer, readMcpServers } from "./mcp.ts";
 import {
 	looksRateLimited,
 	type Provider,
@@ -10,6 +12,58 @@ import {
 	type RunResult,
 	spawnWorker,
 } from "./types.ts";
+
+/** CLI args for a headless run. */
+export function codexArgs(o: {
+	agent: AgentDef;
+	cwd: string;
+	gitDir: string;
+	schemaFile: string;
+	lastFile: string;
+	networkAccess: boolean;
+	mcpServers: Record<string, McpServer>;
+}): string[] {
+	const { agent } = o;
+	const sandbox =
+		agent.tools.includes("edit") || agent.tools.includes("bash")
+			? "workspace-write"
+			: "read-only";
+	const cmd = [
+		"codex",
+		"exec",
+		"--json",
+		"--ephemeral",
+		// Isolate from the user's own setup: no user-level plugins or MCP
+		// servers. Auth still comes from CODEX_HOME.
+		"--ignore-user-config",
+		"--sandbox",
+		sandbox,
+		"--cd",
+		o.cwd,
+		"--add-dir",
+		o.gitDir,
+		"--output-schema",
+		o.schemaFile,
+		"--output-last-message",
+		o.lastFile,
+		"-c",
+		`developer_instructions=${JSON.stringify(agentInstructions(agent))}`,
+		// The repo's committed MCP servers only.
+		...codexMcpArgs(o.mcpServers),
+	];
+	if (o.networkAccess)
+		cmd.push("-c", "sandbox_workspace_write.network_access=true");
+	if (agent.models.codex && agent.models.codex !== "default")
+		cmd.push("--model", agent.models.codex);
+	if (agent.effort) {
+		cmd.push(
+			"-c",
+			`model_reasoning_effort="${agent.effort === "max" ? "xhigh" : agent.effort}"`,
+		);
+	}
+	cmd.push("-");
+	return cmd;
+}
 
 /** Codex CLI headless (`codex exec`), using the logged-in ChatGPT plan. */
 export function codex({ networkAccess }: { networkAccess: boolean }): Provider {
@@ -29,39 +83,15 @@ export function codex({ networkAccess }: { networkAccess: boolean }): Provider {
 					"--path-format=absolute",
 					"--git-common-dir",
 				);
-				const sandbox =
-					agent.tools.includes("edit") || agent.tools.includes("bash")
-						? "workspace-write"
-						: "read-only";
-				const cmd = [
-					"codex",
-					"exec",
-					"--json",
-					"--ephemeral",
-					"--sandbox",
-					sandbox,
-					"--cd",
-					input.cwd,
-					"--add-dir",
+				const cmd = codexArgs({
+					agent,
+					cwd: input.cwd,
 					gitDir,
-					"--output-schema",
 					schemaFile,
-					"--output-last-message",
 					lastFile,
-					"-c",
-					`developer_instructions=${JSON.stringify(agentInstructions(agent))}`,
-				];
-				if (networkAccess)
-					cmd.push("-c", "sandbox_workspace_write.network_access=true");
-				if (agent.models.codex && agent.models.codex !== "default")
-					cmd.push("--model", agent.models.codex);
-				if (agent.effort) {
-					cmd.push(
-						"-c",
-						`model_reasoning_effort="${agent.effort === "max" ? "xhigh" : agent.effort}"`,
-					);
-				}
-				cmd.push("-");
+					networkAccess,
+					mcpServers: await readMcpServers(input.cwd),
+				});
 
 				const res = await spawnWorker(cmd, {
 					cwd: input.cwd,

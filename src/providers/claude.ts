@@ -8,6 +8,7 @@ import {
 	CLAUDE_DENY,
 	claudeTools,
 } from "../agents/sync.ts";
+import { mcpConfigPath } from "./mcp.ts";
 import {
 	looksRateLimited,
 	type Provider,
@@ -25,45 +26,54 @@ type ResultEvent = {
 	api_error_status?: number | null;
 };
 
+/** CLI args for a headless run. */
+export function claudeArgs(input: RunInput, agentsFile: string): string[] {
+	const { agent } = input;
+	const cmd = [
+		"claude",
+		"-p",
+		"--agents",
+		agentsFile,
+		"--agent",
+		agent.name,
+		"--output-format",
+		"stream-json",
+		"--verbose",
+		"--json-schema",
+		JSON.stringify(input.schema),
+		"--permission-mode",
+		"acceptEdits",
+		"--allowedTools",
+		...headlessTools(agent),
+		"--disallowedTools",
+		...CLAUDE_DENY,
+		"--no-session-persistence",
+		// Isolate from the user's own setup: no user-level plugins, skills or
+		// MCP servers, so workers only see the repo's agents and skills.
+		"--setting-sources",
+		"project,local",
+		"--strict-mcp-config",
+		"--settings",
+		JSON.stringify(CLAUDE_ATTRIBUTION),
+	];
+	// The repo's committed MCP servers only.
+	const mcp = mcpConfigPath(input.cwd);
+	if (mcp) cmd.push("--mcp-config", mcp);
+	if (agent.models.claude) cmd.push("--model", agent.models.claude);
+	if (agent.effort) cmd.push("--effort", agent.effort);
+	return cmd;
+}
+
 /** Claude Code headless (`claude -p`), using the logged-in subscription. */
 export const claude: Provider = {
 	name: "claude",
 	async run(input: RunInput): Promise<RunResult> {
-		const { agent } = input;
 		// Pass agent definitions explicitly so runs don't depend on what is
 		// committed in the worktree's .claude/agents.
 		const tmp = await mkdtemp(join(tmpdir(), "kanbot-claude-"));
 		const agentsFile = join(tmp, "agents.json");
 		await Bun.write(agentsFile, JSON.stringify(claudeAgentsJson(input.agents)));
-		const cmd = [
-			"claude",
-			"-p",
-			"--agents",
-			agentsFile,
-			"--agent",
-			agent.name,
-			"--output-format",
-			"stream-json",
-			"--verbose",
-			"--json-schema",
-			JSON.stringify(input.schema),
-			"--permission-mode",
-			"acceptEdits",
-			"--allowedTools",
-			...headlessTools(agent),
-			"--disallowedTools",
-			...CLAUDE_DENY,
-			"--no-session-persistence",
-			// Isolate from the user's own setup: no user-level plugins, skills or
-			// MCP servers, so workers only see the repo's agents and skills.
-			"--setting-sources",
-			"project,local",
-			"--strict-mcp-config",
-			"--settings",
-			JSON.stringify(CLAUDE_ATTRIBUTION),
-		];
-		if (agent.models.claude) cmd.push("--model", agent.models.claude);
-		if (agent.effort) cmd.push("--effort", agent.effort);
+		const cmd = claudeArgs(input, agentsFile);
 
 		const res = await spawnWorker(cmd, {
 			cwd: input.cwd,

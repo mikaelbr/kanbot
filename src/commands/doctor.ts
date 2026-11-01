@@ -15,6 +15,11 @@ import {
 	loadBoard,
 	missingColumns,
 } from "../github/project.ts";
+import {
+	codexSupports,
+	type McpServer,
+	readMcpServers,
+} from "../providers/mcp.ts";
 import { NEW_SUFFIX, pendingMerges, planUpgrade } from "../templates.ts";
 import { REPO_LABELS } from "./board.ts";
 
@@ -159,6 +164,24 @@ export default defineCommand({
 		} catch (e) {
 			add({ name: "agents", ok: false, ...explain(e) });
 		}
+
+		const servers = await readMcpServers(root);
+		const names = Object.keys(servers);
+		const skipped =
+			config.provider === "codex"
+				? names.filter((n) => !codexSupports(servers[n] as McpServer))
+				: [];
+		add({
+			name: "MCP servers for workers (.mcp.json)",
+			ok: true,
+			warn: skipped.length > 0,
+			detail: [
+				names.join(", ") || "none",
+				skipped.length ? `codex can't run: ${skipped.join(", ")}` : "",
+			]
+				.filter(Boolean)
+				.join("; "),
+		});
 
 		const plan = await planUpgrade(root);
 		const behind = plan.changes.filter((c) =>
