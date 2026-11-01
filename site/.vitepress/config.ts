@@ -3,7 +3,15 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { defineConfig, type HeadConfig, type PageData } from "vitepress";
-import { type Doc, docSections, docsDir, linkRewriter, loadDocs } from "./docs";
+import {
+	type Doc,
+	docSections,
+	docsDir,
+	hasSkillPages,
+	linkRewriter,
+	loadDocs,
+	loadSkills,
+} from "./docs";
 
 const repo = "https://github.com/mikaelbr/kanbot";
 // Pages workflow sets these for kanbot.mib.im. Defaults match a local build.
@@ -40,6 +48,7 @@ const vueDir = dirname(
 const docs = loadDocs();
 const rewriteLink = linkRewriter(docs);
 const index = docs.find((d) => d.slug === "index");
+const skills = new Set(hasSkillPages ? loadSkills().map((s) => s.name) : []);
 
 // Social cards need absolute URLs. Source: site/og-image.svg.
 const ogImage = `${siteUrl}/og-image.png`;
@@ -223,6 +232,41 @@ export default defineConfig({
 						const href = child.type === "link_open" && child.attrGet("href");
 						if (href) child.attrSet("href", rewriteLink(href));
 					}
+				}
+			});
+			// `skill-name` -> link to its preview page, unless already in a link.
+			md.core.ruler.push("link-skills", (state) => {
+				const page: string = state.env?.relativePath ?? "";
+				for (const token of state.tokens) {
+					if (!token.children) continue;
+					let inLink = 0;
+					token.children = token.children.flatMap((child) => {
+						if (child.type === "link_open") inLink++;
+						if (child.type === "link_close") inLink--;
+						const name = child.content;
+						if (
+							inLink > 0 ||
+							child.type !== "code_inline" ||
+							!skills.has(name) ||
+							page === `skills/${name}.md`
+						)
+							return [child];
+						const open = new state.Token("link_open", "a", 1);
+						open.attrSet("href", `/skills/${name}`);
+						return [open, child, new state.Token("link_close", "a", -1)];
+					});
+				}
+			});
+			// Skill pages show SKILL.md as written, so <placeholders> are text, not HTML.
+			md.core.ruler.push("skill-html-as-text", (state) => {
+				if (!state.env?.relativePath?.startsWith("skills/")) return;
+				const asText = (t: { type: string }) => {
+					if (t.type === "html_inline" || t.type === "html_block")
+						t.type = "text";
+				};
+				for (const token of state.tokens) {
+					asText(token);
+					token.children?.forEach(asText);
 				}
 			});
 		},

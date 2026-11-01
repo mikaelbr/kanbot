@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // DOCS_DIR points at another checkout, e.g. the latest release tag.
@@ -71,4 +71,81 @@ export function loadDocs(): Doc[] {
 				body: raw.replace(frontmatter, "").trim(),
 			};
 		});
+}
+
+export type Skill = {
+	name: string;
+	meta: [string, string][];
+	body: string;
+};
+
+// Built-in skills ship in templates/, next to the docs checkout.
+export const skillsDir = resolve(docsDir, "../templates/.agents/skills");
+
+// Skill pages come from docs/skills/[skill].md. Older releases don't have it.
+export const hasSkillPages = existsSync(join(docsDir, "skills/[skill].md"));
+
+// Strips YAML quotes from a scalar.
+function unquote(value: string): string {
+	if (/^".*"$/.test(value)) return JSON.parse(value);
+	if (/^'.*'$/.test(value)) return value.slice(1, -1).replace(/''/g, "'");
+	return value;
+}
+
+export function loadSkills(): Skill[] {
+	if (!existsSync(skillsDir)) return [];
+	return readdirSync(skillsDir)
+		.filter((name) => existsSync(join(skillsDir, name, "SKILL.md")))
+		.sort()
+		.map((name) => {
+			const raw = readFileSync(join(skillsDir, name, "SKILL.md"), "utf8");
+			const yaml = raw.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
+			const meta = [...yaml.matchAll(/^(\w[\w-]*):\s*(.*)$/gm)].map(
+				([, key = "", value = ""]) =>
+					[key, unquote(value.trim())] as [string, string],
+			);
+			return { name, meta, body: raw.replace(frontmatter, "").trim() };
+		});
+}
+
+// Demote headings one level, outside code fences, so the page keeps one h1.
+function demote(body: string): string {
+	let fence = false;
+	return body
+		.split("\n")
+		.map((line) => {
+			if (/^(```|~~~)/.test(line)) fence = !fence;
+			return !fence && /^#{1,5} /.test(line) ? `#${line}` : line;
+		})
+		.join("\n");
+}
+
+const cell = (s: string) => s.replace(/\|/g, "\\|");
+
+// Markdown for a skill's preview page.
+export function skillPage(skill: Skill, repo: string): string {
+	const description =
+		skill.meta.find(([key]) => key === "description")?.[1] ?? "";
+	const path = `.agents/skills/${skill.name}/SKILL.md`;
+	return [
+		"---",
+		`title: ${JSON.stringify(skill.name)}`,
+		`description: ${JSON.stringify(description)}`,
+		"---",
+		"",
+		`# \`${skill.name}\``,
+		"",
+		`Built-in skill. \`kanbot init\` installs it in \`${path}\`. See [Skills](/skills). [Source](${repo}/blob/main/templates/${path}).`,
+		"",
+		"## Frontmatter",
+		"",
+		"| Field | Value |",
+		"| ----- | ----- |",
+		...skill.meta.map(([key, value]) => `| \`${key}\` | ${cell(value)} |`),
+		"",
+		"---",
+		"",
+		demote(skill.body),
+		"",
+	].join("\n");
 }
