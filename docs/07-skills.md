@@ -28,7 +28,7 @@ There are two kinds:
 | `spec-review`         | Checking a change against its plan.                           |
 | `pr-description`      | PR title and body format.                                     |
 
-These skills cover the process only. Skills for building, testing and reviewing code are yours: add them to `.agents/skills` and map them under [capabilities](./13-capabilities.md).
+These skills cover the process only. Skills for building, testing and reviewing code are yours: add them to `.agents/skills` and map them under [capabilities](./05-capabilities.md).
 
 ## Admin skills
 
@@ -113,7 +113,7 @@ Both are yours. `kanbot upgrade` never touches them.
 ## Add a skill
 
 1. Create `.agents/skills/<name>/SKILL.md`.
-2. Add the name to `skills` in each agent that should use it. See [Agents](./05-agents.md#frontmatter).
+2. Add the name to `skills` in each agent that should use it. See [Agents](./06-agents.md#frontmatter).
 3. Run `kanbot sync`, commit and push.
 
 ## Edit or remove a skill

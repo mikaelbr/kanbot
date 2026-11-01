@@ -63,7 +63,7 @@ codex:
 
 ## Models and effort
 
-Set models per agent and provider in the agent's frontmatter. See [Agents](./05-agents.md#frontmatter).
+Set models per agent and provider in the agent's frontmatter. See [Agents](./06-agents.md#frontmatter).
 
 ```yaml
 models: { claude: opus, codex: default }

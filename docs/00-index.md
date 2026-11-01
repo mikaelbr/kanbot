@@ -26,15 +26,18 @@ Read these in order the first time.
 
 ## Customize
 
-5. [Agents](./05-agents.md): the agent team and how to change it.
-6. [Skills](./06-skills.md): shared know-how, project conventions and project memory.
-7. [Providers](./07-providers.md): use Claude or Codex.
-8. [Configuration](./08-configuration.md): config file, labels and notifications.
-9. [Copilot review](./09-copilot-review.md): add GitHub Copilot as a cloud reviewer.
-10. [Identity and merging](./12-identity.md): talk as a kanbot bot, and merge by approving.
-11. [Capabilities](./13-capabilities.md): hand the work on code to your own skills and agents.
+5. [Capabilities](./05-capabilities.md): hand the work on code to your own skills and agents.
+6. [Agents](./06-agents.md): the agent team and how to change it.
+7. [Skills](./07-skills.md): shared know-how and project conventions.
+8. [Configuration](./09-configuration.md): config file, labels and notifications.
 
-## Maintain
+## Options
 
-12. [Upgrading](./10-upgrading.md): get new agents and skills, keep your edits.
-13. [CLI usage](./11-usage.md): every command and flag.
+9. [Providers](./10-providers.md): use Claude or Codex.
+10. [Identity and merging](./11-identity.md): talk as a kanbot bot, and merge by approving.
+11. [Copilot review](./12-copilot-review.md): add GitHub Copilot as a cloud reviewer.
+
+## Reference
+
+12. [Upgrading](./13-upgrading.md): get new agents and skills, keep your edits.
+13. [CLI usage](./14-usage.md): every command and flag.

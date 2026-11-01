@@ -21,7 +21,7 @@ The generated files also let you use the same agents in normal Claude Code or Co
 
 ## Default team
 
-kanbot's agents run the process. The work on code is done by your repo's own skills and agents, through [capabilities](./13-capabilities.md).
+kanbot's agents run the process. The work on code is done by your repo's own skills and agents, through [capabilities](./05-capabilities.md).
 
 | Agent                 | Tier   | Role                                                                 |
 | --------------------- | ------ | -------------------------------------------------------------------- |
@@ -99,7 +99,7 @@ Schemas are defined in `src/schemas/results.ts` and can't be changed per repo. A
 
 **Change behaviour.** Edit the markdown body. Keep it about _how_ to work; the daemon's prompt carries the task.
 
-**Add craft.** Don't add implementers. Add a skill or agent for the work and map it under [`capabilities`](./13-capabilities.md). kanbot's agents use it when its `when` fits.
+**Add craft.** Don't add implementers. Add a skill or agent for the work and map it under [`capabilities`](./05-capabilities.md). kanbot's agents use it when its `when` fits.
 
 **Add a subagent.** Create a `tier: sub` file and add its name to a column agent's `subagents`.
 

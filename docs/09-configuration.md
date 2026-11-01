@@ -80,21 +80,21 @@ Each exploratory variant counts as one worker. `priority` orders waiting jobs by
 
 ### Capabilities
 
-Maps needs to your repo's own skills and agents. See [Capabilities](./13-capabilities.md).
+Maps needs to your repo's own skills and agents. See [Capabilities](./05-capabilities.md).
 
 `implementers` is deprecated. While set, it still picks an agent by `type:<key>` label, and `doctor` warns. Remove it and map craft under `capabilities` instead.
 
 ### Review
 
-Adds GitHub Copilot as a third reviewer. See [Copilot review](./09-copilot-review.md).
+Adds GitHub Copilot as a third reviewer. See [Copilot review](./12-copilot-review.md).
 
 ### Identity and merge
 
-Who kanbot talks as, and merging PRs when you approve them. See [Identity and merging](./12-identity.md).
+Who kanbot talks as, and merging PRs when you approve them. See [Identity and merging](./11-identity.md).
 
 ## Notifications
 
-In user mode, kanbot acts as your GitHub account, so GitHub won't notify you about agent work. In [app mode](./12-identity.md#app-mode) it does. kanbot also notifies you itself when:
+In user mode, kanbot acts as your GitHub account, so GitHub won't notify you about agent work. In [app mode](./11-identity.md#app-mode) it does. kanbot also notifies you itself when:
 
 - a PR is ready to test,
 - exploratory PRs are ready to compare,
@@ -125,7 +125,7 @@ notify:
 
 ## Shared agent rules
 
-`AGENTS.md` holds rules every agent follows, in kanbot and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./06-skills.md#project-conventions).
+`AGENTS.md` holds rules every agent follows, in kanbot and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./07-skills.md#project-conventions).
 
 ## Issue and PR templates
 

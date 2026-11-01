@@ -26,11 +26,11 @@ Full docs: [docs/](./docs/00-index.md). Demo video: [docs/assets/demo.mp4](./doc
 | **Ready**       | Moving a card here approves the plan. Cards are picked top-down.                                                                                 |
 | **In Progress** | An agent implements it in its own worktree and opens a PR.                                                                                       |
 | **Review**      | Two agent reviews, with fixes. Then you're notified. Comment on the PR and an agent addresses it. CI failures and merge conflicts are fixed too. |
-| **Done**        | You merge, or approve and kanbot merges ([`merge.onApproval`](./docs/12-identity.md#merge-on-approval)).                                         |
+| **Done**        | You merge, or approve and kanbot merges ([`merge.onApproval`](./docs/11-identity.md#merge-on-approval)).                                         |
 
 A Bun daemon polls the board and runs one `claude -p` / `codex exec` process per job. GitHub is the only state, so you can restart it any time. Agents never get a GitHub token; the daemon makes every comment, push and PR. Only collaborators with write access can steer agents.
 
-kanbot talks as you by default. Run `kanbot app create` to have it talk as its own bot instead, so you can tell its messages apart and approve its PRs. Commits stay yours. With `merge.onApproval`, approving a PR merges it. [More](./docs/12-identity.md)
+kanbot talks as you by default. Run `kanbot app create` to have it talk as its own bot instead, so you can tell its messages apart and approve its PRs. Commits stay yours. With `merge.onApproval`, approving a PR merges it. [More](./docs/11-identity.md)
 
 ## Setup
 
@@ -64,19 +64,19 @@ For a guided setup, run `bunx kanbot skills install` and ask your agent "help me
 
 - **Capture ideas by chatting.** Ask your agent to file an idea; the `kanbot-idea` skill shapes it and puts it in Ideas. [More](./docs/03-capturing-ideas.md)
 - **Your own PRs.** Label a PR `kanbot-review` for agent review without a card. Commits to `main` that break kanbot PRs get merged in and fixed. [More](./docs/04-outside-the-board.md)
-- **Project memory.** Corrections you give on PRs become facts agents read on every job. [More](./docs/06-skills.md#project-memory)
-- **Copilot review.** Optionally add GitHub Copilot as a cloud reviewer. [More](./docs/09-copilot-review.md)
+- **Project memory.** Corrections you give on PRs become facts agents read on every job. [More](./docs/07-skills.md#project-memory)
+- **Copilot review.** Optionally add GitHub Copilot as a cloud reviewer. [More](./docs/12-copilot-review.md)
 
 ## Customizing
 
 - `.kanbot/config.yml`: concurrency, timeouts, notifications, column names.
 - `.kanbot/agents/*.md`: agent definitions. Run `kanbot sync` after editing; don't edit the generated `.claude/` or `.codex/` files.
 - `.agents/skills/`: skills shared by agents. Fill in `project-conventions` first.
-- `capabilities` in config: your own skills and agents for building, testing and reviewing. [More](./docs/13-capabilities.md)
+- `capabilities` in config: your own skills and agents for building, testing and reviewing. [More](./docs/05-capabilities.md)
 
 ## Upgrading
 
-`bunx kanbot@latest upgrade` updates agents and skills you haven't edited. For edited ones, it writes the new version next to yours as `<file>.kanbot-new` to merge. See [Upgrading](./docs/10-upgrading.md).
+`bunx kanbot@latest upgrade` updates agents and skills you haven't edited. For edited ones, it writes the new version next to yours as `<file>.kanbot-new` to merge. See [Upgrading](./docs/13-upgrading.md).
 
 ## Shell completion
 

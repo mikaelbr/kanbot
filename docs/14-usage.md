@@ -13,7 +13,7 @@ Run commands from the repository root. `kanbot --help` and `kanbot <command> --h
 
 Scaffold agents, skills, config and GitHub files into the repo. Also writes `.kanbot/manifest.json` and `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`. Existing files are kept; where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`.
 
-In a terminal, it asks which of your skills fill the `verify`, `review` and `preview` [capabilities](./13-capabilities.md). Pick by number or name, or press Enter to skip.
+In a terminal, it asks which of your skills fill the `verify`, `review` and `preview` [capabilities](./05-capabilities.md). Pick by number or name, or press Enter to skip.
 
 | Flag                         | Default  | Description                                |
 | ---------------------------- | -------- | ------------------------------------------ |
@@ -22,7 +22,7 @@ In a terminal, it asks which of your skills fill the `verify`, `review` and `pre
 
 ## `kanbot upgrade`
 
-Update agents, skills and workflows to this kanbot version, keeping your edits. Maps kanbot's old craft skills to capabilities if you have no `capabilities` yet. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./10-upgrading.md).
+Update agents, skills and workflows to this kanbot version, keeping your edits. Maps kanbot's old craft skills to capabilities if you have no `capabilities` yet. Runs `sync`. Leaves changes uncommitted. See [Upgrading](./13-upgrading.md).
 
 | Flag        | Default | Description                         |
 | ----------- | ------- | ----------------------------------- |
@@ -47,7 +47,7 @@ Use an existing project. Warns about missing columns.
 
 ## `kanbot app create`
 
-Create a GitHub App for kanbot to talk as, save its key in `~/.kanbot/apps/` and set `identity.mode: app`. Opens GitHub in your browser. See [Identity and merging](./12-identity.md#app-mode).
+Create a GitHub App for kanbot to talk as, save its key in `~/.kanbot/apps/` and set `identity.mode: app`. Opens GitHub in your browser. See [Identity and merging](./11-identity.md#app-mode).
 
 | Flag            | Default          | Description                 |
 | --------------- | ---------------- | --------------------------- |
