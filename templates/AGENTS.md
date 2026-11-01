@@ -11,7 +11,7 @@ Board flow:
 1. **Ideas**: raw issues; nothing runs.
 2. **Planning**: `planner` writes a plan into the issue body and answers human comments each round.
 3. **Ready**: a human approves the plan by moving the card here.
-4. **In Progress**: an `implementer-*` agent builds the plan on a branch and commits.
+4. **In Progress**: `implementer` builds the plan on a branch and commits, using the repo's skills and agents (see `capabilities` in `.kanbot/config.yml`).
 5. **Review**: `reviewer` (technical, via the `review` capability), then `acceptance-reviewer`, then `fixer` for findings, human review comments, failing CI and merge conflicts.
 6. **Done**: a human merges, or approves and the daemon merges.
 
@@ -32,7 +32,6 @@ Board flow:
 - `.kanbot/agents/*.md`: agent definitions (frontmatter + instructions). This is the source of truth.
 - `.agents/skills/<name>/SKILL.md`: skills shared by all agents. `.claude/skills` is a symlink to it.
 - `.claude/agents/`, `.claude/settings.json` and `.codex/agents/` are **generated** from `.kanbot/agents` by `kanbot sync`. Do not edit them by hand; edit the source and run `kanbot sync`.
-- `.kanbot/screenshots/<branch>/`: UI screenshots committed for review.
 
 ## When working interactively
 

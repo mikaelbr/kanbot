@@ -1,8 +1,15 @@
+import { existsSync } from "node:fs";
 import { defineCommand } from "citty";
 import pkg from "../../package.json" with { type: "json" };
 import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
-import { writeConfigSchema } from "../config.ts";
+import { legacyCapabilities } from "../capabilities.ts";
+import {
+	configPath,
+	loadConfig,
+	saveConfig,
+	writeConfigSchema,
+} from "../config.ts";
 import { log } from "../log.ts";
 import {
 	applyUpgrade,
@@ -48,9 +55,21 @@ export default defineCommand({
 				);
 		}
 		if (!plan.changes.length) log.info("Templates are up to date.");
+		const caps = existsSync(configPath(root))
+			? legacyCapabilities(root, (await loadConfig(root)).capabilities)
+			: null;
+		if (caps)
+			console.log(
+				`\nMapped skills you have to capabilities in .kanbot/config.yml:\n${Object.entries(
+					caps,
+				)
+					.map(([n, c]) => `  ${n}: ${c.use}`)
+					.join("\n")}`,
+			);
 		if (args["dry-run"]) return;
 
 		await applyUpgrade(root, plan);
+		if (caps) await saveConfig(root, { capabilities: caps });
 		const generated = await sync(root, await loadAgents(root));
 		if (await writeConfigSchema(root))
 			generated.push(".kanbot/config.schema.json");

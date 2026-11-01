@@ -8,7 +8,13 @@
 
 1.
 
+## Validation
+
+<!-- What proved it works: tests, checks, preview. -->
+
 ## Screenshots
+
+<!-- Optional. Only when the change is visible. -->
 
 ## Risks
 

@@ -1,20 +1,7 @@
 {
-	".agents/skills/accessibility/SKILL.md": [
-		"bb8c5148899685168324b8fda3524937e3943b32"
-	],
 	".agents/skills/approach-designer/SKILL.md": [
 		"7fbf6e80562b59e94c8b9615d777afca8a769d29",
 		"d932ed30a58cb32dd91ec03ddd2b1c6c59f77714"
-	],
-	".agents/skills/code-review/SKILL.md": [
-		"a35bdecaeb1b6a2469a6330d2cef42a9d61409fe",
-		"d263ca09f3764c0d4219e4de9186a038d31f67cc"
-	],
-	".agents/skills/frontend-design/LICENSE.txt": [
-		"f433b1a53f5b830a205fd2df78e2b34974656c7b"
-	],
-	".agents/skills/frontend-design/SKILL.md": [
-		"8ac4bf9b37f7b42ead4b65c35e0e9890fb5354e8"
 	],
 	".agents/skills/issue-splitting/SKILL.md": [
 		"01625372d68a81347bf401e8603084420922d04e"
@@ -45,6 +32,7 @@
 		"830c94888620de0a5bb7030672c017c5fafa63e5"
 	],
 	".agents/skills/project-conventions/SKILL.md": [
+		"668d904ff8fdf33edbe9768cd6bf223813380c9d",
 		"81d9ff980a15a6f901010646b800b3e6e379e4b0",
 		"dabf1dadc148c020496d8f2f9bb8de6269f56479"
 	],
@@ -62,16 +50,10 @@
 		"84fbc57a8b8f4fe473258402772185944a54a81c",
 		"f455d1007d589602e5afce0dac4f00d78aa7c67a"
 	],
-	".agents/skills/tdd/SKILL.md": ["5e6b20868e02ae24f6d25824bac431143bd43021"],
 	".agents/skills/user-stories/SKILL.md": [
 		"1b37f8e59c15b934d555070a63d4f0d3939a007f",
 		"1b5d229d043c1bfbd84aecd9ee6191b1d473f1d8",
 		"73455bec36bd5677cdf3c081677ad2856c434954"
-	],
-	".agents/skills/verify-ui/SKILL.md": [
-		"c67a0e1d6a1c1d9adf59dd154160ccf58519ea72",
-		"ddcdf216fbe9deb5af8848ca83c898a6d4fa91fd",
-		"f4d3d07c0ec28a9961d919356d0b4e572b724b43"
 	],
 	".github/ISSUE_TEMPLATE/config.yml": [
 		"0086358db1eb971c0cfa8739c27518bbc18a5ff4"
@@ -83,7 +65,8 @@
 		"d26a148970ba6323d9cfdd86924cb2e82e68b705"
 	],
 	".github/pull_request_template.md": [
-		"57cfbc21472a94ccccb19ef6f19e87a473925649"
+		"57cfbc21472a94ccccb19ef6f19e87a473925649",
+		"b8060c2599769dd12477081b6ec51733a2a82c7b"
 	],
 	".github/workflows/ci.yml": ["dce7bcf80cef91c10923829eb5893d2b311b58e5"],
 	".github/workflows/kanbot-merged.yml": [
@@ -105,26 +88,6 @@
 		"7c98cf1dc3e798e0e5856fd95a3d78d378884def",
 		"810871ec49fd7be56d111c7df176d22c66748a0f"
 	],
-	".kanbot/agents/implementer-backend.md": [
-		"5d454e29260ba8df0ef6e21f1ece9d02a472d4ed",
-		"6fefffb02bb5551631839abd0863379e58bc7dcc",
-		"ccd6bd16fe384e8599d739992e4c97d78d4b65e8"
-	],
-	".kanbot/agents/implementer-docs.md": [
-		"082da045a20bc914f29839e026027b6715c184a9",
-		"79907e7f27233aa551e03b0adda79e7045b77776",
-		"c5f01ac3d377133caab5b13422f1e73608d6357e"
-	],
-	".kanbot/agents/implementer-frontend.md": [
-		"0aa9b0e70c3057138b4255ee3d270ac04fc8ab0e",
-		"45a6e3b8f6e6f5a95dac865126c5649dab115fc5",
-		"4cb71eab6eced0926d92652bc59d49233cca5676"
-	],
-	".kanbot/agents/implementer-technical.md": [
-		"b38e1af6a98af621269d46f516e3bdaeb2674553",
-		"c95dff48eed5db4aadf10d0a47e7ec1285937ebf",
-		"e4bbddb0a810313fb3a6ed3983b3b9335279feef"
-	],
 	".kanbot/agents/implementer.md": ["f6000b529b1a8bed0def57af9bfa55c1ca5cd3b6"],
 	".kanbot/agents/plan-critic.md": [
 		"3d1c38922a94712d0f3a725902e3df9cee87bcda",
@@ -136,32 +99,15 @@
 		"bdb111213cced70583157edad658247972dcbe45",
 		"dc50d048164ade2926b58dee48c3919c6b7d9558"
 	],
-	".kanbot/agents/reviewer-code.md": [
-		"398035214b63ceb3469a3b3384b07209e4cd63dd",
-		"61f3a45642ca954c6d4a5f41083f0a25f78d2b51",
-		"9d642fefd1b876dc61e80c6321a9acc5b1dacfdd"
-	],
-	".kanbot/agents/reviewer-spec.md": [
-		"11c86a654a0b715777b23bfb699a4f0d6cfe91de",
-		"7902b9c96281d18f1eb249871cc506f0f8367c9b",
-		"ab8951ab296e96b01f419243d8acfc99c7e64b1c"
-	],
 	".kanbot/agents/reviewer.md": ["7ff1fdd21df4442d3b82784d3e6077195b32ba5b"],
-	".kanbot/agents/test-writer.md": [
-		"dcef7f611a307229974fef4098d53816d7db0555",
-		"ec81c44c021053fae0612683a61e8414634359a0"
-	],
-	".kanbot/agents/ui-verifier.md": [
-		"38615159a8fe7b1e99cacedc49c0be53c69b90d4",
-		"a73abf7e72c654fde41df51b43a5879170978cb0"
-	],
 	"AGENTS.md": [
 		"0dd205961831f0082e74a3c03b79036e2114c072",
 		"3da9115cbf52b7b7d0feb8325503a8caf43ff2c7",
 		"b821013b5be7051327b349eda603218590a41f33",
 		"c688ed7f42f7a6f6a5ac600de857b42fb04aa613",
 		"cf7ef593ccfda953055dfb76b3e9c267fc9637f6",
-		"e5b76bcbaf155b79a8ff3f2e70977cc0c589566b"
+		"e5b76bcbaf155b79a8ff3f2e70977cc0c589566b",
+		"f820c2f5a9d3bc299eed35a6012bbc5d19615aef"
 	],
 	"CLAUDE.md": ["43c994c2d3617f947bcb5adf1933e21dabe46bb5"]
 }

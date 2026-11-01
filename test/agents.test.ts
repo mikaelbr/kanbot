@@ -37,10 +37,6 @@ describe("template agents", () => {
 		const names = agents.map((a) => a.name);
 		for (const n of [
 			"planner",
-			"implementer-frontend",
-			"implementer-backend",
-			"implementer-docs",
-			"implementer-technical",
 			"implementer",
 			"reviewer",
 			"acceptance-reviewer",
@@ -48,6 +44,29 @@ describe("template agents", () => {
 		]) {
 			expect(names).toContain(n);
 		}
+	});
+
+	test("templates ship no craft agents or skills", async () => {
+		const names = (await loadAgents(TEMPLATES)).map((a) => a.name);
+		for (const n of [
+			"implementer-frontend",
+			"reviewer-code",
+			"ui-verifier",
+			"test-writer",
+		])
+			expect(names).not.toContain(n);
+		for (const s of [
+			"tdd",
+			"verify-ui",
+			"accessibility",
+			"frontend-design",
+			"code-review",
+		])
+			expect(
+				await Bun.file(
+					join(TEMPLATES, ".agents/skills", s, "SKILL.md"),
+				).exists(),
+			).toBe(false);
 	});
 
 	test("flow agents name no craft skills or helpers", async () => {
@@ -107,7 +126,7 @@ describe("template agents", () => {
 
 	test("missingSkills names the agent and the missing skill", () => {
 		const agent = parseAgent(
-			"---\nname: a\ntier: sub\ndescription: x\nskills: [tdd, nope]\n---\nBody",
+			"---\nname: a\ntier: sub\ndescription: x\nskills: [plan-template, nope]\n---\nBody",
 			"a.md",
 		);
 		expect(missingSkills(TEMPLATES, [agent])).toEqual(["a: nope"]);
@@ -166,10 +185,8 @@ Do the thing.`,
 	test("sync writes files, links skills and is idempotent", async () => {
 		const root = await mkdtemp(join(tmpdir(), "kanbot-sync-"));
 		await Bun.write(
-			join(root, ".kanbot/agents/implementer-frontend.md"),
-			await Bun.file(
-				join(TEMPLATES, ".kanbot/agents/implementer-frontend.md"),
-			).text(),
+			join(root, ".kanbot/agents/implementer.md"),
+			await Bun.file(join(TEMPLATES, ".kanbot/agents/implementer.md")).text(),
 		);
 		const agents = await loadAgents(root).catch(() => null);
 		// The template references subagents not present here, so validate against all templates instead.

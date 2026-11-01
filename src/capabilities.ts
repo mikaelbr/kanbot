@@ -38,3 +38,34 @@ export function capabilitiesSection(caps: Capabilities, extra = ""): string {
 		),
 	].join("\n");
 }
+
+/** Craft skills earlier kanbot versions installed, and the capability each maps to. */
+const LEGACY: [name: string, use: string, when?: string][] = [
+	["verify", "verify-ui", "Changes to UI users see"],
+	["review", "code-review"],
+	["tdd", "tdd", "Writing or changing behaviour"],
+	["ui-design", "frontend-design", "Building or restyling UI"],
+	["accessibility", "accessibility", "Changes to UI users see"],
+];
+
+/**
+ * A capabilities block for craft skills an earlier kanbot installed, so
+ * upgrades keep using them. Null when config already maps capabilities or
+ * none of them are present.
+ */
+export function legacyCapabilities(
+	root: string,
+	current: Capabilities,
+): Capabilities | null {
+	if (Object.keys(current).length) return null;
+	const found = LEGACY.filter(([, use]) =>
+		existsSync(join(root, ".agents", "skills", use, "SKILL.md")),
+	);
+	if (!found.length) return null;
+	return Object.fromEntries(
+		found.map(([name, use, when]) => [
+			name,
+			{ use, ...(when ? { when } : {}), required: false },
+		]),
+	);
+}

@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { legacyCapabilities } from "../src/capabilities.ts";
 import { globalSkillDirs, installGlobal } from "../src/commands/skills.ts";
 import knownHashes from "../src/known-hashes.json" with { type: "json" };
 import {
@@ -149,6 +150,51 @@ describe("upgrade", () => {
 			known: { [SKILL]: [v1], "b.md": [v1] },
 		});
 		expect(actions(plan)).toEqual({ [SKILL]: "update", "b.md": "conflict" });
+	});
+});
+
+describe("upgrade from the v0.3 layout", () => {
+	const CRAFT = [
+		".agents/skills/verify-ui/SKILL.md",
+		".agents/skills/code-review/SKILL.md",
+		".agents/skills/tdd/SKILL.md",
+		".kanbot/agents/implementer-frontend.md",
+	];
+
+	test("craft files stay in place and map to capabilities", async () => {
+		const tpl = await tmp();
+		const root = await tmp();
+		await writeAll(tpl, Object.fromEntries(CRAFT.map((p) => [p, "old"])));
+		await applyUpgrade(root, await planUpgrade(root, { templates: tpl }));
+
+		const plan = await planUpgrade(root);
+		for (const p of CRAFT) expect(actions(plan)[p]).toBe("removed");
+		await applyUpgrade(root, plan);
+		for (const p of CRAFT) expect(existsSync(join(root, p))).toBe(true);
+		expect(existsSync(join(root, ".kanbot/agents/implementer.md"))).toBe(true);
+
+		expect(legacyCapabilities(root, {})).toEqual({
+			verify: {
+				use: "verify-ui",
+				when: "Changes to UI users see",
+				required: false,
+			},
+			review: { use: "code-review", required: false },
+			tdd: {
+				use: "tdd",
+				when: "Writing or changing behaviour",
+				required: false,
+			},
+		});
+	});
+
+	test("an existing capabilities block is left alone", async () => {
+		const root = await tmp();
+		await writeAll(root, { [CRAFT[0] as string]: "old" });
+		expect(
+			legacyCapabilities(root, { verify: { use: "mine", required: false } }),
+		).toBeNull();
+		expect(legacyCapabilities(await tmp(), {})).toBeNull();
 	});
 });
 
