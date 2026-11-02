@@ -35,10 +35,10 @@ When the code changes so a fact no longer holds, agents that touch the area fix 
 
 ## Memory or conventions?
 
-| `project-conventions`              | `project-memory`                             |
-| ---------------------------------- | -------------------------------------------- |
-| How to build, test and run the app | What the team learned while building it      |
-| You write it at setup              | Grows from your corrections, one fact a time |
-| One structured file                | Many small facts, each with its reason       |
+| [`project-conventions`](./08-project-conventions.md) | `project-memory`                             |
+| ---------------------------------------------------- | -------------------------------------------- |
+| How to build, test and run the app                   | What the team learned while building it      |
+| You write it at setup                                | Grows from your corrections, one fact a time |
+| One structured file                                  | Many small facts, each with its reason       |
 
 Both are yours. `kanbot upgrade` never touches them.

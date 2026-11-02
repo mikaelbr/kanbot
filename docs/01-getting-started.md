@@ -11,7 +11,7 @@ slug: getting-started
 
 - [Bun](https://bun.sh) 1.3 or newer.
 - [`gh`](https://cli.github.com) logged in, with the `project` scope.
-- [`claude`](https://docs.claude.com/en/docs/claude-code) or [`codex`](https://github.com/openai/codex) logged in with a subscription. See [Providers](./10-providers.md).
+- [`claude`](https://docs.claude.com/en/docs/claude-code) or [`codex`](https://github.com/openai/codex) logged in with a subscription. See [Providers](./11-providers.md).
 - A GitHub repository you can push to.
 
 Add the `project` scope to your `gh` token:
@@ -49,18 +49,18 @@ In a terminal, `init` asks which of your skills to use for verifying, reviewing 
 
 | Path                       | What                                                |
 | -------------------------- | --------------------------------------------------- |
-| `.kanbot/config.yml`       | Config. See [Configuration](./09-configuration.md). |
+| `.kanbot/config.yml`       | Config. See [Configuration](./10-configuration.md). |
 | `.kanbot/agents/*.md`      | Agent definitions. See [Agents](./06-agents.md).    |
 | `.agents/skills/`          | Shared skills. See [Skills](./07-skills.md).        |
 | `.claude/`, `.codex/`      | Generated from `.kanbot/agents`. Don't edit.        |
 | `AGENTS.md`, `CLAUDE.md`   | Rules every agent follows.                          |
 | `.github/workflows/ci.yml` | CI. Agents fix failing CI, so adjust it.            |
 
-Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them. [`kanbot init`](./14-usage.md#kanbot-init) lists the rest.
+Existing files are kept. Where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`. Pass `--force` to overwrite them. [`kanbot init`](./15-usage.md#kanbot-init) lists the rest.
 
 ## Fill in project conventions
 
-Edit `.agents/skills/project-conventions/SKILL.md`. Add your stack, commands and conventions. Every agent reads it first, so wrong commands here cause wrong work everywhere.
+Fill in `.agents/skills/project-conventions/SKILL.md` with your stack, commands and rules. Every agent reads it first. Ask your agent to draft it, then check each command. See [Project conventions](./08-project-conventions.md).
 
 Also review `AGENTS.md` and `.github/workflows/ci.yml`.
 
@@ -99,7 +99,7 @@ kanbot run --once --dry-run  # shows what it would do
 kanbot run                   # starts the daemon
 ```
 
-Run one daemon per repo. Next, read the [development flow](./02-workflow.md). To have kanbot talk as its own bot, so you can approve its PRs, see [Identity and merging](./11-identity.md).
+Run one daemon per repo. Next, read the [development flow](./02-workflow.md). To have kanbot talk as its own bot, so you can approve its PRs, see [Identity and merging](./12-identity.md).
 
 ## Shell completion
 

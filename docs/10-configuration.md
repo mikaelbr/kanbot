@@ -86,11 +86,11 @@ Maps needs to your repo's own skills and agents. See [Capabilities](./05-capabil
 
 ### Review
 
-Adds GitHub Copilot as a third reviewer. See [Copilot review](./12-copilot-review.md).
+Adds GitHub Copilot as a third reviewer. See [Copilot review](./13-copilot-review.md).
 
 ### Identity and merge
 
-Who kanbot talks as, and merging PRs when you approve them. See [Identity and merging](./11-identity.md).
+Who kanbot talks as, and merging PRs when you approve them. See [Identity and merging](./12-identity.md).
 
 ## Notifications
 
@@ -102,7 +102,7 @@ kanbot notifies you when:
 - an implementer is blocked,
 - an issue needs a human.
 
-In user mode, these are your only notifications about agent work. See [Identity](./11-identity.md#user-mode).
+In user mode, these are your only notifications about agent work. See [Identity](./12-identity.md#user-mode).
 
 Turn off desktop notifications with `notify.desktop: false`. To get them elsewhere, set a webhook. It receives a JSON `POST` with `title`, `message` and `url`, plus `Title` and `Click` headers, so an [ntfy.sh](https://ntfy.sh) topic URL works as is:
 
@@ -127,7 +127,7 @@ notify:
 
 ## Shared agent rules
 
-`AGENTS.md` holds rules every agent follows, in kanbot and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./07-skills.md#project-conventions).
+`AGENTS.md` holds rules every agent follows, in kanbot and in normal sessions. `CLAUDE.md` imports it. Add repo-wide rules here; put commands and conventions in the [`project-conventions` skill](./08-project-conventions.md).
 
 ## Issue and PR templates
 

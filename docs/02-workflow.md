@@ -51,7 +51,7 @@ Each PR goes through, in order:
 3. **Failing CI.** The `fixer` tries up to 3 times. Then the issue gets `needs-human`.
 4. **Technical review** by `reviewer`, through your `review` capability, then a fix if it found problems.
 5. **Acceptance review** by `acceptance-reviewer`: every criterion has evidence, required capabilities were used, nothing out of scope. Then a fix if it found problems.
-6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./12-copilot-review.md).
+6. **Copilot review**, if you turned it on. The `fixer` answers its comments. See [Copilot review](./13-copilot-review.md).
 
 Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed` and you get a "Ready to test" notification.
 
@@ -63,7 +63,7 @@ Want the same review for a PR you opened yourself? Label it `kanbot-review`. See
 
 You test and merge. The board's built-in workflow moves the card to Done, and kanbot cleans up worktrees.
 
-With [`merge.onApproval`](./11-identity.md#merge-on-approval), approving the PR is enough: kanbot merges it as you. To approve your own kanbot PRs, kanbot must open them as its own app ([app mode](./11-identity.md#app-mode)).
+With [`merge.onApproval`](./12-identity.md#merge-on-approval), approving the PR is enough: kanbot merges it as you. To approve your own kanbot PRs, kanbot must open them as its own app ([app mode](./12-identity.md#app-mode)).
 
 ## Exploring alternatives
 
@@ -83,4 +83,4 @@ Only collaborators with write access can steer agents. Comments from others are 
 - `gh`, `git push`, `git remote` and `git config` are denied for agents.
 - GitHub is the only state. You can stop and restart the daemon any time.
 
-Workers run as your user, and commands are blocked by pattern, not missing credentials. In [app mode](./11-identity.md#app-mode), the app's key in `~/.kanbot/apps/` is readable by them too. A determined prompt injection could get around that.
+Workers run as your user, and commands are blocked by pattern, not missing credentials. In [app mode](./12-identity.md#app-mode), the app's key in `~/.kanbot/apps/` is readable by them too. A determined prompt injection could get around that.

@@ -36,9 +36,9 @@ function leaves(spec: Spec, path: string[] = []): [string, Spec][] {
 	return spec.subs.flatMap((s) => leaves(s, [...path, s.name]));
 }
 
-// Keeps docs/14-usage.md and error links in step with the CLI.
+// Keeps docs/15-usage.md and error links in step with the CLI.
 describe("usage docs", async () => {
-	const usage = await Bun.file(join(DOCS, "14-usage.md")).text();
+	const usage = await Bun.file(join(DOCS, "15-usage.md")).text();
 	const sections = new Map(
 		usage
 			.split(/^## /m)

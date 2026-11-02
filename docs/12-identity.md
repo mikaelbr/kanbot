@@ -25,7 +25,7 @@ kanbot can talk on GitHub as you, or as its own GitHub App. Either way, code is 
 
 ### User mode
 
-kanbot posts with your `gh` login. Its comments start with a small `🤖 kanbot` line, and hidden markers tell kanbot which comments are its own. GitHub doesn't notify you about your own activity, so kanbot sends [its own notifications](./09-configuration.md#notifications).
+kanbot posts with your `gh` login. Its comments start with a small `🤖 kanbot` line, and hidden markers tell kanbot which comments are its own. GitHub doesn't notify you about your own activity, so kanbot sends [its own notifications](./10-configuration.md#notifications).
 
 ## App mode
 

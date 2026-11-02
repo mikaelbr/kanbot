@@ -349,7 +349,7 @@ export default defineCommand({
 						: "replace the starter steps with your stack's commands"
 					: undefined,
 				docs: conventions
-					? "getting-started#fill-in-project-conventions"
+					? "project-conventions#fill-it-in"
 					: "getting-started#set-up-a-repository",
 			});
 		}

@@ -16,17 +16,17 @@ There are two kinds:
 
 ## Board skills
 
-| Skill                 | Used for                                                                     |
-| --------------------- | ---------------------------------------------------------------------------- |
-| `project-conventions` | Your stack, commands and conventions. **Fill this in first.**                |
-| `project-memory`      | Lessons from your corrections. See [Project memory](./08-project-memory.md). |
-| `plan-template`       | The plan format.                                                             |
-| `user-stories`        | User stories and Given/When/Then criteria.                                   |
-| `issue-splitting`     | Splitting large issues.                                                      |
-| `approach-designer`   | Writing N approaches for `explore:N`.                                        |
-| `review-findings`     | Severity rubric, finding format and review rounds.                           |
-| `spec-review`         | Checking a change against its plan.                                          |
-| `pr-description`      | PR title and body format.                                                    |
+| Skill                 | Used for                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| `project-conventions` | Your stack, commands and rules. See [Project conventions](./08-project-conventions.md). |
+| `project-memory`      | Lessons from your corrections. See [Project memory](./09-project-memory.md).            |
+| `plan-template`       | The plan format.                                                                        |
+| `user-stories`        | User stories and Given/When/Then criteria.                                              |
+| `issue-splitting`     | Splitting large issues.                                                                 |
+| `approach-designer`   | Writing N approaches for `explore:N`.                                                   |
+| `review-findings`     | Severity rubric, finding format and review rounds.                                      |
+| `spec-review`         | Checking a change against its plan.                                                     |
+| `pr-description`      | PR title and body format.                                                               |
 
 These skills cover the process only. Skills for building, testing and reviewing code are yours: add them to `.agents/skills` and map them under [capabilities](./05-capabilities.md).
 
@@ -69,16 +69,6 @@ Instructions...
 `name` must match the folder name. The `description` decides when an agent loads the skill, so say what it covers and when it applies.
 
 A skill folder can hold extra files, like templates or scripts. Reference them from `SKILL.md`.
-
-## Project conventions
-
-`project-conventions` is a template. Replace every `<placeholder>` with real values: stack, commands, layout, code conventions, decisions and gotchas. Agents use these commands exactly. `kanbot doctor` warns while placeholders are left.
-
-Agents that find a wrong or missing command may propose an edit to this file in their PR.
-
-## Project memory
-
-`project-memory` holds lessons from your corrections, one fact per file. See [Project memory](./08-project-memory.md).
 
 ## Add a skill
 

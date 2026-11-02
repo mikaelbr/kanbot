@@ -5,7 +5,7 @@ import { loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { askCapabilities, compact, ownWorkers } from "../capabilities.ts";
 import { configPath, saveConfig, writeConfigSchema } from "../config.ts";
-import { UserError } from "../errors.ts";
+import { DOCS_URL, UserError } from "../errors.ts";
 import { run } from "../github/gh.ts";
 import { log } from "../log.ts";
 import { applyUpgrade, NEW_SUFFIX, planUpgrade } from "../templates.ts";
@@ -111,6 +111,7 @@ export default defineCommand({
 		console.log(`
 Next steps:
   1. Review AGENTS.md and fill in .agents/skills/project-conventions/SKILL.md
+     (ask your agent to draft it; see ${DOCS_URL}/project-conventions)
   2. Adjust .github/workflows/ci.yml to your stack (agents fix failing CI)
   3. Map your own skills under capabilities in .kanbot/config.yml (kanbot-guide can help)
   4. kanbot board create        # board and labels; enable the workflows it prints

@@ -47,4 +47,4 @@ Cards in Planning or Ready need nothing: agents always start from the latest bas
 | Get agent review on your own PR             | Add `kanbot-review`                                      |
 | Work with an agent at your side             | Normal Claude Code or Codex session in the repo          |
 | Note an idea for later while working        | Ask your agent to file it (`kanbot-idea`)                |
-| Teach agents something for every future job | Add a fact to [`project-memory`](./08-project-memory.md) |
+| Teach agents something for every future job | Add a fact to [`project-memory`](./09-project-memory.md) |

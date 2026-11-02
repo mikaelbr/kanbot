@@ -12,22 +12,23 @@ Explain in plain words. Ask before choosing for them; give a recommendation with
 
 ## Docs
 
-| Question                                      | Slug                |
-| --------------------------------------------- | ------------------- |
-| How do I install and set up a repo?           | `getting-started`   |
-| How does a card move across the board?        | `workflow`          |
-| How do I add or file ideas?                   | `capturing-ideas`   |
-| My own PRs, local sessions, direct commits?   | `outside-the-board` |
-| Which agents are there, how do I change them? | `agents`            |
-| Skills?                                       | `skills`            |
-| Project memory, facts from corrections        | `project-memory`    |
-| Claude or Codex?                              | `providers`         |
-| Every config field, labels, notifications     | `configuration`     |
-| Using our own skills and agents for the work  | `capabilities`      |
-| Copilot as an extra reviewer                  | `copilot-review`    |
-| Bot or user identity, merge by approving      | `identity`          |
-| Upgrading and `.kanbot-new` files             | `upgrading`         |
-| Every command and flag                        | `usage`             |
+| Question                                      | Slug                  |
+| --------------------------------------------- | --------------------- |
+| How do I install and set up a repo?           | `getting-started`     |
+| How does a card move across the board?        | `workflow`            |
+| How do I add or file ideas?                   | `capturing-ideas`     |
+| My own PRs, local sessions, direct commits?   | `outside-the-board`   |
+| Which agents are there, how do I change them? | `agents`              |
+| Skills?                                       | `skills`              |
+| Filling in stack, commands and rules          | `project-conventions` |
+| Project memory, facts from corrections        | `project-memory`      |
+| Claude or Codex?                              | `providers`           |
+| Every config field, labels, notifications     | `configuration`       |
+| Using our own skills and agents for the work  | `capabilities`        |
+| Copilot as an extra reviewer                  | `copilot-review`      |
+| Bot or user identity, merge by approving      | `identity`            |
+| Upgrading and `.kanbot-new` files             | `upgrading`           |
+| Every command and flag                        | `usage`               |
 
 ## Board flow
 
@@ -43,7 +44,7 @@ Go step by step. Run each command, check its output, then go on. If `.kanbot/con
 
 1. **Requirements.** Bun 1.3+, `gh` logged in, `claude` or `codex` logged in with a subscription (not an API key). Run `gh auth refresh -s project`.
 2. **Provider.** Ask which subscription they have, then `bunx kanbot init --provider claude|codex` in the repo root.
-3. **Conventions.** Fill in `.agents/skills/project-conventions/SKILL.md` with them: stack, commands to test, lint and typecheck. Adjust `.github/workflows/ci.yml` to run the same. Every agent reads this first.
+3. **Conventions.** Fill in `.agents/skills/project-conventions/SKILL.md` with them: stack, commands to test, lint and typecheck. Adjust `.github/workflows/ci.yml` to run the same. Every agent reads this first. Draft it from manifests and CI, ask what you can't find, and have them run each command. Link `project-conventions`.
 4. **Capabilities.** kanbot runs the process; the repo's own skills and agents do the work. Ask which skills they have for proving acceptance criteria (`verify`), technical review (`review`) and something a human can try (`preview`), and map them under `capabilities` in `.kanbot/config.yml`. See [Capabilities](#capabilities).
 5. **Board.** `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
 6. **Options.** Go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
