@@ -11,8 +11,6 @@ Every card starts as an issue in **Ideas**. The easiest way is to add it straigh
 
 ## On the board
 
-This is the preferred way.
-
 1. Open the project board and go to the **Ideas** column.
 2. Click **+ Add item**, then **+** → **Create new issue**.
 3. Pick the repo and the **User need** or **Technical task** template.
@@ -24,7 +22,7 @@ No agent touches Ideas. When you're ready, drag the card to **Planning**.
 
 ## With your agent
 
-Not sure what the idea is yet? Talk it through. The `kanbot-idea` skill asks you questions until the idea is clear, checks for duplicates, and files the issue for you.
+If you're not sure what the idea is yet, talk it through. The `kanbot-idea` skill asks you questions until the idea is clear, checks for duplicates, and files the issue for you.
 
 1. Tell your agent about the idea, in Claude Code or Codex:
 
@@ -35,7 +33,7 @@ Not sure what the idea is yet? Talk it through. The `kanbot-idea` skill asks you
 4. It shows you a draft, written in the same shape as your issue templates. Nothing is filed until you say yes.
 5. It files the issue. The board's auto-add workflow puts it in **Ideas**.
 
-The skill only creates the issue. That's why it needs no extra setup: it uses the same GitHub access you already have.
+The skill only creates the issue, so it needs no extra setup. It uses the GitHub access you already have.
 
 ### In this repo
 

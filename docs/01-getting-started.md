@@ -36,7 +36,7 @@ bun add -g kanbot
 
 ## Set up a repository
 
-Prefer a guided setup? Run `bunx kanbot skills install`, then ask your agent "help me set up kanbot in this repo". The `kanbot-guide` skill walks you through the steps below and helps you choose options.
+For a guided setup, run `bunx kanbot skills install`, then ask your agent "help me set up kanbot in this repo". The `kanbot-guide` skill walks you through the steps below and helps you choose options.
 
 ```sh
 cd your-repo

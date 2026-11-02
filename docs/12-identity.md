@@ -29,7 +29,7 @@ kanbot posts with your `gh` login. Its comments start with a small `🤖 kanbot`
 
 ## App mode
 
-kanbot posts as a GitHub App you own, so the conversation reads as kanbot talking to you. You get the usual benefits of a second participant:
+kanbot posts as a GitHub App you own, so it shows up on GitHub as a separate participant:
 
 - **Clear authorship.** Anything from `<app>[bot]` is kanbot. Anything else is a human.
 - **GitHub notifications.** Plans, replies and review results reach your GitHub inbox. When agent review is done, kanbot requests your review, so the PR shows up in your review queue.

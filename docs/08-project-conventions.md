@@ -43,7 +43,7 @@ Then check the draft:
 | Decisions        | Choices agents shouldn't reopen, with the reason.                        |
 | Gotchas          | Things that trip up newcomers: services to start, generated files.       |
 
-Be specific. Agents follow what's written, not what you meant.
+Be specific. Agents run commands exactly as written and can't ask what you meant.
 
 | Vague              | Specific                                                  |
 | ------------------ | --------------------------------------------------------- |

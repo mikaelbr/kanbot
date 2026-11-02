@@ -41,7 +41,7 @@ After both kanbot review passes, the daemon checks Copilot:
 2. **No Copilot review yet.** The daemon waits, up to `copilotWaitMinutes` (15) after the PR opened.
 3. **Still nothing after the wait.** The PR gets `agent-reviewed` without it. Copilot may be out of credits or switched off.
 
-Your own comments still come first, as always.
+Your own comments still come first.
 
 ## Options
 

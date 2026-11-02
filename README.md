@@ -4,7 +4,7 @@
 # kanbot
 
 Run an autonomous dev team from a GitHub Project board. You define, specify and prioritize work while Claude or Codex agents work as your team.
-Uses subscriptions for Claude or Codex, and does not require API usage. The agents are fully autonomous, but you can comment on their work and steer them as needed.
+It runs on your Claude or Codex subscription, not API keys. Agents work on their own, and you steer them by commenting.
 
 ```mermaid
 flowchart LR

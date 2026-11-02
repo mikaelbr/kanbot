@@ -7,7 +7,7 @@ slug: project-memory
 
 # Project memory
 
-Agents start every job fresh. Without memory, you'd give the same correction on PR after PR. `project-memory` is where those corrections stick.
+Agents start every job fresh. Without memory, you'd give the same correction on PR after PR. `project-memory` stores each correction as a fact that agents read before every job.
 
 ## What goes in
 
@@ -25,7 +25,7 @@ Facts live in `.agents/skills/project-memory/facts/`, with a one-line index in `
 
 1. You correct something on a PR, for example in a review comment.
 2. The `fixer` makes the change. If your correction applies beyond this PR, it also adds a fact, as a separate `docs(memory): …` commit in the same PR.
-3. You merge the PR, and the fact with it. Don't want the fact? Ask in a comment to drop it.
+3. You merge the PR, and the fact with it. To drop the fact, ask in a comment.
 
 You can also add facts yourself, by hand or by asking your agent: "remember that we never call the payment API from the frontend". The [`kanbot-admin`](./07-skills.md#admin-skills) skill knows how.
 

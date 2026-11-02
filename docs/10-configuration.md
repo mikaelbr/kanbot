@@ -66,7 +66,7 @@ Restart the daemon after changes.
 
 ### Schema
 
-`init` and `sync` write `.kanbot/config.schema.json`, matching your kanbot version. The header line above points editors at it (VS Code needs the YAML extension), giving autocomplete, docs on hover and errors. `doctor` reports a stale schema.
+`init` and `sync` write `.kanbot/config.schema.json`, matching your kanbot version. The header line above points editors at it for autocomplete, docs on hover and errors. VS Code needs the YAML extension. `doctor` reports a stale schema.
 
 The schema also ships in the package as `schema/config.schema.json`, e.g. `https://unpkg.com/kanbot/schema/config.schema.json`.
 

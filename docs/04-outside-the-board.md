@@ -7,7 +7,7 @@ slug: outside-the-board
 
 # Working outside the board
 
-The board is for work you want agents to own, from plan to PR. Not everything fits that. Sometimes you fix a typo straight on `main`, pair with an agent in your editor, or open a PR yourself. kanbot is built to live alongside that.
+The board is for work you want agents to own, from plan to PR. Some work doesn't fit that: you fix a typo straight on `main`, pair with an agent in your editor, or open a PR yourself. kanbot works alongside all of it.
 
 ## Agent sessions in your repo
 
@@ -22,7 +22,7 @@ Work done this way doesn't need a card. The board shows what you want agents to 
 
 ## Your own PRs: the `kanbot-review` label
 
-Want agent review on a PR you opened yourself? Add the `kanbot-review` label. You don't need a card.
+To get agent review on a PR you opened yourself, add the `kanbot-review` label. You don't need a card.
 
 The daemon then treats it like a kanbot PR in Review, with three differences:
 

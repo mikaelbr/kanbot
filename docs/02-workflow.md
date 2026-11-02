@@ -7,7 +7,7 @@ slug: workflow
 
 # Development flow
 
-You own the board. Agents do the work in between.
+You decide what gets built and what ships. Agents plan, build, review and fix everything in between.
 
 ```mermaid
 flowchart LR
@@ -57,13 +57,13 @@ Nits don't trigger a fix. When all passes are clean, the PR gets `agent-reviewed
 
 Comment on the PR or start a review thread any time. An agent answers and pushes a fix.
 
-Want the same review for a PR you opened yourself? Label it `kanbot-review`. See [Working outside the board](./04-outside-the-board.md).
+To get the same review on a PR you opened yourself, label it `kanbot-review`. See [Working outside the board](./04-outside-the-board.md).
 
 ## 6. Done
 
 You test and merge. The board's built-in workflow moves the card to Done, and kanbot cleans up worktrees.
 
-With [`merge.onApproval`](./12-identity.md#merge-on-approval), approving the PR is enough: kanbot merges it as you. To approve your own kanbot PRs, kanbot must open them as its own app ([app mode](./12-identity.md#app-mode)).
+With [`merge.onApproval`](./12-identity.md#merge-on-approval), approving the PR is enough, and kanbot merges it as you. To approve your own kanbot PRs, kanbot must open them as its own app ([app mode](./12-identity.md#app-mode)).
 
 ## Exploring alternatives
 
