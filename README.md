@@ -114,6 +114,6 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org). A `c
 2. A draft release updates with the next version and notes. `feat` bumps minor, `fix` patch. On 0.x, breaking changes bump minor.
 3. Publish the draft on GitHub. This tags the commit, publishes to npm with provenance, and commits the version to `package.json` on `main`.
 
-Docs: [kanbot.mib.im](https://kanbot.mib.im) shows the latest release, [kanbot.mib.im/main](https://kanbot.mib.im/main/) shows `main`. Both deploy on every push to `main` and on each release. `pnpm docs:dev` serves your working tree.
+Docs: [kanbot.mib.im](https://kanbot.mib.im) shows the latest release plus later commits that only touch `docs/` or `README.md`, so docs fixes need no release. [kanbot.mib.im/main](https://kanbot.mib.im/main/) shows `main`. Both deploy on every push to `main` and on each release. `pnpm docs:dev` serves your working tree.
 
 Preview the next release with `pnpm release:preview`. Mark the draft as a pre-release to publish under the `next` tag.

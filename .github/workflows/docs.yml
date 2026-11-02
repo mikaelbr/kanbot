@@ -39,13 +39,26 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: pnpm --dir site install --frozen-lockfile
       # kanbot.mib.im documents the latest release, so it matches what npm installs.
+      # Commits since the release that only touch docs/ are added on top,
+      # so docs fixes go live without a new release.
       - name: Check out the latest release
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           tag=$(gh release view --json tagName --jq .tagName)
           git worktree add "$RUNNER_TEMP/release" "$tag"
+          for c in $(git rev-list --reverse --no-merges "$tag..HEAD"); do
+            files=$(git diff-tree --no-commit-id --name-only -r "$c")
+            [ -n "$files" ] && ! grep -qvE '^(docs/|README\.md$)' <<< "$files" || continue
+            git -C "$RUNNER_TEMP/release" cherry-pick "$c" >/dev/null && continue
+            git -C "$RUNNER_TEMP/release" cherry-pick --abort || true
+            echo "::warning::Skipped docs commit $c: it depends on unreleased changes."
+          done
           # The changelog is site content, not versioned docs.
           cp docs/changelog.md "$RUNNER_TEMP/release/docs/"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
