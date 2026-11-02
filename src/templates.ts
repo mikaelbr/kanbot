@@ -54,6 +54,18 @@ export async function readManifest(root: string): Promise<Manifest | null> {
 	return (await file.exists()) ? ((await file.json()) as Manifest) : null;
 }
 
+/** Warning when this repo's templates and the running kanbot differ in version. */
+export async function versionNotice(root: string, current = pkg.version) {
+	const installed = (await readManifest(root).catch(() => null))?.version;
+	if (!installed) return null;
+	const order = Bun.semver.order(installed, current);
+	if (order < 0)
+		return `kanbot ${current} is out, this repo has ${installed}. Run \`kanbot upgrade\` to get the new agents, skills and workflows.`;
+	if (order > 0)
+		return `This repo uses kanbot ${installed}, but you run ${current}. Use \`bunx kanbot@latest\`.`;
+	return null;
+}
+
 async function writeManifest(root: string, files: Record<string, string>) {
 	const sorted = Object.fromEntries(
 		Object.entries(files).sort(([a], [b]) => a.localeCompare(b)),

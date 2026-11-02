@@ -17,6 +17,8 @@ git diff                               # review, then commit
 
 Nothing is committed for you.
 
+When the kanbot you run is newer than the one in `.kanbot/manifest.json`, other commands print a warning to run `kanbot upgrade`.
+
 ## How it knows what you changed
 
 `init` and `upgrade` write `.kanbot/manifest.json`. It records the kanbot version and a hash of each file as kanbot installed it. On upgrade, kanbot compares three versions of each file:

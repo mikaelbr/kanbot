@@ -16,6 +16,7 @@ import {
 	planUpgrade,
 	readManifest,
 	unfilledTemplates,
+	versionNotice,
 } from "../src/templates.ts";
 
 const dirs: string[] = [];
@@ -255,5 +256,32 @@ describe("unfilledTemplates", () => {
 
 	test("skips missing files", async () => {
 		expect(await check()).toEqual([]);
+	});
+});
+
+describe("versionNotice", () => {
+	async function notice(installed?: string) {
+		const root = await tmp();
+		if (installed)
+			await writeAll(root, {
+				".kanbot/manifest.json": JSON.stringify({
+					version: installed,
+					files: {},
+				}),
+			});
+		return versionNotice(root, "0.5.0");
+	}
+
+	test("asks to upgrade when the repo is behind", async () => {
+		expect(await notice("0.4.1")).toContain("kanbot upgrade");
+	});
+
+	test("asks to update kanbot when the repo is ahead", async () => {
+		expect(await notice("0.6.0")).toContain("kanbot@latest");
+	});
+
+	test("is quiet when versions match or there is no manifest", async () => {
+		expect(await notice("0.5.0")).toBeNull();
+		expect(await notice()).toBeNull();
 	});
 });
