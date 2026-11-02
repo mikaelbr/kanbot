@@ -16,7 +16,7 @@ Explain in plain words. Ask before choosing for them; give a recommendation with
 | --------------------------------------------- | ------------------- |
 | How do I install and set up a repo?           | `getting-started`   |
 | How does a card move across the board?        | `workflow`          |
-| How do I file ideas by chatting?              | `capturing-ideas`   |
+| How do I add or file ideas?                   | `capturing-ideas`   |
 | My own PRs, local sessions, direct commits?   | `outside-the-board` |
 | Which agents are there, how do I change them? | `agents`            |
 | Skills?                                       | `skills`            |

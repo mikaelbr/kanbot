@@ -15,6 +15,7 @@ import {
 	pendingMerges,
 	planUpgrade,
 	readManifest,
+	unfilledTemplates,
 } from "../src/templates.ts";
 
 const dirs: string[] = [];
@@ -217,4 +218,42 @@ test("skills install copies global skills into each provider's folder", async ()
 			(f) => f.includes("kanbot-idea") || f.includes("kanbot-guide"),
 		),
 	).toBe(true);
+});
+
+describe("unfilledTemplates", () => {
+	const tpl = {
+		[CONVENTIONS]:
+			"# Conventions\n\n- Test: `<run all tests>`\n- Lint: `<lint>`\n",
+	};
+
+	async function check(content?: string) {
+		const dir = await tmp();
+		const root = await tmp();
+		await writeAll(dir, tpl);
+		if (content !== undefined) await writeAll(root, { [CONVENTIONS]: content });
+		return unfilledTemplates(root, { templates: dir, known: {} });
+	}
+
+	test("flags an unchanged template", async () => {
+		const [u] = await check(tpl[CONVENTIONS]);
+		expect(u?.detail).toBe("unchanged from the template");
+	});
+
+	test("lists lines with placeholders left", async () => {
+		const [u] = await check(
+			"# Conventions\n\n- Test: `bun test`\n- Lint: `<lint>`\n",
+		);
+		expect(u?.detail).toContain("line 4: - Lint: `<lint>`");
+		expect(u?.detail).not.toContain("bun test");
+	});
+
+	test("passes when filled in, ignoring other <tags>", async () => {
+		expect(
+			await check("# Conventions\n\n- Test: `bun test`\n- <details>\n"),
+		).toEqual([]);
+	});
+
+	test("skips missing files", async () => {
+		expect(await check()).toEqual([]);
+	});
 });

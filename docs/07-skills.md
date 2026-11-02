@@ -72,7 +72,7 @@ A skill folder can hold extra files, like templates or scripts. Reference them f
 
 ## Project conventions
 
-`project-conventions` is a template. Replace every `<placeholder>` with real values: stack, commands, layout, code conventions, decisions and gotchas. Agents use these commands exactly.
+`project-conventions` is a template. Replace every `<placeholder>` with real values: stack, commands, layout, code conventions, decisions and gotchas. Agents use these commands exactly. `kanbot doctor` warns while placeholders are left.
 
 Agents that find a wrong or missing command may propose an edit to this file in their PR.
 

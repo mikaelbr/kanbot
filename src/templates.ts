@@ -191,3 +191,54 @@ export async function pendingMerges(root: string, dir = TEMPLATES) {
 	const paths = [...(await listTemplates(dir)).keys()];
 	return paths.filter((p) => existsSync(join(root, `${p}${NEW_SUFFIX}`)));
 }
+
+/** User templates you are meant to fill in after install. */
+export const FILL_IN = [
+	".agents/skills/project-conventions/SKILL.md",
+	".github/workflows/ci.yml",
+];
+
+const clip = (s: string) => (s.length > 72 ? `${s.slice(0, 71)}…` : s);
+
+export type Unfilled = { path: string; detail: string };
+
+/**
+ * Fill-in templates still unedited, or still holding the template's
+ * `<placeholder>`s. Missing files are left to other checks.
+ */
+export async function unfilledTemplates(
+	root: string,
+	opts: Pick<Options, "templates" | "known"> = {},
+): Promise<Unfilled[]> {
+	const templates = await listTemplates(opts.templates);
+	const known: Record<string, string[]> = opts.known ?? knownHashes;
+	const out: Unfilled[] = [];
+	for (const path of FILL_IN) {
+		const tpl = templates.get(path);
+		const file = Bun.file(join(root, path));
+		if (!tpl || !(await file.exists())) continue;
+		const bytes = await file.bytes();
+		const current = hash(bytes);
+		if (current === hash(tpl) || (known[path] ?? []).includes(current)) {
+			out.push({ path, detail: "unchanged from the template" });
+			continue;
+		}
+		const placeholders = new Set(
+			new TextDecoder().decode(tpl).match(/<[^<>`\n]+>/g) ?? [],
+		);
+		const left = new TextDecoder()
+			.decode(bytes)
+			.split("\n")
+			.flatMap((line, i) =>
+				[...placeholders].some((p) => line.includes(p))
+					? [`line ${i + 1}: ${clip(line.trim())}`]
+					: [],
+			);
+		if (left.length)
+			out.push({
+				path,
+				detail: `${left.length} line(s) with placeholders left:\n${left.slice(0, 5).join("\n")}${left.length > 5 ? "\n…" : ""}`,
+			});
+	}
+	return out;
+}

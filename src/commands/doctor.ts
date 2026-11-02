@@ -21,7 +21,13 @@ import {
 	type McpServer,
 	readMcpServers,
 } from "../providers/mcp.ts";
-import { NEW_SUFFIX, pendingMerges, planUpgrade } from "../templates.ts";
+import {
+	FILL_IN,
+	NEW_SUFFIX,
+	pendingMerges,
+	planUpgrade,
+	unfilledTemplates,
+} from "../templates.ts";
 import { REPO_LABELS } from "./board.ts";
 
 type Check = {
@@ -322,6 +328,31 @@ export default defineCommand({
 			docs: "upgrading",
 			fix: `merge each into the file next to it and delete it (kanbot-admin skill can help)`,
 		});
+
+		const unfilled = await unfilledTemplates(root);
+		for (const path of FILL_IN) {
+			const u = unfilled.find((x) => x.path === path);
+			const conventions = path.includes("project-conventions");
+			add({
+				name: `${path} filled in`,
+				ok: true,
+				warn: !!u,
+				detail: u?.detail,
+				why: u
+					? conventions
+						? "Every agent reads it first for commands and conventions. Until it's filled in, they guess."
+						: "Agents fix failing CI, so it should run your real install, lint and test commands."
+					: undefined,
+				fix: u
+					? conventions
+						? "replace each <placeholder> and delete the TEMPLATE note (kanbot-guide skill can help)"
+						: "replace the starter steps with your stack's commands"
+					: undefined,
+				docs: conventions
+					? "getting-started#fill-in-project-conventions"
+					: "getting-started#set-up-a-repository",
+			});
+		}
 
 		section(`Pushed to origin/${config.baseBranch}`);
 		await git(root, "fetch", "origin", config.baseBranch).catch(() => {});

@@ -21,7 +21,7 @@ Read these in order the first time.
 
 1. [Getting started](./01-getting-started.md): install and set up a repo.
 2. [Development flow](./02-workflow.md): how work moves across the board, and where you step in.
-3. [Capturing ideas](./03-capturing-ideas.md): file ideas by chatting with your agent, from anywhere.
+3. [Capturing ideas](./03-capturing-ideas.md): add ideas on the board, or shape them with your agent.
 4. [Working outside the board](./04-outside-the-board.md): local sessions, your own PRs, direct commits.
 
 ## Customize

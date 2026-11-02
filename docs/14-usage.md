@@ -86,6 +86,7 @@ Check that everything is in place:
 - Agents, the skills they use, and capabilities.
 - Generated files, config schema and MCP servers for workers.
 - Templates up to date, leftover `.kanbot-new` files, and files pushed to the base branch.
+- `project-conventions` and `ci.yml` filled in: warns on files unchanged from the template or with `<placeholder>`s left.
 - Board columns, board workflows and labels.
 - In app mode: the app, its key and its install on the repo.
 - With `review.copilot`: the ruleset and `.github/copilot-instructions.md`.
