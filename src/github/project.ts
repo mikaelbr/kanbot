@@ -319,3 +319,25 @@ export async function boardWorkflows(gh: Gh, board: Board) {
 	);
 	return data.node.workflows.nodes;
 }
+
+export type StatusUpdate = {
+	body: string;
+	status: "ON_TRACK" | "AT_RISK" | "OFF_TRACK" | "INACTIVE" | "COMPLETE";
+	/** YYYY-MM-DD */
+	startDate: string;
+};
+
+/** Post to the board's "Status updates" in the project details. */
+export function postStatusUpdate(gh: Gh, board: Board, update: StatusUpdate) {
+	return gh.mutate<{
+		createProjectV2StatusUpdate: { statusUpdate: { id: string } };
+	}>(
+		"post project status update",
+		`mutation($p: ID!, $b: String!, $s: ProjectV2StatusUpdateStatus!, $d: Date!) {
+			createProjectV2StatusUpdate(input: { projectId: $p, body: $b, status: $s, startDate: $d }) {
+				statusUpdate { id }
+			}
+		}`,
+		{ p: board.id, b: update.body, s: update.status, d: update.startDate },
+	);
+}

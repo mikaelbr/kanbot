@@ -106,8 +106,9 @@ Warn: never enable the branch rule "Require approval of the most recent reviewab
 
 1. `kanbot doctor`: prints a fix for each failed check.
 2. `kanbot status`: board by column, what waits on the user (oldest first), daemon, failures, rate-limit pause.
-3. `.kanbot/logs/*.jsonl`: full agent transcripts.
-4. `needs-human` label: the issue has a comment saying why. Fix the cause, then remove the label to retry.
-5. Nothing happens: is the daemon running, are kanbot files pushed to the base branch, is the card in an active column?
-6. Card stays in Ready: the plan has open questions, or the issue is blocked by open issues. kanbot commented why. Answer questions in Planning; blocked cards start when the blockers close.
-7. Agent didn't use a skill: is it mapped under `capabilities`, does its `when` fit, and is it committed?
+3. `kanbot report`: merged PRs, cycle time, wait on the user, fix loops and `needs-human` causes for the last 7 days. `--post` adds it to the board's Status updates.
+4. `.kanbot/logs/*.jsonl`: full agent transcripts.
+5. `needs-human` label: the issue has a comment saying why. Fix the cause, then remove the label to retry.
+6. Nothing happens: is the daemon running, are kanbot files pushed to the base branch, is the card in an active column?
+7. Card stays in Ready: the plan has open questions, or the issue is blocked by open issues. kanbot commented why. Answer questions in Planning; blocked cards start when the blockers close.
+8. Agent didn't use a skill: is it mapped under `capabilities`, does its `when` fit, and is it committed?

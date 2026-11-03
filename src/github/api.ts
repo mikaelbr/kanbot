@@ -1,4 +1,5 @@
 import type { Checks, Comment, Issue, IssueRef, PR } from "../daemon/types.ts";
+import type { Activity } from "../report.ts";
 import type { Gh } from "./gh.ts";
 
 const COMMENT = "id databaseId author { login } body createdAt";
@@ -392,4 +393,49 @@ export async function copilotReviewRule(gh: Gh, branch: string) {
 		gh.r(`/rules/branches/${encodeURIComponent(branch)}`),
 	);
 	return rules.find((r) => r.type === "copilot_code_review") ?? null;
+}
+
+const ACTIVITY_QUERY = `
+query($q: String!, $after: String) {
+	search(query: $q, type: ISSUE, first: 50, after: $after) {
+		nodes {
+			__typename
+			... on PullRequest {
+				number title url headRefName createdAt mergedAt
+				comments(last: 100) { nodes { body createdAt } }
+			}
+			... on Issue {
+				number title url createdAt
+				comments(last: 100) { nodes { body createdAt } }
+			}
+		}
+		pageInfo { hasNextPage endCursor }
+	}
+}`;
+
+/** Issues and PRs updated since `since`, with comments, for `kanbot report`. */
+export async function fetchActivity(gh: Gh, since: Date): Promise<Activity[]> {
+	const q = `repo:${gh.repo} updated:>=${since.toISOString().slice(0, 10)}`;
+	const out: Activity[] = [];
+	let after: string | null = null;
+	do {
+		// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape, mapped below
+		const data: any = await gh.query(ACTIVITY_QUERY, { q, after });
+		for (const n of data.search.nodes) {
+			if (n.__typename !== "PullRequest" && n.__typename !== "Issue") continue;
+			out.push({
+				kind: n.__typename === "PullRequest" ? "pr" : "issue",
+				number: n.number,
+				title: n.title,
+				url: n.url,
+				headRefName: n.headRefName,
+				createdAt: n.createdAt,
+				mergedAt: n.mergedAt,
+				comments: n.comments.nodes,
+			});
+		}
+		const page = data.search.pageInfo;
+		after = page.hasNextPage ? page.endCursor : null;
+	} while (after);
+	return out;
 }

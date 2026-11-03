@@ -107,6 +107,25 @@ Start the daemon. It polls the board, runs agent jobs and applies their results 
 
 Show the board by column, daemon PID and provider, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
 
+## `kanbot report`
+
+Show how work flowed in a period: PRs merged, median cycle time (PR opened → merged), median wait on you (agent-reviewed → merged), fix loops (review, CI, conflict, feedback) and `needs-human` causes. It starts with a health label and ends with at most two next steps. Data comes from GitHub, so it covers work from every machine.
+
+Health follows fixed rules:
+
+| Health    | When                                                                   |
+| --------- | ---------------------------------------------------------------------- |
+| Inactive  | Nothing merged and no active cards.                                    |
+| Off track | Nothing merged while items wait on you.                                |
+| At risk   | The `wip.awaitingHuman` limit is reached, or cards have `needs-human`. |
+| On track  | Otherwise.                                                             |
+
+| Flag             | Default | Description                                                      |
+| ---------------- | ------- | ---------------------------------------------------------------- |
+| `--since <when>` | `7d`    | Start of the period: `7d`, `2w`, `12h` or `YYYY-MM-DD`.          |
+| `--post`         | `false` | Also post it to the board's **Status updates**, with the health. |
+| `--json`         | `false` | Print JSON instead of text.                                      |
+
 ## `kanbot completion`
 
 Print a shell completion script. See [Shell completion](./01-getting-started.md#shell-completion).
