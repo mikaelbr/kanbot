@@ -18,6 +18,7 @@ import {
 	neededWorkflows,
 	workflowsUrl,
 } from "../github/project.ts";
+import { LOGIN_FIX, providerLogin } from "../providers/login.ts";
 import {
 	codexSupports,
 	type McpServer,
@@ -173,27 +174,25 @@ export default defineCommand({
 			return summary(checks);
 		}
 
+		const login = await providerLogin(config.provider);
 		if (config.provider === "claude") {
 			section("Claude Code");
-			const s = await cmd(["claude", "auth", "status"]);
-			const sub = /"authMethod":\s*"claude\.ai"/.test(s.out);
 			add({
 				name: "claude CLI logged in with a subscription",
-				ok: s.ok && sub,
-				detail: sub ? undefined : "Not using a claude.ai login.",
+				ok: login.ok,
+				detail: login.installed ? login.detail : "claude is not installed.",
 				why: "Workers run `claude`. An API key login bills per token instead of your plan.",
-				fix: "claude auth login",
+				fix: LOGIN_FIX.claude,
 				docs: "providers#claude-code",
 			});
 		} else {
 			section("Codex");
-			const s = await cmd(["codex", "login", "status"]);
 			add({
 				name: "codex CLI logged in with ChatGPT",
-				ok: s.ok && /ChatGPT/i.test(s.out),
-				detail: s.out.split("\n")[0],
+				ok: login.ok,
+				detail: login.installed ? login.detail : "codex is not installed.",
 				why: "Workers run `codex` on your ChatGPT plan.",
-				fix: "codex login",
+				fix: LOGIN_FIX.codex,
 				docs: "providers#codex",
 			});
 			add({

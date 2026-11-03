@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { chmod, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { defineCommand } from "citty";
+import { openBrowser } from "../ask.ts";
 import { loadConfig, saveConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { appKeyPath, appManifest, convertManifest } from "../github/app.ts";
@@ -10,18 +11,6 @@ import { Gh } from "../github/gh.ts";
 import { log } from "../log.ts";
 
 const WAIT_MS = 10 * 60_000;
-
-function openBrowser(url: string) {
-	const cmd =
-		process.platform === "darwin"
-			? "open"
-			: process.platform === "win32"
-				? "explorer"
-				: "xdg-open";
-	try {
-		Bun.spawn([cmd, url], { stdout: "ignore", stderr: "ignore" });
-	} catch {}
-}
 
 const escAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 
@@ -40,6 +29,77 @@ const page = (msg: string) =>
 		{ headers: { "content-type": "text/html" } },
 	);
 
+/** Creates a GitHub App in the browser and switches config to app mode. */
+export async function createApp(root: string, name?: string) {
+	const config = await loadConfig(root);
+	const gh = new Gh(config.repo);
+	const owner = gh.owner;
+	const { type } = await gh.rest<{ type: string }>(`users/${owner}`);
+	const appName = (name ?? `kanbot-${owner}`).slice(0, 34);
+	const state = randomUUID();
+	const action =
+		type === "Organization"
+			? `https://github.com/organizations/${owner}/settings/apps/new?state=${state}`
+			: `https://github.com/settings/apps/new?state=${state}`;
+
+	const got = Promise.withResolvers<string>();
+	const server = Bun.serve({
+		port: 0,
+		hostname: "localhost",
+		fetch(req): Response {
+			const url = new URL(req.url);
+			if (url.pathname === "/")
+				return new Response(
+					formPage(
+						action,
+						appManifest(appName, `http://localhost:${url.port}/callback`),
+					),
+					{ headers: { "content-type": "text/html" } },
+				);
+			if (url.pathname !== "/callback")
+				return new Response("", { status: 404 });
+			const code = url.searchParams.get("code");
+			if (url.searchParams.get("state") !== state || !code)
+				return page("Unexpected request. Run `kanbot app create` again.");
+			got.resolve(code);
+			return page("App created. Go back to your terminal.");
+		},
+	});
+	const start = `http://localhost:${server.port}/`;
+	log.info(`Opening ${start} — confirm the app on GitHub.`);
+	openBrowser(start);
+	const timer = setTimeout(
+		() => got.reject(new Error("timed out waiting for GitHub")),
+		WAIT_MS,
+	);
+	let code: string;
+	try {
+		code = await got.promise;
+	} catch (e) {
+		throw new UserError("No app was created.", {
+			why: String(e),
+			fix: "kanbot app create",
+			docs: "identity#app-mode",
+		});
+	} finally {
+		clearTimeout(timer);
+		server.stop();
+	}
+
+	const app = await convertManifest(code);
+	const keyFile = appKeyPath(app.id);
+	await mkdir(dirname(keyFile), { recursive: true });
+	await Bun.write(keyFile, app.pem);
+	await chmod(keyFile, 0o600);
+	await saveConfig(root, {
+		identity: { mode: "app", app: { id: app.id, slug: app.slug } },
+	});
+	const install = `https://github.com/apps/${app.slug}/installations/new`;
+	log.info(`Created ${app.slug} (id ${app.id}). Key: ${keyFile}`);
+	log.info(`Now install it on ${config.repo}: ${install}`);
+	openBrowser(install);
+}
+
 const create = defineCommand({
 	meta: {
 		name: "create",
@@ -53,74 +113,7 @@ const create = defineCommand({
 		},
 	},
 	async run({ args }) {
-		const root = process.cwd();
-		const config = await loadConfig(root);
-		const gh = new Gh(config.repo);
-		const owner = gh.owner;
-		const { type } = await gh.rest<{ type: string }>(`users/${owner}`);
-		const name = (args.name ?? `kanbot-${owner}`).slice(0, 34);
-		const state = randomUUID();
-		const action =
-			type === "Organization"
-				? `https://github.com/organizations/${owner}/settings/apps/new?state=${state}`
-				: `https://github.com/settings/apps/new?state=${state}`;
-
-		const got = Promise.withResolvers<string>();
-		const server = Bun.serve({
-			port: 0,
-			hostname: "localhost",
-			fetch(req): Response {
-				const url = new URL(req.url);
-				if (url.pathname === "/")
-					return new Response(
-						formPage(
-							action,
-							appManifest(name, `http://localhost:${url.port}/callback`),
-						),
-						{ headers: { "content-type": "text/html" } },
-					);
-				if (url.pathname !== "/callback")
-					return new Response("", { status: 404 });
-				const code = url.searchParams.get("code");
-				if (url.searchParams.get("state") !== state || !code)
-					return page("Unexpected request. Run `kanbot app create` again.");
-				got.resolve(code);
-				return page("App created. Go back to your terminal.");
-			},
-		});
-		const start = `http://localhost:${server.port}/`;
-		log.info(`Opening ${start} — confirm the app on GitHub.`);
-		openBrowser(start);
-		const timer = setTimeout(
-			() => got.reject(new Error("timed out waiting for GitHub")),
-			WAIT_MS,
-		);
-		let code: string;
-		try {
-			code = await got.promise;
-		} catch (e) {
-			throw new UserError("No app was created.", {
-				why: String(e),
-				fix: "kanbot app create",
-				docs: "identity#app-mode",
-			});
-		} finally {
-			clearTimeout(timer);
-			server.stop();
-		}
-
-		const app = await convertManifest(code);
-		const keyFile = appKeyPath(app.id);
-		await mkdir(dirname(keyFile), { recursive: true });
-		await Bun.write(keyFile, app.pem);
-		await chmod(keyFile, 0o600);
-		await saveConfig(root, {
-			identity: { mode: "app", app: { id: app.id, slug: app.slug } },
-		});
-		const install = `https://github.com/apps/${app.slug}/installations/new`;
-		log.info(`Created ${app.slug} (id ${app.id}). Key: ${keyFile}`);
-		log.info(`Now install it on ${config.repo}: ${install}`);
-		openBrowser(install);
+		await createApp(process.cwd(), args.name);
 		console.log(
 			"\nThen commit .kanbot/config.yml, run `kanbot doctor` and restart the daemon.",
 		);

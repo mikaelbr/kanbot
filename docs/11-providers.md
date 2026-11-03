@@ -11,7 +11,7 @@ kanbot runs agents with either Claude Code or Codex. Both use your subscription 
 
 ## Choose a provider
 
-Pick one at setup:
+`kanbot init` asks, and defaults to the one you're logged in to. Or pass it:
 
 ```sh
 kanbot init --provider claude   # or codex

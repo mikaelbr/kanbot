@@ -1,9 +1,10 @@
 import { defineCommand } from "citty";
-import { LABELS, loadConfig, saveConfig } from "../config.ts";
+import { type Config, LABELS, loadConfig, saveConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { ensureCopilotRuleset, ensureLabel } from "../github/api.ts";
 import { Gh } from "../github/gh.ts";
 import {
+	type Board,
 	createBoard,
 	loadBoard,
 	missingColumns,
@@ -61,6 +62,76 @@ export async function ensureLabels(gh: Gh) {
 		await ensureLabel(gh, name, color, description);
 }
 
+/**
+ * Creates the board (or keeps the configured one), labels and Copilot
+ * ruleset, then prints the workflows to turn on. Returns the board, or null
+ * if creation was skipped.
+ */
+export async function setupBoard(root: string, title?: string) {
+	const config = await loadConfig(root);
+	const gh = new Gh(config.repo);
+	if (config.project) {
+		log.info(
+			`Project already configured (${config.project.owner} #${config.project.number}); only ensuring labels.`,
+		);
+	} else {
+		const project = await createBoard(gh, config, title ?? gh.name);
+		if (!project) return null;
+		await saveConfig(root, {
+			project: { owner: project.owner, number: project.number },
+		});
+		log.info(`Created project ${project.url}`);
+	}
+	await ensureLabels(gh);
+	log.info(`Labels ensured: ${REPO_LABELS.map(([n]) => n).join(", ")}`);
+	if (config.review.copilot) {
+		await ensureCopilotRuleset(gh, config.review.copilotOnPush);
+		log.info("Copilot review ruleset ensured.");
+	}
+	const board = await loadBoard(gh, await loadConfig(root));
+	warnMissing(board);
+	printWorkflows(config, board);
+	return board;
+}
+
+/** Saves an existing project as the board and adds the labels. */
+export async function linkBoard(root: string, owner: string, number: number) {
+	await saveConfig(root, { project: { owner, number } });
+	const config = await loadConfig(root);
+	const gh = new Gh(config.repo);
+	const board = await loadBoard(gh, config);
+	await ensureLabels(gh);
+	log.info(`Linked ${board.url}`);
+	warnMissing(board);
+	return board;
+}
+
+function warnMissing(board: Board) {
+	const missing = missingColumns(board);
+	if (missing.length)
+		log.warn(
+			`Board is missing columns: ${missing.join(", ")} — add them to the Status field.`,
+		);
+}
+
+export function printWorkflows(config: Config, board: Board) {
+	const steps = neededWorkflows(config).map(
+		(w) => `  • ${w.name.padEnd(21)} → ${w.set}`,
+	);
+	console.log(`
+Turn on these built-in workflows. GitHub's API can't, so do it here:
+${workflowsUrl(board)}
+${steps.join("\n")}`);
+}
+
+/** Owner and number from a project URL like github.com/users/<owner>/projects/<n>. */
+export function parseProjectUrl(url: string) {
+	const m = url.match(
+		/github\.com\/(?:users|orgs)\/([^/\s]+)\/projects\/(\d+)/,
+	);
+	return m ? { owner: m[1] as string, number: Number(m[2]) } : null;
+}
+
 const create = defineCommand({
 	meta: {
 		name: "create",
@@ -74,41 +145,8 @@ const create = defineCommand({
 		},
 	},
 	async run({ args }) {
-		const root = process.cwd();
-		const config = await loadConfig(root);
-		const gh = new Gh(config.repo);
-		if (config.project) {
-			log.info(
-				`Project already configured (${config.project.owner} #${config.project.number}); only ensuring labels.`,
-			);
-		} else {
-			const project = await createBoard(gh, config, args.title ?? gh.name);
-			if (!project) return;
-			await saveConfig(root, {
-				project: { owner: project.owner, number: project.number },
-			});
-			log.info(`Created project ${project.url}`);
-		}
-		await ensureLabels(gh);
-		log.info(`Labels ensured: ${REPO_LABELS.map(([n]) => n).join(", ")}`);
-		if (config.review.copilot) {
-			await ensureCopilotRuleset(gh, config.review.copilotOnPush);
-			log.info("Copilot review ruleset ensured.");
-		}
-		const board = await loadBoard(gh, await loadConfig(root));
-		const missing = missingColumns(board);
-		if (missing.length)
-			log.warn(
-				`Board is missing columns: ${missing.join(", ")} — add them to the Status field.`,
-			);
-		const steps = neededWorkflows(config).map(
-			(w) => `  • ${w.name.padEnd(21)} → ${w.set}`,
-		);
-		console.log(`
-Turn on these built-in workflows. GitHub's API can't, so do it here:
-${workflowsUrl(board)}
-${steps.join("\n")}
-Then run kanbot doctor.`);
+		if (await setupBoard(process.cwd(), args.title))
+			console.log("Then run kanbot doctor.");
 	},
 });
 
@@ -127,24 +165,15 @@ const link = defineCommand({
 		number: { type: "string", required: true, description: "Project number" },
 	},
 	async run({ args }) {
-		const root = process.cwd();
 		const number = Number(args.number);
 		if (!Number.isInteger(number))
 			throw new UserError("--number must be a number.", {
 				why: "It's the number at the end of the project URL.",
 				docs: "getting-started#create-the-board",
 			});
-		await saveConfig(root, {
-			project: { owner: args.owner, number },
-		});
-		const config = await loadConfig(root);
-		const board = await loadBoard(new Gh(config.repo), config);
-		const missing = missingColumns(board);
-		log.info(
-			missing.length
-				? `Linked, but missing columns: ${missing.join(", ")}`
-				: `Linked ${board.url}`,
-		);
+		const config = await loadConfig(process.cwd());
+		const board = await linkBoard(process.cwd(), args.owner, number);
+		printWorkflows(config, board);
 	},
 });
 

@@ -11,14 +11,23 @@ Run commands from the repository root. `kanbot --help` and `kanbot <command> --h
 
 ## `kanbot init`
 
-Scaffold agents, skills, config and GitHub files into the repo. Also writes `.kanbot/manifest.json` and `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`. Existing files are kept; where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`.
+Set up kanbot in the repo. Adds agents, skills, config and GitHub files, writes `.kanbot/manifest.json` and `.github/CODEOWNERS`, updates `.gitignore` and runs `sync`. Existing files are kept; where kanbot's version differs, it is written next to yours as `<file>.kanbot-new`.
 
-In a terminal, it asks which of your skills fill the `verify`, `review` and `preview` [capabilities](./05-capabilities.md). Pick by number or name, or press Enter to skip.
+In a terminal, it walks you through setup. Press Enter to take the default:
 
-| Flag                         | Default  | Description                                |
-| ---------------------------- | -------- | ------------------------------------------ |
-| `--provider <claude\|codex>` | `claude` | Agent provider.                            |
-| `--force`                    | `false`  | Overwrite existing files, including edits. |
+1. **Provider**: Claude Code or Codex. Defaults to the one you're logged in to.
+2. **GitHub identity**: talk as you, or as its own bot (runs [`kanbot app create`](#kanbot-app-create)). Then whether to merge PRs on approval. See [Identity](./12-identity.md).
+3. **Options**: agents at once, limit on items waiting for you, phone alerts, Copilot review. Defaults are shown; change them or keep them.
+4. **Capabilities**: which of your skills fill `verify`, `review` and `preview`. Asked only if you have your own skills. See [Capabilities](./05-capabilities.md).
+5. **Board**: create one, link an existing one by URL, or skip. Adds the `project` scope to `gh` if needed, and offers to open the page where you turn on the board's workflows.
+
+Run again, it updates files and asks only about what isn't set up, like a missing board. Without a terminal, or with `--yes`, it asks nothing and uses defaults.
+
+| Flag                         | Default | Description                                         |
+| ---------------------------- | ------- | --------------------------------------------------- |
+| `--provider <claude\|codex>` | ask     | Agent provider. `claude` when not asking.           |
+| `--yes`                      | `false` | Don't ask; use defaults and set up the board later. |
+| `--force`                    | `false` | Overwrite existing files, including edits.          |
 
 ## `kanbot upgrade`
 
@@ -38,7 +47,7 @@ Create a GitHub Project with the kanbot columns, save it to config and add the r
 
 ## `kanbot board link`
 
-Use an existing project. Warns about missing columns.
+Use an existing project. Adds the labels, warns about missing columns and prints the workflows to turn on.
 
 | Flag              | Description                        |
 | ----------------- | ---------------------------------- |

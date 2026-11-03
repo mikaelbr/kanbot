@@ -40,10 +40,10 @@ For a guided setup, run `bunx kanbot skills install`, then ask your agent "help 
 
 ```sh
 cd your-repo
-kanbot init --provider claude   # or codex
+kanbot init
 ```
 
-In a terminal, `init` asks which of your skills to use for verifying, reviewing and previewing changes. Press Enter to skip. See [Capabilities](./05-capabilities.md).
+`init` asks a few questions: provider, whether kanbot talks as you or its own bot, options like how many agents run at once, which of your skills to use (see [Capabilities](./05-capabilities.md)), and the board. Press Enter to take the default. Pass `--yes` to skip the questions; [`kanbot init`](./15-usage.md#kanbot-init) has the details.
 
 `init` adds, among others:
 
@@ -65,6 +65,8 @@ Fill in `.agents/skills/project-conventions/SKILL.md` with your stack, commands 
 Also review `AGENTS.md` and `.github/workflows/ci.yml`.
 
 ## Create the board
+
+`init` offers to create the board. If you skipped it:
 
 ```sh
 kanbot board create

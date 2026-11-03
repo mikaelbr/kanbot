@@ -43,11 +43,11 @@ Agents never get a GitHub token. The daemon does every comment, push and PR. Onl
 Go step by step. Run each command, check its output, then go on. If `.kanbot/config.yml` exists, run `kanbot doctor` first and skip what passes.
 
 1. **Requirements.** Bun 1.3+, `gh` logged in, `claude` or `codex` logged in with a subscription (not an API key). Run `gh auth refresh -s project`.
-2. **Provider.** Ask which subscription they have, then `bunx kanbot init --provider claude|codex` in the repo root.
+2. **Init.** Best: have them run `bunx kanbot init` in their own terminal. It asks for provider, identity, options, capabilities and the board. Without a terminal, ask which subscription they have and run `bunx kanbot init --yes --provider claude|codex`; then go on with the steps below.
 3. **Conventions.** Fill in `.agents/skills/project-conventions/SKILL.md` with them: stack, commands to test, lint and typecheck. Adjust `.github/workflows/ci.yml` to run the same. Every agent reads this first. Draft it from manifests and CI, ask what you can't find, and have them run each command. Link `project-conventions`.
 4. **Capabilities.** kanbot runs the process; the repo's own skills and agents do the work. Ask which skills they have for proving acceptance criteria (`verify`), technical review (`review`) and something a human can try (`preview`), and map them under `capabilities` in `.kanbot/config.yml`. See [Capabilities](#capabilities).
-5. **Board.** `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
-6. **Options.** Go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
+5. **Board.** Skip if `init` made one. Otherwise `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
+6. **Options.** Skip what `init` asked. Otherwise go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
 7. **Commit and push** the kanbot files. Agents only see what's on the pushed base branch.
 8. **Check.** `kanbot doctor` until it passes, then `kanbot run --once --dry-run`, then `kanbot run`.
 9. **First card.** Have them write an issue, put it in Planning and read the plan. Point to `workflow`.
