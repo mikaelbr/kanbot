@@ -1,6 +1,6 @@
 {
 	"name": "kanbot",
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"description": "Run an autonomous dev team (Claude Code or Codex) from a GitHub Project board",
 	"type": "module",
 	"license": "MIT",
