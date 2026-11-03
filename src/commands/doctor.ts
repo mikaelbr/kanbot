@@ -15,6 +15,8 @@ import {
 	boardWorkflows,
 	loadBoard,
 	missingColumns,
+	neededWorkflows,
+	workflowsUrl,
 } from "../github/project.ts";
 import {
 	codexSupports,
@@ -402,16 +404,17 @@ export default defineCommand({
 			});
 			// Moving cards to Done on close/merge and adding new issues are left to GitHub.
 			const workflows = await boardWorkflows(gh, board);
-			for (const name of [
-				"Item closed",
-				"Pull request merged",
-				"Auto-add to project",
-			]) {
+			for (const w of neededWorkflows(config)) {
+				const on = workflows.some((x) => x.name === w.name && x.enabled);
 				add({
-					name: `board workflow "${name}" enabled`,
-					ok: workflows.some((w) => w.name === name && w.enabled),
-					why: "kanbot leaves adding new issues and moving closed ones to Done to GitHub.",
-					fix: `enable it in ${board.url} → ⋯ → Workflows`,
+					name: `board workflow "${w.name}" enabled`,
+					ok: on || !w.required,
+					warn: !on && !w.required,
+					why: w.required
+						? "kanbot leaves adding new issues and moving closed ones to Done to GitHub."
+						: `Without it, new issues land with no Status and kanbot ignores them until you set one.`,
+					fix: `open ${workflowsUrl(board)} → "${w.name}" → ${w.set} → turn it on`,
+					docs: "getting-started#create-the-board",
 				});
 			}
 		} catch (e) {

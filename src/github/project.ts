@@ -274,6 +274,39 @@ export async function addToBoard(
 	if (res) await moveItem(gh, board, res.addProjectV2ItemById.item.id, column);
 }
 
+/**
+ * Built-in board workflows kanbot relies on, with the setting to pick.
+ * GitHub's API can read them but not enable them. `required`: kanbot needs it.
+ */
+export function neededWorkflows(config: Config) {
+	return [
+		{
+			name: "Item closed",
+			set: `set Status: ${config.columns.done}`,
+			required: true,
+		},
+		{
+			name: "Pull request merged",
+			set: `set Status: ${config.columns.done}`,
+			required: true,
+		},
+		{
+			name: "Auto-add to project",
+			set: `filter is:issue repo:${config.repo}`,
+			required: true,
+		},
+		{
+			name: "Item added to project",
+			set: `set Status: ${config.columns.ideas}`,
+			required: false,
+		},
+	];
+}
+
+/** The board's Workflows settings page. */
+export const workflowsUrl = (board: { url: string }) =>
+	`${board.url}/workflows`;
+
 /** Built-in board workflows; they can be read but not enabled via the API. */
 export async function boardWorkflows(gh: Gh, board: Board) {
 	const data = await gh.query<{

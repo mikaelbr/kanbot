@@ -3,7 +3,13 @@ import { LABELS, loadConfig, saveConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { ensureCopilotRuleset, ensureLabel } from "../github/api.ts";
 import { Gh } from "../github/gh.ts";
-import { createBoard, loadBoard, missingColumns } from "../github/project.ts";
+import {
+	createBoard,
+	loadBoard,
+	missingColumns,
+	neededWorkflows,
+	workflowsUrl,
+} from "../github/project.ts";
 import { log } from "../log.ts";
 
 export const REPO_LABELS: [name: string, color: string, description: string][] =
@@ -95,13 +101,14 @@ const create = defineCommand({
 			log.warn(
 				`Board is missing columns: ${missing.join(", ")} — add them to the Status field.`,
 			);
+		const steps = neededWorkflows(config).map(
+			(w) => `  • ${w.name.padEnd(21)} → ${w.set}`,
+		);
 		console.log(`
-Enable these built-in project workflows (Project → ⋯ → Workflows), they can't be set via the API:
-  • Item closed           → set Status: ${config.columns.done}
-  • Pull request merged   → set Status: ${config.columns.done}
-  • Auto-add to project   → filter is:issue repo:${config.repo}   (new issues land in the board)
-  • Item added to project → set Status: ${config.columns.ideas}
-${board.url}`);
+Turn on these built-in workflows. GitHub's API can't, so do it here:
+${workflowsUrl(board)}
+${steps.join("\n")}
+Then run kanbot doctor.`);
 	},
 });
 

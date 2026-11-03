@@ -76,12 +76,14 @@ This creates a GitHub Project with the six columns and adds the labels. To use a
 kanbot board link --owner <login> --number <n>
 ```
 
-Then enable these built-in workflows in the project (Project → ⋯ → Workflows). They can't be set through the API:
+Then turn on these built-in workflows. GitHub's API can't, so `board create` prints a link to the project's Workflows page (`<project URL>/workflows`, or Project → ⋯ → Workflows):
 
 - **Item closed** → Status: Done
 - **Pull request merged** → Status: Done
 - **Auto-add to project** → filter `is:issue repo:<owner>/<repo>`
 - **Item added to project** → Status: Ideas
+
+`kanbot doctor` checks them. The first three are needed; without the last, new issues have no Status until you set one.
 
 ## Commit and push
 
