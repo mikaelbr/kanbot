@@ -7,6 +7,7 @@ import {
 	openQuestions,
 	schedule,
 	waitingOnHuman,
+	wipFull,
 	withOpenQuestions,
 } from "../src/daemon/derive.ts";
 import { prItem } from "../src/daemon/snapshot.ts";
@@ -871,5 +872,47 @@ describe("waiting on human", () => {
 				item("planning", { state: "CLOSED", body: planned }),
 			),
 		).toEqual([]);
+	});
+});
+
+describe("wip.awaitingHuman limit", () => {
+	const limited = (n: number) =>
+		ConfigSchema.parse({ repo: "acme/app", wip: { awaitingHuman: n } });
+	const plan = comment(`Plan.\n${marker("plan")}`, HUMAN);
+	const waitingPlan = (number: number) =>
+		item("planning", { number, body: planned, comments: [plan] });
+	const ready = item("ready", { number: 9, body: planned });
+
+	test("off by default", () => {
+		const r = derive(snap(waitingPlan(1), waitingPlan(2), ready), ctx());
+		expect(kinds(r)).toEqual(["implement:#9:1"]);
+		expect(wipFull(snap(waitingPlan(1)), config).full).toBe(false);
+	});
+
+	test("below the limit, Ready cards start", () => {
+		const r = derive(snap(waitingPlan(1), ready), ctx({ config: limited(2) }));
+		expect(kinds(r)).toEqual(["implement:#9:1"]);
+	});
+
+	test("at the limit, new Ready cards wait", () => {
+		const s = snap(waitingPlan(1), waitingPlan(2), ready);
+		expect(derive(s, ctx({ config: limited(2) })).jobs).toEqual([]);
+		expect(wipFull(s, limited(2))).toEqual({
+			waiting: 2,
+			limit: 2,
+			full: true,
+		});
+	});
+
+	test("started cards and other jobs run on", () => {
+		const r = derive(
+			snap(
+				waitingPlan(1),
+				item("inProgress", { number: 5, body: planned }),
+				item("planning", { number: 6 }),
+			),
+			ctx({ config: limited(1) }),
+		);
+		expect(kinds(r).sort()).toEqual(["implement:#5:1", "plan:#6:"]);
 	});
 });

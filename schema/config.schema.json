@@ -79,6 +79,27 @@
 			"minimum": 1,
 			"maximum": 9007199254740991
 		},
+		"wip": {
+			"description": "Work-in-progress limits.",
+			"default": {},
+			"type": "object",
+			"properties": {
+				"awaitingHuman": {
+					"default": null,
+					"description": "When this many items wait on you (`kanbot status`), no new Ready card starts. Started work runs on. null: no limit.",
+					"anyOf": [
+						{
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 9007199254740991
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
 		"pollSeconds": {
 			"default": 60,
 			"description": "Seconds between board polls.",

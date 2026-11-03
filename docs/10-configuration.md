@@ -27,6 +27,8 @@ columns: # names of the board's Status options
   done: Done
 
 concurrency: 3 # max agent workers at once
+wip:
+  awaitingHuman: null # e.g. 5: stop starting Ready cards when 5 items wait on you
 pollSeconds: 60 # min 10
 priority: [fix, review, plan, implement] # which waiting jobs run first
 maxAttempts: 2 # failures before needs-human
@@ -79,6 +81,12 @@ Rename columns to match your board's Status field. `kanbot doctor` reports missi
 Each exploratory variant counts as one worker. `priority` orders waiting jobs by kind; board order decides within a kind.
 
 `maxAttempts` counts failed agent jobs. Failing CI and merge conflicts have their own fixed limit of 3 fix attempts per PR.
+
+### WIP limit
+
+`wip.awaitingHuman` caps what waits on you: plans to approve, questions, PRs to review or merge, `needs-human`. It counts the "waiting on you" list in `kanbot status`. At the limit, no new Ready card starts. Planning, fixes and started cards run on. The daemon logs when the limit is hit and cleared.
+
+To see it on the board too, set a limit on the Review column: board view → column menu → **Set limit**. GitHub only shows the count, and kanbot can't set it for you. It counts cards in one column, so it won't always match.
 
 ### Capabilities
 

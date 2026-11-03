@@ -81,6 +81,20 @@ export const ConfigSchema = z.object({
 		.describe(
 			"Max concurrent agent workers. Each exploratory variant is one worker.",
 		),
+	wip: z
+		.object({
+			awaitingHuman: z
+				.number()
+				.int()
+				.min(1)
+				.nullable()
+				.default(null)
+				.describe(
+					"When this many items wait on you (`kanbot status`), no new Ready card starts. Started work runs on. null: no limit.",
+				),
+		})
+		.prefault({})
+		.describe("Work-in-progress limits."),
 	pollSeconds: z
 		.number()
 		.int()

@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand } from "citty";
 import { COLUMN_KEYS, loadConfig } from "../config.ts";
-import { waitingOnHuman } from "../daemon/derive.ts";
+import { waitingOnHuman, wipFull } from "../daemon/derive.ts";
 import { takeSnapshot } from "../daemon/snapshot.ts";
 import { State } from "../daemon/state.ts";
 import { Gh } from "../github/gh.ts";
@@ -56,7 +56,15 @@ export default defineCommand({
 				const ago = since ? age(since) : "?";
 				return `  ${ago.padStart(4)}  #${item.issue.number} ${why} · ${item.issue.title}\n        ${url}`;
 			});
-			console.log(`\nwaiting on you:\n${rows.join("\n")}`);
+			const limit = config.wip.awaitingHuman;
+			console.log(
+				`\nwaiting on you${limit === null ? "" : ` (${waiting.length}/${limit})`}:\n${rows.join("\n")}`,
+			);
+		}
+		if (wipFull(snapshot, config).full) {
+			console.log(
+				"WIP limit reached: no new Ready cards start until you clear some.",
+			);
 		}
 
 		const state = await new State(root).load();

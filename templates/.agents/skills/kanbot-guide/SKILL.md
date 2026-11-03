@@ -69,16 +69,17 @@ capabilities:
 
 Ask only about what matters to them. Defaults are fine for the rest. Options live in `.kanbot/config.yml`; restart the daemon after changes.
 
-| Option                             | Ask                                                       | Recommend                                                                                                                       |
-| ---------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `identity.mode` (`user` \| `app`)  | Should kanbot talk as you, or as its own bot?             | `app`: clear who said what, GitHub notifies you, and you can approve its PRs. `user` for zero setup. Commits are yours in both. |
-| `merge.onApproval`, `merge.method` | Merge by approving the PR, or press merge yourself?       | `true` with `app` mode. In `user` mode only another collaborator can approve.                                                   |
-| `provider`                         | Claude or ChatGPT subscription?                           | Whichever they pay for.                                                                                                         |
-| `concurrency`                      | How many agents at once?                                  | Default 3. Lower on a small machine or near usage limits.                                                                       |
-| `review.copilot`                   | Want GitHub Copilot as an extra reviewer? (costs credits) | Off unless they have a paid Copilot plan.                                                                                       |
-| `notify.desktop`, `notify.webhook` | Where do you want to hear that a PR is ready?             | Desktop. Add an ntfy.sh webhook for phone alerts.                                                                               |
-| `codex.networkAccess`              | Do agents need to install packages? (Codex only)          | Off unless installs fail.                                                                                                       |
-| `explore:N` label                  | Want several approaches built for some issues?            | Per issue, not config.                                                                                                          |
+| Option                             | Ask                                                                  | Recommend                                                                                                                       |
+| ---------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `identity.mode` (`user` \| `app`)  | Should kanbot talk as you, or as its own bot?                        | `app`: clear who said what, GitHub notifies you, and you can approve its PRs. `user` for zero setup. Commits are yours in both. |
+| `merge.onApproval`, `merge.method` | Merge by approving the PR, or press merge yourself?                  | `true` with `app` mode. In `user` mode only another collaborator can approve.                                                   |
+| `provider`                         | Claude or ChatGPT subscription?                                      | Whichever they pay for.                                                                                                         |
+| `concurrency`                      | How many agents at once?                                             | Default 3. Lower on a small machine or near usage limits.                                                                       |
+| `wip.awaitingHuman`                | How many items can wait on you before agents stop starting new work? | 5 for a solo builder. Off (`null`) by default. Optional: same limit on the board's Review column (column menu → Set limit).     |
+| `review.copilot`                   | Want GitHub Copilot as an extra reviewer? (costs credits)            | Off unless they have a paid Copilot plan.                                                                                       |
+| `notify.desktop`, `notify.webhook` | Where do you want to hear that a PR is ready?                        | Desktop. Add an ntfy.sh webhook for phone alerts.                                                                               |
+| `codex.networkAccess`              | Do agents need to install packages? (Codex only)                     | Off unless installs fail.                                                                                                       |
+| `explore:N` label                  | Want several approaches built for some issues?                       | Per issue, not config.                                                                                                          |
 
 ### Who does what
 

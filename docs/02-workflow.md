@@ -36,6 +36,8 @@ A plan with open questions doesn't start. kanbot comments once; move the card ba
 
 A card that is blocked by open issues waits, and the next card is picked. kanbot comments once and starts it when the blockers close. Remove the link on the issue to start it anyway.
 
+With [`wip.awaitingHuman`](./10-configuration.md#wip-limit) set, no new card starts while that many items wait on you. Started work runs on.
+
 ## 4. In Progress
 
 The `implementer` builds the plan on branch `kanbot/<issue>` in its own worktree, using your repo's skills and [capabilities](./05-capabilities.md). It commits, and the daemon opens a PR. When all PRs are open, the card moves to Review.

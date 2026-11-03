@@ -18,7 +18,7 @@ import { log } from "../log.ts";
 import { claude } from "../providers/claude.ts";
 import { codex } from "../providers/codex.ts";
 import type { Provider } from "../providers/types.ts";
-import { type Action, derive, type Job, schedule } from "./derive.ts";
+import { type Action, derive, type Job, schedule, wipFull } from "./derive.ts";
 import { Worktrees } from "./git.ts";
 import { acquireLock } from "./lock.ts";
 import { Notifier } from "./notify.ts";
@@ -75,6 +75,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	let wake: () => void = () => {};
 	// kanbot-review PRs vanish from the snapshot when closed; clean up after them.
 	let prOnly = new Set<number>();
+	let wasFull = false;
 	let stopping = false;
 
 	const stop = () => {
@@ -125,6 +126,15 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			failures: state.failures,
 			now: Date.now(),
 		});
+		const wip = wipFull(snapshot, config);
+		if (wip.full !== wasFull) {
+			if (wip.full)
+				log.warn(
+					`WIP limit: ${wip.waiting} item(s) wait on you (limit ${wip.limit}). No new Ready cards start. See \`kanbot status\`.`,
+				);
+			else log.info("WIP limit cleared; Ready cards start again.");
+			wasFull = wip.full;
+		}
 		const nowPrOnly = new Set(
 			snapshot.items.filter((i) => i.issue.prOnly).map((i) => i.issue.number),
 		);

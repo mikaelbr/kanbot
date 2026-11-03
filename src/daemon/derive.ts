@@ -242,6 +242,7 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 	};
 
 	const items = [...snapshot.items].sort((a, b) => a.position - b.position);
+	const full = wipFull(snapshot, config).full;
 
 	for (const item of items) {
 		const { issue } = item;
@@ -296,6 +297,8 @@ export function derive(snapshot: Snapshot, ctx: DeriveContext) {
 						actions.push({ kind: "waiting", item, blockers });
 					break;
 				}
+				// Too much waits on the human: don't start new cards.
+				if (item.column === "ready" && !issue.prs.length && full) break;
 				const n = exploreCount(issue.labels);
 				const variants =
 					n === null ? [null] : Array.from({ length: n }, (_, i) => i + 1);
@@ -620,4 +623,11 @@ export function waitingOnHuman(snapshot: Snapshot, config: Config): Waiting[] {
 	// Oldest first; unknown age last.
 	const key = (w: Waiting) => w.since ?? "\uffff";
 	return out.sort((a, b) => key(a).localeCompare(key(b)));
+}
+
+/** The `wip.awaitingHuman` limit. When full, no new Ready card starts. */
+export function wipFull(snapshot: Snapshot, config: Config) {
+	const limit = config.wip.awaitingHuman;
+	const waiting = limit === null ? 0 : waitingOnHuman(snapshot, config).length;
+	return { waiting, limit, full: limit !== null && waiting >= limit };
 }
