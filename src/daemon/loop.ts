@@ -1,4 +1,4 @@
-import { loadAgents } from "../agents/load.ts";
+import { type AgentDef, loadAgents } from "../agents/load.ts";
 import { sync } from "../agents/sync.ts";
 import { type Config, loadConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
@@ -33,15 +33,28 @@ export function providerFor(config: Config): Provider {
 	return config.provider === "codex" ? codex : claude;
 }
 
-export async function runDaemon(root: string, opts: RunOptions) {
-	const config = await loadConfig(root);
-	const agents = await loadAgents(root);
+/** Config that only takes effect on restart: clients and board are built once. */
+const RESTART_KEYS = [
+	"repo",
+	"baseBranch",
+	"project",
+	"columns",
+	"identity",
+] as const;
+
+async function warnStale(root: string, agents: AgentDef[]) {
 	const changed = await sync(root, agents, { check: true });
 	if (changed.length) {
 		log.warn(
 			`Generated agent files are stale (${changed.join(", ")}). Run \`kanbot sync\` and commit.`,
 		);
 	}
+}
+
+export async function runDaemon(root: string, opts: RunOptions) {
+	const config = await loadConfig(root);
+	const agents = await loadAgents(root);
+	await warnStale(root, agents);
 	const gh = new Gh(config.repo, opts.dryRun);
 	const board = await loadBoard(gh, config);
 	const missing = missingColumns(board);
@@ -103,7 +116,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			if (opts.once) break;
 			await new Promise<void>((resolve) => {
 				// Clear the timer on wake so Ctrl-C doesn't wait out the poll interval.
-				const timer = setTimeout(resolve, config.pollSeconds * 1000);
+				const timer = setTimeout(resolve, deps.config.pollSeconds * 1000);
 				wake = () => {
 					clearTimeout(timer);
 					resolve();
@@ -115,8 +128,43 @@ export async function runDaemon(root: string, opts: RunOptions) {
 		release();
 	}
 
+	let rootSkipped: string | undefined;
+	/** Keep the checkout at origin/<base>; reload config and agents when it moves. */
+	async function updateRoot() {
+		const { moved, skipped } = await deps.worktrees.updateRoot();
+		if (skipped !== rootSkipped && skipped)
+			log.warn(
+				`Can't update ${root} to origin/${config.baseBranch}: ${skipped}. Config and agents may be stale; \`kanbot doctor\` explains.`,
+			);
+		rootSkipped = skipped;
+		if (!moved) return;
+		const next = await loadConfig(root);
+		const restart = RESTART_KEYS.filter(
+			(k) => JSON.stringify(next[k]) !== JSON.stringify(config[k]),
+		);
+		if (restart.length)
+			log.warn(
+				`Config changed ${restart.join(", ")}. Restart kanbot to apply them.`,
+			);
+		for (const k of RESTART_KEYS) Object.assign(next, { [k]: config[k] });
+		deps.config = next;
+		deps.provider = providerFor(next);
+		deps.notify = new Notifier(next.notify);
+		deps.agents = await loadAgents(root);
+		await warnStale(root, deps.agents);
+		log.info(
+			`Updated to origin/${config.baseBranch}; reloaded config and agents.`,
+		);
+	}
+
 	async function tick() {
-		if (!opts.dryRun) await deps.worktrees.fetch();
+		if (!opts.dryRun) {
+			await deps.worktrees.fetch();
+			await updateRoot().catch((e) =>
+				log.warn(`update checkout: ${e instanceof Error ? e.message : e}`),
+			);
+		}
+		const config = deps.config;
 		const snapshot = await takeSnapshot(gh, board, trust);
 		const { jobs, actions } = derive(snapshot, {
 			config,
@@ -185,9 +233,9 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			} else {
 				const n = await state.fail(job.key);
 				log.error(
-					`${job.key} failed (attempt ${n}/${config.maxAttempts}): ${msg}`,
+					`${job.key} failed (attempt ${n}/${deps.config.maxAttempts}): ${msg}`,
 				);
-				if (n >= config.maxAttempts) {
+				if (n >= deps.config.maxAttempts) {
 					await applyAction(
 						{
 							kind: "needsHuman",

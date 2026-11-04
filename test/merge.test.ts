@@ -45,3 +45,46 @@ describe("merge", () => {
 		expect(await git(dir, "status", "--porcelain")).toBe("");
 	});
 });
+
+/** Repo on `main` with origin/main one commit ahead. */
+async function behind() {
+	dir = await mkdtemp(join(tmpdir(), "kanbot-root-"));
+	const g = (...a: string[]) => git(dir, ...a);
+	await g("init", "-q", "-b", "main");
+	await g("config", "user.email", "t@t");
+	await g("config", "user.name", "t");
+	await Bun.write(join(dir, "a.txt"), "one\n");
+	await g("add", "-A");
+	await g("commit", "-qm", "init");
+	await Bun.write(join(dir, "a.txt"), "two\n");
+	await g("commit", "-qam", "upstream");
+	await g("update-ref", "refs/remotes/origin/main", "HEAD");
+	await g("reset", "-q", "--hard", "HEAD~1");
+	return { g, w: new Worktrees(dir, "acme/app", "main") };
+}
+
+describe("updateRoot", () => {
+	test("fast-forwards a checkout that is behind", async () => {
+		const { g, w } = await behind();
+		expect(await w.updateRoot()).toEqual({ moved: true });
+		expect(await g("rev-parse", "HEAD")).toBe(
+			await g("rev-parse", "origin/main"),
+		);
+		expect(await w.updateRoot()).toEqual({ moved: false });
+	});
+
+	test("skips another branch", async () => {
+		const { g, w } = await behind();
+		await g("checkout", "-qb", "mine");
+		expect((await w.updateRoot()).skipped).toContain("`mine`");
+	});
+
+	test("never drops local commits or changes", async () => {
+		const { g, w } = await behind();
+		await Bun.write(join(dir, "a.txt"), "local\n");
+		expect((await w.updateRoot()).skipped).toContain("local changes");
+		expect(await Bun.file(join(dir, "a.txt")).text()).toBe("local\n");
+		await g("commit", "-qam", "local");
+		expect((await w.updateRoot()).skipped).toContain("1 commit(s)");
+	});
+});

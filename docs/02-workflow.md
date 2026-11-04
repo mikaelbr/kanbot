@@ -40,7 +40,7 @@ With [`wip.awaitingHuman`](./10-configuration.md#wip-limit) set, no new card sta
 
 ## 4. In Progress
 
-The `implementer` builds the plan on branch `kanbot/<issue>` in its own worktree, using your repo's skills and [capabilities](./05-capabilities.md). It commits, and the daemon opens a PR. When all PRs are open, the card moves to Review.
+The `implementer` builds the plan on branch `kanbot/<issue>` in its own worktree, using your repo's skills and [capabilities](./05-capabilities.md). It commits. The daemon then merges in the latest base branch, so the PR starts up to date; the `fixer` resolves any conflicts. Then it opens the PR. When all PRs are open, the card moves to Review.
 
 If the agent reports it is blocked, you get a notification.
 
@@ -70,6 +70,17 @@ With [`merge.onApproval`](./12-identity.md#merge-on-approval), approving the PR 
 ## Exploring alternatives
 
 Add `explore:2`, `explore:3` or `explore:4` to an issue before planning. The plan then has N approaches, and N agents build them as N PRs (`kanbot/<issue>-v<k>`). When all are agent-reviewed, kanbot posts a comparison and notifies you. Merge one; a GitHub workflow closes the others.
+
+## Staying up to date
+
+The daemon can run for weeks without you touching its folder:
+
+- Every poll it fetches `origin`. Agents always start from the latest `origin/<base>`, never from your local branch.
+- It fast-forwards your checkout to `origin/<base>` and reloads config and agents when they change. It only does this when the checkout is on the base branch with no local commits or changes in the way. Otherwise it warns and runs on the old config.
+- Changes to `repo`, `baseBranch`, `project`, `columns` or `identity` need a restart. The daemon says so.
+- Before a PR opens, the latest base branch is merged in. Open PRs get the base merged in when they conflict.
+
+Run the daemon from a clone you don't work in, or keep it on the base branch. `kanbot doctor` checks this.
 
 ## When agents give up
 

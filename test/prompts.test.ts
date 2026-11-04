@@ -3,6 +3,7 @@ import { prItem } from "../src/daemon/snapshot.ts";
 import {
 	fixPrompt,
 	implementPrompt,
+	mergePrompt,
 	reviewPrompt,
 } from "../src/jobs/prompts.ts";
 import { comment, item, pr } from "./helpers.ts";
@@ -73,6 +74,25 @@ test("review prompt for a PR without a card uses the PR as spec", () => {
 	expect(out).toContain("# Pull request #");
 	expect(out).toContain("Adds login rate limiting");
 	expect(out).toContain("Review pass 1 of 1");
+});
+
+test("merge prompt lists conflicts on a branch without a PR", () => {
+	const out = mergePrompt(
+		{
+			kind: "implement",
+			key: "i",
+			item: item("inProgress"),
+			variant: null,
+			variants: 1,
+			branch: "kanbot/7",
+		},
+		"main",
+		"- a.txt",
+	);
+	expect(out).toContain("Branch `kanbot/7`");
+	expect(out).toContain("PR is not open yet");
+	expect(out).toContain("## Merge conflicts");
+	expect(out).toContain("- a.txt");
 });
 
 describe("capabilities in prompts", () => {

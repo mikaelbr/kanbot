@@ -410,6 +410,35 @@ export default defineCommand({
 				fix: "commit and push the kanbot files",
 			});
 		}
+		const branch = await git(root, "rev-parse", "--abbrev-ref", "HEAD").catch(
+			() => "",
+		);
+		const ahead = Number(
+			await git(
+				root,
+				"rev-list",
+				"--count",
+				`origin/${config.baseBranch}..HEAD`,
+			).catch(() => "0"),
+		);
+		const follows = branch === config.baseBranch && !ahead;
+		add({
+			name: `checkout follows origin/${config.baseBranch}`,
+			ok: follows,
+			warn: !follows,
+			detail:
+				branch !== config.baseBranch
+					? `on ${branch}`
+					: ahead
+						? `${ahead} local commit(s) not pushed`
+						: undefined,
+			why: "The daemon fast-forwards this checkout each poll to pick up config and agent changes. It skips when it can't do that safely.",
+			fix:
+				branch !== config.baseBranch
+					? `git checkout ${config.baseBranch}, or run the daemon from a separate clone`
+					: "push or drop the local commits",
+			docs: "workflow#staying-up-to-date",
+		});
 		add({
 			name: ".github/workflows/kanbot-merged.yml",
 			ok: existsSync(join(root, ".github/workflows/kanbot-merged.yml")),

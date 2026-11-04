@@ -61,7 +61,7 @@ notify:
   webhook: null
 ```
 
-Restart the daemon after changes.
+The daemon reloads it after you push. Changes to `repo`, `baseBranch`, `project`, `columns` and `identity` need a restart.
 
 ### Schema
 

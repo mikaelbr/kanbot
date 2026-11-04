@@ -207,9 +207,7 @@ export function fixPrompt(
 			);
 		}
 	} else if (r.type === "conflict") {
-		parts.push(
-			`## Merge conflicts\n\`origin/${base}\` has moved and conflicts with this branch. A merge of it is in progress in the worktree. Resolve every conflict, keeping the intent of both sides; the PR's plan and the base branch's changes both stand. Then run tests, lint and typecheck. Stage your resolution; committing the merge is optional. Do not abort the merge or rebase. Use \`ref: "conflict"\` in \`addressed\`.\n\nConflicted files:\n${details}`,
-		);
+		parts.push(conflictSection(base, details));
 	} else {
 		parts.push(
 			`## CI is failing\nMake CI pass without weakening tests. Use \`ref: "ci"\` in \`addressed\`.\n\n${details || "_No logs available; reproduce locally with the project's test/lint commands._"}`,
@@ -217,6 +215,30 @@ export function fixPrompt(
 	}
 	parts.push(RULES);
 	return parts.join("\n\n");
+}
+
+function conflictSection(base: string, files: string | null) {
+	return `## Merge conflicts\n\`origin/${base}\` has moved and conflicts with this branch. A merge of it is in progress in the worktree. Resolve every conflict, keeping the intent of both sides; the plan and the base branch's changes both stand. Then run tests, lint and typecheck. Stage your resolution; committing the merge is optional. Do not abort the merge or rebase. Use \`ref: "conflict"\` in \`addressed\`.\n\nConflicted files:\n${files}`;
+}
+
+/** Conflicts from merging the latest base into a branch before its PR opens. */
+export function mergePrompt(
+	job: ImplementJob,
+	base: string,
+	files: string,
+	capabilities: Capabilities = {},
+) {
+	const { issue } = job.item;
+	return [
+		issueHeader(issue),
+		`## Plan / acceptance criteria\n${extractPlan(issue.body) ?? stripPlan(issue.body)}`,
+		`## Branch\nBranch \`${job.branch}\` (checked out) implements the plan. Its PR is not open yet. Diff with: \`git diff origin/${base}...HEAD\`.`,
+		capabilitiesSection(capabilities, VALIDATION),
+		conflictSection(base, files),
+		RULES,
+	]
+		.filter(Boolean)
+		.join("\n\n");
 }
 
 export function findingsList(findings: Finding[]) {

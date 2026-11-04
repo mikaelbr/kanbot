@@ -67,7 +67,7 @@ capabilities:
 
 ## Choose options
 
-Ask only about what matters to them. Defaults are fine for the rest. Options live in `.kanbot/config.yml`; restart the daemon after changes.
+Ask only about what matters to them. Defaults are fine for the rest. Options live in `.kanbot/config.yml`; the daemon reloads them once pushed.
 
 | Option                             | Ask                                                                  | Recommend                                                                                                                       |
 | ---------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |

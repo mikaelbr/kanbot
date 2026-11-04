@@ -57,6 +57,34 @@ export class Worktrees {
 		return this.serial(() => git(this.root, "fetch", "--prune", "origin"));
 	}
 
+	/**
+	 * Fast-forward the human's checkout to origin/<base>, so config and agents
+	 * stay current. Never discards work: skips with a reason when the checkout
+	 * is on another branch, has local commits or has changes in the way.
+	 */
+	updateRoot(): Promise<{ moved: boolean; skipped?: string }> {
+		return this.serial(async () => {
+			const branch = await git(this.root, "rev-parse", "--abbrev-ref", "HEAD");
+			if (branch !== this.base)
+				return { moved: false, skipped: `it is on \`${branch}\`` };
+			const ref = `origin/${this.base}`;
+			if (await this.isAncestor(this.root, ref)) return { moved: false };
+			const before = await this.head(this.root);
+			try {
+				await git(this.root, "merge", "--ff-only", "--quiet", ref);
+			} catch (e) {
+				const ahead = await this.commitsAhead(this.root, ref);
+				return {
+					moved: false,
+					skipped: ahead
+						? `it has ${ahead} commit(s) not on ${ref}`
+						: `local changes block it (${String(e).split("\n")[0]})`,
+				};
+			}
+			return { moved: (await this.head(this.root)) !== before };
+		});
+	}
+
 	async remoteHas(branch: string) {
 		return (
 			(await git(this.root, "ls-remote", "--heads", "origin", branch)).length >

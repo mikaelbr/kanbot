@@ -94,7 +94,7 @@ Check that everything is in place:
 - `gh` auth and scope, and provider login.
 - Agents, the skills they use, and capabilities.
 - Generated files, config schema and MCP servers for workers.
-- Templates up to date, leftover `.kanbot-new` files, and files pushed to the base branch.
+- Templates up to date, leftover `.kanbot-new` files, files pushed to the base branch, and a checkout the daemon can fast-forward.
 - `project-conventions` and `ci.yml` filled in: warns on files unchanged from the template or with `<placeholder>`s left.
 - Board columns, board workflows and labels.
 - In app mode: the app, its key and its install on the repo.
@@ -108,7 +108,7 @@ Each failed check says why it matters, how to fix it and, where it helps, a docs
 
 ## `kanbot run`
 
-Start the daemon. It polls the board, runs agent jobs and applies their results to GitHub. Stop it with Ctrl-C; running jobs finish first.
+Start the daemon. It polls the board, runs agent jobs and applies their results to GitHub. Each poll it fetches `origin` and fast-forwards your checkout of the base branch, reloading config and agents. See [Staying up to date](./02-workflow.md#staying-up-to-date). Stop it with Ctrl-C; running jobs finish first.
 
 | Flag              | Description                              |
 | ----------------- | ---------------------------------------- |

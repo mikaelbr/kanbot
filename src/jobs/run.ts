@@ -60,6 +60,7 @@ import {
 	findingsList,
 	fixPrompt,
 	implementPrompt,
+	mergePrompt,
 	planPrompt,
 	reviewPrompt,
 } from "./prompts.ts";
@@ -350,12 +351,18 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 		) {
 			throw new Error("agent finished without any changes");
 		}
-		await worktrees.push(cwd, job.branch);
 	} else {
 		log.info(
 			`${job.key}: branch ${job.branch} already pushed; opening PR only`,
 		);
 	}
+	// Open the PR against the latest base, not the one the agent started from.
+	const before = await worktrees.head(cwd);
+	const merged = await mergeLatest(job, deps, cwd, (files) =>
+		mergePrompt(job, config.baseBranch, files, config.capabilities),
+	);
+	if (!resumed || (await worktrees.head(cwd)) !== before)
+		await worktrees.push(cwd, job.branch);
 
 	const variant =
 		job.variant === null ? "" : ` [approach ${job.variant}/${job.variants}]`;
@@ -372,6 +379,7 @@ async function implement(job: ImplementJob, deps: JobDeps) {
 		result?.testsRun.length
 			? `### Checks\n${result.testsRun.map((t) => `- ${t}`).join("\n")}`
 			: "",
+		merged ? `### Merge conflicts\n${merged}` : "",
 		job.variant === null
 			? ""
 			: `> Exploratory: approach ${job.variant} of ${job.variants}. Merging one closes the others.`,
@@ -562,26 +570,30 @@ async function fix(job: FixJob, deps: JobDeps) {
 
 const CONFLICT_MARKER = /^(<{7}|>{7})( |$)/m;
 
-/** Merge the base branch into a conflicting PR; the fixer resolves conflicts. */
-async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
-	const { bot, worktrees, config } = deps;
-	const { pr } = job;
+/**
+ * Fetch and merge the latest base branch into the worktree. The fixer resolves
+ * any conflicts. Returns a summary of the resolution, or null if none was needed.
+ */
+async function mergeLatest(
+	job: Job,
+	deps: JobDeps,
+	cwd: string,
+	prompt: (files: string) => string,
+): Promise<string | null> {
+	const { worktrees, config } = deps;
 	const base = `origin/${config.baseBranch}`;
+	await worktrees.fetch();
 	const files = await worktrees.merge(cwd, base);
-	let summary = "It merged cleanly.";
+	let summary: string | null = null;
 	if (files.length) {
+		log.info(`${job.key}: ${base} conflicts in ${files.join(", ")}`);
 		const result = await runAgent(
 			deps,
 			job,
 			"fixer",
 			"fix-result",
 			cwd,
-			fixPrompt(
-				job,
-				config.baseBranch,
-				files.map((f) => `- ${f}`).join("\n"),
-				config.capabilities,
-			),
+			prompt(files.map((f) => `- ${f}`).join("\n")),
 		);
 		FixResult.parse(result);
 		const left: string[] = [];
@@ -601,6 +613,17 @@ async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
 	);
 	if (!(await worktrees.isAncestor(cwd, base)))
 		throw new Error(`${base} was not merged`);
+	return summary;
+}
+
+/** Merge the base branch into a conflicting PR. */
+async function mergeBase(job: FixJob, deps: JobDeps, cwd: string) {
+	const { bot, worktrees, config } = deps;
+	const { pr } = job;
+	const summary =
+		(await mergeLatest(job, deps, cwd, (files) =>
+			fixPrompt(job, config.baseBranch, files, config.capabilities),
+		)) ?? "It merged cleanly.";
 	await worktrees.push(cwd, pr.headRefName);
 	await postComment(
 		bot,
