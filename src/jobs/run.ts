@@ -45,7 +45,8 @@ import {
 } from "../github/markers.ts";
 import { addToBoard, type Board, moveItem } from "../github/project.ts";
 import { log } from "../log.ts";
-import type { Provider } from "../providers/types.ts";
+import type { Provider, RunResult } from "../providers/types.ts";
+import { logPath, logsDir, type Run, runId, saveRun } from "../runs.ts";
 import {
 	FixResult,
 	type ImplementResult,
@@ -94,25 +95,56 @@ async function runAgent<N extends ResultSchemaName>(
 	prompt: string,
 ): Promise<z.infer<(typeof RESULT_SCHEMAS)[N]>> {
 	const agent = getAgent(deps.agents, agentName);
-	const logDir = join(deps.root, ".kanbot", "logs");
-	await mkdir(logDir, { recursive: true });
-	const logFile = join(
-		logDir,
-		`${new Date().toISOString().replace(/[:.]/g, "-")}_${job.key.replace(/[^a-zA-Z0-9-]/g, "_")}.jsonl`,
-	);
+	await mkdir(logsDir(deps.root), { recursive: true });
+	const run: Run = {
+		id: runId(job.key),
+		key: job.key,
+		kind: job.kind,
+		agent: agent.name,
+		provider: deps.provider.name,
+		issue: job.item.issue.number,
+		...("pr" in job ? { pr: job.pr.number } : {}),
+		pid: process.pid,
+		startedAt: new Date().toISOString(),
+	};
+	await saveRun(deps.root, run);
+	const logFile = logPath(deps.root, run.id);
 	log.info(
-		`▶ ${job.key} → ${agent.name} (${deps.provider.name}) log: ${logFile}`,
+		`▶ ${job.key} → ${agent.name} (${deps.provider.name}) follow: kanbot logs ${job.key} -f`,
 	);
-	const res = await deps.provider.run({
-		agent,
-		agents: deps.agents,
-		prompt,
-		cwd,
-		schema: jsonSchema(schema),
-		timeoutMs: deps.config.timeoutMinutes[job.kind] * 60_000,
-		logFile,
-		repoRoot: deps.root,
-	});
+	const end = (outcome: Run["outcome"], error?: string) =>
+		saveRun(deps.root, {
+			...run,
+			endedAt: new Date().toISOString(),
+			outcome,
+			...(error ? { error: error.slice(0, 500) } : {}),
+		});
+	let res: RunResult;
+	try {
+		res = await deps.provider.run({
+			agent,
+			agents: deps.agents,
+			prompt,
+			cwd,
+			schema: jsonSchema(schema),
+			timeoutMs: deps.config.timeoutMinutes[job.kind] * 60_000,
+			logFile,
+			repoRoot: deps.root,
+		});
+	} catch (e) {
+		await end("failed", String(e));
+		throw e;
+	}
+	if (res.ok) await end("ok");
+	else
+		await end(
+			res.rateLimited
+				? "rate limited"
+				: res.error === "timed out"
+					? "timed out"
+					: "failed",
+			res.error,
+		);
 	if (!res.ok) {
 		if (res.rateLimited) throw new RateLimited(res.error);
 		throw new Error(res.error);

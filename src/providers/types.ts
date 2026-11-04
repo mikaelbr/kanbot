@@ -79,6 +79,8 @@ export async function spawnWorker(
 	const readOut = (async () => {
 		for await (const chunk of proc.stdout) {
 			sink.write(chunk);
+			// Flush so `kanbot logs -f` sees output as it comes.
+			sink.flush();
 			stdout += decoder.decode(chunk, { stream: true });
 		}
 	})();

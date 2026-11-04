@@ -114,7 +114,33 @@ Start the daemon. It polls the board, runs agent jobs and applies their results 
 
 ## `kanbot status`
 
-Show the board by column, daemon PID and provider, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
+Show the board by column, daemon PID and provider, the agents running now, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
+
+| Flag             | Description                                                             |
+| ---------------- | ----------------------------------------------------------------------- |
+| `-f`, `--follow` | Then follow a running agent's log, as `kanbot logs -f`. Asks which one. |
+
+## `kanbot logs`
+
+List recent agent runs, newest first: status, duration, job key and agent. Status is `running`, `ok`, `failed`, `rate limited`, `timed out`, or `cut off` when the daemon stopped mid-run.
+
+Pass a run to read its transcript: assistant text, tool calls and errors. Match it by job key or part of one (`implement:#12`), issue number (`12`), PR (`pr34`) or run id. A running match wins over older ones.
+
+```sh
+kanbot logs                # recent runs
+kanbot logs 12             # latest run on issue #12
+kanbot logs -f             # follow the running agent
+kanbot logs pr34 -f -v     # follow the run on PR #34, with tool output
+```
+
+| Flag              | Default | Description                                                          |
+| ----------------- | ------- | -------------------------------------------------------------------- |
+| `-f`, `--follow`  | `false` | Keep printing until the run ends. Without a run, pick a running one. |
+| `-n`, `--limit`   | `20`    | How many runs to list.                                               |
+| `--raw`           | `false` | Print the raw JSONL transcript.                                      |
+| `-v`, `--verbose` | `false` | Also show tool output and reasoning.                                 |
+
+Logs are local to the machine running the daemon.
 
 ## `kanbot report`
 
@@ -148,6 +174,7 @@ Print a shell completion script. See [Shell completion](./01-getting-started.md#
 | Path                   | What                                   |
 | ---------------------- | -------------------------------------- |
 | `.kanbot/logs/*.jsonl` | Full transcript of each agent run.     |
+| `.kanbot/logs/*.json`  | Run info: job, agent, start, outcome.  |
 | `.kanbot/state.json`   | Failure counts and rate-limit pause.   |
 | `.kanbot/daemon.pid`   | Lock so only one daemon runs per repo. |
 | `~/.kanbot/worktrees/` | Git worktrees, one per job.            |

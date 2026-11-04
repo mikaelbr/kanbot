@@ -8,6 +8,8 @@ import { State } from "../daemon/state.ts";
 import { Gh } from "../github/gh.ts";
 import { listItems, loadBoard } from "../github/project.ts";
 import { Trust } from "../github/trust.ts";
+import { listRuns, runLine, runStatus } from "../runs.ts";
+import { pickRunning, showRun } from "./logs.ts";
 
 /** Short age like `5m`, `3h` or `2d`. */
 export function age(since: string, now = Date.now()) {
@@ -23,7 +25,16 @@ export default defineCommand({
 		description:
 			"Show board columns, what waits on you, daemon state and failures",
 	},
-	async run() {
+	args: {
+		follow: {
+			type: "boolean",
+			alias: "f",
+			description:
+				"Then follow a running agent's log; asks which if several run",
+			default: false,
+		},
+	},
+	async run({ args }) {
 		const root = process.cwd();
 		const config = await loadConfig(root);
 		const gh = new Gh(config.repo);
@@ -47,6 +58,17 @@ export default defineCommand({
 					? `${inCol.length}`
 					: inCol.map((i) => `#${i.number}`).join(" ") || "—";
 			console.log(`${config.columns[key].padEnd(12)} ${shown}`);
+		}
+
+		const running = (await listRuns(root)).filter(
+			(r) => runStatus(r) === "running",
+		);
+		if (running.length) {
+			console.log(
+				`\nrunning:\n${running.map((r) => `  ${runLine(r)}`).join("\n")}`,
+			);
+			if (!args.follow)
+				console.log("  Follow one: kanbot status -f, or kanbot logs <key> -f");
 		}
 
 		const snapshot = await takeSnapshot(gh, board, new Trust(gh), items);
@@ -77,6 +99,15 @@ export default defineCommand({
 			console.log(
 				`\npaused (rate limit) until ${new Date(state.pausedUntil).toLocaleString()}`,
 			);
+		}
+
+		if (args.follow) {
+			console.log();
+			await showRun(root, pickRunning(running), {
+				follow: true,
+				raw: false,
+				verbose: false,
+			});
 		}
 	},
 });
