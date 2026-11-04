@@ -30,9 +30,7 @@ export type RunOptions = { once: boolean; dryRun: boolean };
 const RATE_LIMIT_PAUSE_MS = 30 * 60_000;
 
 export function providerFor(config: Config): Provider {
-	return config.provider === "codex"
-		? codex({ networkAccess: config.codex.networkAccess })
-		: claude;
+	return config.provider === "codex" ? codex : claude;
 }
 
 export async function runDaemon(root: string, opts: RunOptions) {

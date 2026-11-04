@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentDef } from "../agents/load.ts";
 import { agentInstructions } from "../agents/sync.ts";
-import { git } from "../daemon/git.ts";
 import { codexMcpArgs, type McpServer, readMcpServers } from "./mcp.ts";
 import {
 	looksRateLimited,
@@ -17,17 +16,18 @@ import {
 export function codexArgs(o: {
 	agent: AgentDef;
 	cwd: string;
-	gitDir: string;
 	schemaFile: string;
 	lastFile: string;
-	networkAccess: boolean;
 	mcpServers: Record<string, McpServer>;
 }): string[] {
 	const { agent } = o;
+	// Agents that edit or run commands get no sandbox, like Claude workers:
+	// Codex's sandbox blocks commit signing, browsers and `.agents`. The
+	// worker env still keeps them off GitHub (see workerEnv).
 	const sandbox =
 		agent.tools.includes("edit") || agent.tools.includes("bash")
-			? "workspace-write"
-			: "read-only";
+			? ["--dangerously-bypass-approvals-and-sandbox"]
+			: ["--sandbox", "read-only"];
 	const cmd = [
 		"codex",
 		"exec",
@@ -36,12 +36,9 @@ export function codexArgs(o: {
 		// Isolate from the user's own setup: no user-level plugins or MCP
 		// servers. Auth still comes from CODEX_HOME.
 		"--ignore-user-config",
-		"--sandbox",
-		sandbox,
+		...sandbox,
 		"--cd",
 		o.cwd,
-		"--add-dir",
-		o.gitDir,
 		"--output-schema",
 		o.schemaFile,
 		"--output-last-message",
@@ -51,8 +48,6 @@ export function codexArgs(o: {
 		// The repo's committed MCP servers only.
 		...codexMcpArgs(o.mcpServers),
 	];
-	if (o.networkAccess)
-		cmd.push("-c", "sandbox_workspace_write.network_access=true");
 	if (agent.models.codex && agent.models.codex !== "default")
 		cmd.push("--model", agent.models.codex);
 	if (agent.effort) {
@@ -66,63 +61,52 @@ export function codexArgs(o: {
 }
 
 /** Codex CLI headless (`codex exec`), using the logged-in ChatGPT plan. */
-export function codex({ networkAccess }: { networkAccess: boolean }): Provider {
-	return {
-		name: "codex",
-		async run(input: RunInput): Promise<RunResult> {
-			const { agent } = input;
-			const tmp = await mkdtemp(join(tmpdir(), "kanbot-codex-"));
-			try {
-				const schemaFile = join(tmp, "schema.json");
-				const lastFile = join(tmp, "last.json");
-				await Bun.write(schemaFile, JSON.stringify(input.schema));
-				// Worktree commits write into the main repo's .git dir.
-				const gitDir = await git(
-					input.cwd,
-					"rev-parse",
-					"--path-format=absolute",
-					"--git-common-dir",
-				);
-				const cmd = codexArgs({
-					agent,
-					cwd: input.cwd,
-					gitDir,
-					schemaFile,
-					lastFile,
-					networkAccess,
-					mcpServers: await readMcpServers(input.cwd),
-				});
+export const codex: Provider = {
+	name: "codex",
+	async run(input: RunInput): Promise<RunResult> {
+		const { agent } = input;
+		const tmp = await mkdtemp(join(tmpdir(), "kanbot-codex-"));
+		try {
+			const schemaFile = join(tmp, "schema.json");
+			const lastFile = join(tmp, "last.json");
+			await Bun.write(schemaFile, JSON.stringify(input.schema));
+			const cmd = codexArgs({
+				agent,
+				cwd: input.cwd,
+				schemaFile,
+				lastFile,
+				mcpServers: await readMcpServers(input.cwd),
+			});
 
-				const res = await spawnWorker(cmd, {
-					cwd: input.cwd,
-					stdin: input.prompt,
-					timeoutMs: input.timeoutMs,
-					logFile: input.logFile,
-				});
-				if (res.timedOut)
-					return { ok: false, error: "timed out", rateLimited: false };
+			const res = await spawnWorker(cmd, {
+				cwd: input.cwd,
+				stdin: input.prompt,
+				timeoutMs: input.timeoutMs,
+				logFile: input.logFile,
+			});
+			if (res.timedOut)
+				return { ok: false, error: "timed out", rateLimited: false };
 
-				const last = Bun.file(lastFile);
-				if (res.code !== 0 || !(await last.exists())) {
-					const detail = (res.stderr || res.stdout).slice(-2000);
-					return {
-						ok: false,
-						error: `codex exit ${res.code}: ${detail}`,
-						rateLimited: looksRateLimited(detail),
-					};
-				}
-				try {
-					return { ok: true, output: JSON.parse(await last.text()) };
-				} catch {
-					return {
-						ok: false,
-						error: "codex final message was not JSON",
-						rateLimited: false,
-					};
-				}
-			} finally {
-				await rm(tmp, { recursive: true, force: true });
+			const last = Bun.file(lastFile);
+			if (res.code !== 0 || !(await last.exists())) {
+				const detail = (res.stderr || res.stdout).slice(-2000);
+				return {
+					ok: false,
+					error: `codex exit ${res.code}: ${detail}`,
+					rateLimited: looksRateLimited(detail),
+				};
 			}
-		},
-	};
-}
+			try {
+				return { ok: true, output: JSON.parse(await last.text()) };
+			} catch {
+				return {
+					ok: false,
+					error: "codex final message was not JSON",
+					rateLimited: false,
+				};
+			}
+		} finally {
+			await rm(tmp, { recursive: true, force: true });
+		}
+	},
+};

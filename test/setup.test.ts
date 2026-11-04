@@ -56,20 +56,18 @@ test("identity and merge default to you, no merge", () => {
 });
 
 test("options keep defaults unless changed", () => {
-	expect(askOptions(answers(""), quiet, "claude")).toEqual({});
-	expect(askOptions(answers("y", "", "", "", ""), quiet, "claude")).toEqual({});
+	expect(askOptions(answers(""), quiet)).toEqual({});
+	expect(askOptions(answers("y", "", "", "", ""), quiet)).toEqual({});
 	expect(
 		askOptions(
-			answers("y", "2", "5", "nope", "https://ntfy.sh/me", "y", "y"),
+			answers("y", "2", "5", "nope", "https://ntfy.sh/me", "y"),
 			quiet,
-			"codex",
 		),
 	).toEqual({
 		concurrency: 2,
 		wip: { awaitingHuman: 5 },
 		notify: { webhook: "https://ntfy.sh/me" },
 		review: { copilot: true },
-		codex: { networkAccess: true },
 	} as never);
 });
 

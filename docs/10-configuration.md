@@ -56,9 +56,6 @@ merge:
   onApproval: false # merge kanbot PRs when you approve them
   method: squash # squash | merge | rebase
 
-codex:
-  networkAccess: false
-
 notify:
   desktop: true
   webhook: null

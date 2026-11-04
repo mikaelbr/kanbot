@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	duration,
+	eventProblems,
 	findRuns,
 	formatEvent,
 	legacyRun,
@@ -125,4 +126,46 @@ test("duration is short", () => {
 	expect(duration(45_000)).toBe("45s");
 	expect(duration(12 * 60_000)).toBe("12m");
 	expect(duration(125 * 60_000)).toBe("2h05m");
+});
+
+test("finds permission denials and errors, not normal failures", () => {
+	const p = (e: object) => eventProblems(JSON.stringify(e));
+	const cmd = (exit_code: number, aggregated_output: string) => ({
+		type: "item.completed",
+		item: {
+			type: "command_execution",
+			command: "x",
+			exit_code,
+			aggregated_output,
+		},
+	});
+	expect(p(cmd(1, "3 tests failed"))).toEqual([]);
+	expect(
+		p(cmd(133, "bootstrap_check_in: Permission denied (1100)"))[0],
+	).toStartWith("denied: $ x");
+	expect(
+		p({
+			type: "kanbot.stderr",
+			text: "2026-11-04T12:18:16Z ERROR codex_core::tools::router: error=patch rejected: writing outside of the project",
+		}),
+	).toEqual(["patch rejected: writing outside of the project"]);
+	expect(
+		p({
+			type: "user",
+			message: {
+				content: [
+					{
+						type: "tool_result",
+						is_error: true,
+						content:
+							"Claude requested permissions to use Edit, but you haven't granted it yet.",
+					},
+				],
+			},
+		}),
+	).toHaveLength(1);
+	expect(p({ type: "turn.failed", error: { message: "boom" } })).toEqual([
+		"boom",
+	]);
+	expect(eventProblems("plain text")).toEqual([]);
 });

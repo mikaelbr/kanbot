@@ -49,7 +49,7 @@ Go step by step. Run each command, check its output, then go on. If `.kanbot/con
 5. **Board.** Skip if `init` made one. Otherwise `kanbot board create`, or `kanbot board link --owner <login> --number <n>` for an existing project. Have them enable the four built-in project workflows it prints; they can't be set through the API.
 6. **Options.** Skip what `init` asked. Otherwise go through [Choose options](#choose-options). For app mode, run `kanbot app create` and have them install the app on the repo.
 7. **Commit and push** the kanbot files. Agents only see what's on the pushed base branch.
-8. **Check.** `kanbot doctor` until it passes, then `kanbot run --once --dry-run`, then `kanbot run`.
+8. **Check.** `kanbot doctor` until it passes, then `kanbot doctor --probe` once to try a real agent job, then `kanbot run --once --dry-run`, then `kanbot run`.
 9. **First card.** Have them write an issue, put it in Planning and read the plan. Point to `workflow`.
 
 ## Capabilities
@@ -78,7 +78,6 @@ Ask only about what matters to them. Defaults are fine for the rest. Options liv
 | `wip.awaitingHuman`                | How many items can wait on you before agents stop starting new work? | 5 for a solo builder. Off (`null`) by default. Optional: same limit on the board's Review column (column menu → Set limit).     |
 | `review.copilot`                   | Want GitHub Copilot as an extra reviewer? (costs credits)            | Off unless they have a paid Copilot plan.                                                                                       |
 | `notify.desktop`, `notify.webhook` | Where do you want to hear that a PR is ready?                        | Desktop. Add an ntfy.sh webhook for phone alerts.                                                                               |
-| `codex.networkAccess`              | Do agents need to install packages? (Codex only)                     | Off unless installs fail.                                                                                                       |
 | `explore:N` label                  | Want several approaches built for some issues?                       | Per issue, not config.                                                                                                          |
 
 ### Who does what
@@ -104,8 +103,8 @@ Warn: never enable the branch rule "Require approval of the most recent reviewab
 
 ## Troubleshoot
 
-1. `kanbot doctor`: prints a fix for each failed check.
-2. `kanbot status`: board by column, running agents, what waits on the user (oldest first), daemon, failures, rate-limit pause. `-f` follows a running agent.
+1. `kanbot doctor`: prints a fix for each failed check. `--probe` runs a short agent job to check it can edit files, write skills and commit.
+2. `kanbot status`: board by column, running agents and their permission or provider errors, what waits on the user (oldest first), daemon, failures, rate-limit pause. `-f` follows a running agent.
 3. `kanbot report`: merged PRs, cycle time, wait on the user, fix loops and `needs-human` causes for the last 7 days. `--post` adds it to the board's Status updates.
 4. `kanbot logs`: recent agent runs and how they ended. `kanbot logs <key|#issue|prN>` shows a transcript; `-f` follows it live.
 5. `needs-human` label: the issue has a comment saying why. Fix the cause, then remove the label to retry.

@@ -159,7 +159,7 @@ export default defineCommand({
 					await saveConfig(root, { merge: merge as Config["merge"] });
 
 				step("Options");
-				const options = askOptions(ask, say, config.provider);
+				const options = askOptions(ask, say);
 				if (Object.keys(options).length) await saveConfig(root, options);
 			}
 

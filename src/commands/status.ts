@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand } from "citty";
+import { color } from "../color.ts";
 import { COLUMN_KEYS, loadConfig } from "../config.ts";
 import { waitingOnHuman, wipFull } from "../daemon/derive.ts";
 import { takeSnapshot } from "../daemon/snapshot.ts";
@@ -8,7 +9,13 @@ import { State } from "../daemon/state.ts";
 import { Gh } from "../github/gh.ts";
 import { listItems, loadBoard } from "../github/project.ts";
 import { Trust } from "../github/trust.ts";
-import { listRuns, runLine, runStatus } from "../runs.ts";
+import {
+	listRuns,
+	type Run,
+	runLine,
+	runProblems,
+	runStatus,
+} from "../runs.ts";
 import { pickRunning, showRun } from "./logs.ts";
 
 /** Short age like `5m`, `3h` or `2d`. */
@@ -17,6 +24,18 @@ export function age(since: string, now = Date.now()) {
 	if (m < 60) return `${m}m`;
 	if (m < 60 * 24) return `${Math.floor(m / 60)}h`;
 	return `${Math.floor(m / (60 * 24))}d`;
+}
+
+/** Up to the last two problems of a running agent, under its run line. */
+export function problemLines(run: Run, problems: string[]): string[] {
+	if (!problems.length) return [];
+	const n = problems.length;
+	const head = `${n} ${n === 1 ? "error" : "errors"} so far`;
+	return [
+		color.red(`    ✖ ${head}${n > 2 ? ", last two:" : ":"}`),
+		...problems.slice(-2).map((p) => color.red(`      ${p}`)),
+		color.dim(`      See all: kanbot logs ${run.key}`),
+	];
 }
 
 export default defineCommand({
@@ -64,9 +83,12 @@ export default defineCommand({
 			(r) => runStatus(r) === "running",
 		);
 		if (running.length) {
-			console.log(
-				`\nrunning:\n${running.map((r) => `  ${runLine(r)}`).join("\n")}`,
-			);
+			console.log("\nrunning:");
+			for (const r of running) {
+				console.log(`  ${runLine(r)}`);
+				const lines = problemLines(r, await runProblems(root, r));
+				if (lines.length) console.log(lines.join("\n"));
+			}
 			if (!args.follow)
 				console.log("  Follow one: kanbot status -f, or kanbot logs <key> -f");
 		}

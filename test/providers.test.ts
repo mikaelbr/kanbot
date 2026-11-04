@@ -6,6 +6,7 @@ import { parseAgent } from "../src/agents/load.ts";
 import { claudeArgs } from "../src/providers/claude.ts";
 import { codexArgs } from "../src/providers/codex.ts";
 import { codexMcpArgs, readMcpServers } from "../src/providers/mcp.ts";
+import { spawnWorker, workerEnv } from "../src/providers/types.ts";
 
 const agent = parseAgent(
 	"---\nname: a\ntier: column\ndescription: x\ntools: [read, edit]\n---\nBody",
@@ -58,10 +59,8 @@ test("codex ignores user config and gets the repo's servers", async () => {
 	const args = codexArgs({
 		agent,
 		cwd,
-		gitDir: "/g",
 		schemaFile: "s",
 		lastFile: "l",
-		networkAccess: false,
 		mcpServers: await readMcpServers(cwd),
 	});
 	expect(args).toContain("--ignore-user-config");
@@ -73,4 +72,61 @@ test("codex ignores user config and gets the repo's servers", async () => {
 
 test("codex gets no mcp_servers override without servers", () => {
 	expect(codexMcpArgs({})).toEqual([]);
+});
+
+test("codex runs editing agents without a sandbox, readers read-only", async () => {
+	const cwd = await repo();
+	const args = (a: typeof agent) =>
+		codexArgs({
+			agent: a,
+			cwd,
+			schemaFile: "s",
+			lastFile: "l",
+			mcpServers: {},
+		});
+	expect(args(agent)).toContain("--dangerously-bypass-approvals-and-sandbox");
+	const reader = { ...agent, tools: ["read" as const] };
+	expect(args(reader).join(" ")).toContain("--sandbox read-only");
+});
+
+test("workers can't push or use gh's login", async () => {
+	const dir = await repo();
+	const sh = (cmd: string, env?: Record<string, string>) =>
+		Bun.spawnSync(["sh", "-c", cmd], { cwd: dir, env }).exitCode;
+	sh(
+		"git init -q --bare bare.git && git init -q w && cd w && git -c user.name=a -c user.email=a@b -c commit.gpgsign=false commit -q --allow-empty -m i",
+	);
+	const env = workerEnv({
+		PATH: process.env.PATH,
+		HOME: process.env.HOME,
+		GH_TOKEN: "x",
+		GIT_CONFIG_COUNT: "1",
+		GIT_CONFIG_KEY_0: "user.name",
+		GIT_CONFIG_VALUE_0: "a",
+	});
+	expect(env.GH_TOKEN).toBeUndefined();
+	expect(env.GH_CONFIG_DIR).toBeDefined();
+	expect(env.GIT_CONFIG_KEY_0).toBe("user.name");
+	expect(sh("cd w && git push -q ../bare.git HEAD:refs/heads/x")).toBe(0);
+	expect(sh("cd w && git push -q ../bare.git HEAD:refs/heads/y", env)).not.toBe(
+		0,
+	);
+	expect(sh("cd w && git fetch -q ../bare.git x", env)).toBe(0);
+});
+
+test("spawnWorker logs stderr lines as events as they come", async () => {
+	const dir = await repo();
+	const logFile = join(dir, "log.jsonl");
+	const res = await spawnWorker(
+		[
+			"sh",
+			"-c",
+			'echo \'{"type":"a"}\'; echo "ERROR no" >&2; echo \'{"type":"b"}\'',
+		],
+		{ cwd: dir, stdin: "", timeoutMs: 5000, logFile },
+	);
+	expect(res.stderr).toBe("ERROR no\n");
+	const lines = (await Bun.file(logFile).text()).trim().split("\n");
+	expect(lines).toContain('{"type":"kanbot.stderr","text":"ERROR no"}');
+	expect(lines.filter((l) => l.startsWith('{"type":"'))).toHaveLength(3);
 });

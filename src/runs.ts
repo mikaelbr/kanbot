@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { color } from "./color.ts";
+import { STDERR } from "./providers/types.ts";
 
 /**
  * One agent run. Stored as `<id>.json` next to its `<id>.jsonl` transcript in
@@ -270,6 +271,78 @@ export function formatEvent(line: string, verbose = false): string[] {
 		case "error":
 			out.push(color.red(`✖ ${e.message ?? "error"}`));
 			break;
+		case STDERR: {
+			const text = String(e.text ?? "");
+			out.push(STDERR_PROBLEM.test(text) ? color.red(text) : color.dim(text));
+			break;
+		}
 	}
 	return out;
+}
+
+// ---- problems -------------------------------------------------------------------
+
+/** Output that means the sandbox or permission settings blocked the agent. */
+const DENIED =
+	/permission denied|operation not permitted|not permitted|patch rejected|rejected by|haven't granted|requires approval|read-only file system|EACCES|EPERM/i;
+const STDERR_PROBLEM = /\bERROR\b|denied|rejected|not permitted/i;
+
+/**
+ * Errors worth a human's attention in one transcript line: permission and
+ * sandbox denials, provider errors and errors on stderr. Failing tests and
+ * other non-zero exits are normal work and are left out.
+ */
+export function eventProblems(line: string): string[] {
+	// biome-ignore lint/suspicious/noExplicitAny: raw provider event, read defensively
+	let e: Record<string, any>;
+	try {
+		e = JSON.parse(line);
+	} catch {
+		return [];
+	}
+	const out: string[] = [];
+	switch (e.type) {
+		case "user":
+			for (const c of e.message?.content ?? []) {
+				const text = resultText(c.content);
+				if (c.type === "tool_result" && c.is_error && DENIED.test(text))
+					out.push(`denied: ${text}`);
+			}
+			break;
+		case "result":
+			if (e.is_error) out.push(String(e.result ?? e.subtype ?? "failed"));
+			break;
+		case "item.completed": {
+			const it = e.item ?? {};
+			if (it.type === "error") out.push(String(it.message ?? "error"));
+			const output = String(it.aggregated_output ?? "");
+			if (
+				it.type === "command_execution" &&
+				it.exit_code &&
+				DENIED.test(output)
+			)
+				out.push(`denied: $ ${it.command ?? ""} → ${output}`);
+			break;
+		}
+		case "turn.failed":
+			out.push(String(e.error?.message ?? "turn failed"));
+			break;
+		case "error":
+			out.push(String(e.message ?? "error"));
+			break;
+		case STDERR: {
+			const text = String(e.text ?? "");
+			// Codex: `<time> ERROR codex_core::…: error=patch rejected: …`
+			if (STDERR_PROBLEM.test(text)) out.push(text.replace(/^.*?\berror=/, ""));
+			break;
+		}
+	}
+	return out.map((p) => clip(p, 200));
+}
+
+/** Problems in a run's transcript so far, oldest first. */
+export async function runProblems(root: string, run: Run): Promise<string[]> {
+	const file = Bun.file(logPath(root, run.id));
+	if (!(await file.exists())) return [];
+	return (await file.text()).split("\n").flatMap(eventProblems);
 }

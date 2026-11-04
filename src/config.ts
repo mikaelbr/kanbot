@@ -195,7 +195,9 @@ export const ConfigSchema = z.object({
 			networkAccess: z
 				.boolean()
 				.default(false)
-				.describe("Let codex workers reach the network (package installs)."),
+				.describe(
+					"Ignored: codex workers that run commands have no sandbox, so they have network.",
+				),
 		})
 		.prefault({}),
 	notify: z

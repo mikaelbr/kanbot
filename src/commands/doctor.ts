@@ -7,6 +7,7 @@ import { capabilitySummary, findCapability } from "../capabilities.ts";
 import { color } from "../color.ts";
 import { loadConfig, writeConfigSchema } from "../config.ts";
 import { git } from "../daemon/git.ts";
+import { providerFor } from "../daemon/loop.ts";
 import { DOCS_URL, describeError } from "../errors.ts";
 import { copilotReviewRule } from "../github/api.ts";
 import { appKeyPath, appTokens } from "../github/app.ts";
@@ -18,6 +19,7 @@ import {
 	neededWorkflows,
 	workflowsUrl,
 } from "../github/project.ts";
+import { probe } from "../probe.ts";
 import { LOGIN_FIX, providerLogin } from "../providers/login.ts";
 import {
 	codexSupports,
@@ -127,7 +129,15 @@ export default defineCommand({
 		name: "doctor",
 		description: "Check that everything kanbot needs is in place",
 	},
-	async run() {
+	args: {
+		probe: {
+			type: "boolean",
+			description:
+				"Also run a short agent job to check it can edit files, write skills and commit. Takes a minute of your plan",
+			default: false,
+		},
+	},
+	async run({ args }) {
 		const root = process.cwd();
 		const checks: Check[] = [];
 		const add = (c: Check) => {
@@ -199,8 +209,31 @@ export default defineCommand({
 				name: "codex workers ignore ~/.codex/config.toml",
 				ok: true,
 				detail:
-					"models come from agent frontmatter, MCP servers from .mcp.json",
+					"models come from agent frontmatter, MCP servers from .mcp.json; agents that run commands have no sandbox",
 			});
+		}
+
+		if (args.probe && login.ok) {
+			console.log(color.dim("  Running a short agent job…"));
+			const fix =
+				config.provider === "claude"
+					? "remove deny rules for Edit, Write or Bash in .claude/settings.local.json or managed settings"
+					: "update codex and kanbot; if your organization manages Codex, ask whether it forces a sandbox";
+			for (const c of await probe(root, providerFor(config)))
+				add({
+					name: c.name,
+					ok: c.ok,
+					detail: c.detail,
+					why: "Jobs need these to finish. See the run with `kanbot logs probe`.",
+					fix,
+					docs: "providers#permissions",
+				});
+		} else if (login.ok) {
+			console.log(
+				color.dim(
+					"  Check worker permissions with a real job: kanbot doctor --probe",
+				),
+			);
 		}
 
 		section("Agents and skills");

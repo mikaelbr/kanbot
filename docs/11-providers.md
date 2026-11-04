@@ -50,16 +50,24 @@ Log in with a ChatGPT plan:
 codex login
 ```
 
-Each job runs `codex exec`. Agents with `edit` or `bash` tools get a `workspace-write` sandbox; others get `read-only`.
+Each job runs `codex exec`. Agents with `edit` or `bash` tools run without a sandbox, like Claude workers; others get a `read-only` sandbox. Codex's `workspace-write` sandbox blocks `.agents`, signed commits and browsers, which agents need. See [Safety](./02-workflow.md#safety) for what still keeps them off GitHub.
 
 Workers ignore `~/.codex/config.toml`: no user plugins, MCP servers, default model or other settings. The model comes from the agent's frontmatter, and MCP servers from the repo's `.mcp.json` (stdio and HTTP; not `sse`). Login still comes from `~/.codex`.
 
-Network access is off by default. Turn it on if agents need to install packages:
+`codex.networkAccess` is ignored, since agents that run commands have no sandbox.
 
-```yaml
-codex:
-  networkAccess: true
+## Permissions
+
+Workers must edit files, edit skills in `.agents/skills` and commit, but not push. Check with a real job:
+
+```sh
+kanbot doctor --probe
 ```
+
+It runs a short job in a throwaway worktree, then reports what worked. Read the run with `kanbot logs probe`. `kanbot status` also shows permission errors of running agents.
+
+- **Claude Code**: deny rules in `.claude/settings.local.json` or managed settings still apply. Remove ones that block `Edit`, `Write` or `Bash`.
+- **Codex**: managed requirements from your organization can still force a sandbox. Ask whoever manages Codex for you.
 
 ## Models and effort
 

@@ -276,7 +276,7 @@
 			"properties": {
 				"networkAccess": {
 					"default": false,
-					"description": "Let codex workers reach the network (package installs).",
+					"description": "Ignored: codex workers that run commands have no sandbox, so they have network.",
 					"type": "boolean"
 				}
 			}

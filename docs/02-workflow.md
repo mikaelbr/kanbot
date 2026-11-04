@@ -81,8 +81,11 @@ Only collaborators with write access can steer agents. Comments from others are 
 
 ## Safety
 
+> **Warning: use at your own risk.** Agents run unattended, with no sandbox, as your user. They can read and change anything your user can, including files outside the repo, and they act on text from issues and comments. The blocks below make mistakes less likely, but they don't stop a determined prompt injection. This is a current limitation. Run kanbot on a machine or account with nothing you can't afford to lose or leak.
+
 - Agents never get a GitHub token. The daemon makes every comment, push and PR.
-- `gh`, `git push`, `git remote` and `git config` are denied for agents.
+- `gh`, `git push`, `git remote` and `git config` are denied for Claude agents.
+- For all agents, `gh` sees no login and `git push` fails: kanbot points `GH_CONFIG_DIR` at an empty folder and rewrites push URLs to a dead one.
 - GitHub is the only state. You can stop and restart the daemon any time.
 
-Workers run as your user, and commands are blocked by pattern, not missing credentials. In [app mode](./12-identity.md#app-mode), the app's key in `~/.kanbot/apps/` is readable by them too. A determined prompt injection could get around that.
+Workers run as your user, without a sandbox, and these blocks live in their environment and deny patterns, not missing credentials. In [app mode](./12-identity.md#app-mode), the app's key in `~/.kanbot/apps/` is readable by them too. A determined prompt injection could get around that.

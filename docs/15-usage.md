@@ -100,6 +100,10 @@ Check that everything is in place:
 - In app mode: the app, its key and its install on the repo.
 - With `review.copilot`: the ruleset and `.github/copilot-instructions.md`.
 
+| Flag      | Description                                                                                                                                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--probe` | Also run a short agent job in a throwaway worktree: edit a file, edit `.agents/skills`, commit, and check that a push is blocked. Takes about a minute of your plan. See [Permissions](./11-providers.md#permissions). |
+
 Each failed check says why it matters, how to fix it and, where it helps, a docs link. Lines marked `!` are warnings and don't fail doctor. Exits 1 on failure. Colors turn off when output is piped or `NO_COLOR` is set.
 
 ## `kanbot run`
@@ -114,7 +118,7 @@ Start the daemon. It polls the board, runs agent jobs and applies their results 
 
 ## `kanbot status`
 
-Show the board by column, daemon PID and provider, the agents running now, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
+Show the board by column, daemon PID and provider, the agents running now with any permission or provider errors in their logs so far, then what waits on you, oldest first: plans to approve or answer, PRs to review or merge, approaches to pick, and `needs-human` cards with kanbot's reason. Last come local failure counts and any rate-limit pause.
 
 | Flag             | Description                                                             |
 | ---------------- | ----------------------------------------------------------------------- |

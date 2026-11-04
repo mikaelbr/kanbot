@@ -83,17 +83,12 @@ export type OptionsPatch = Partial<
 >;
 
 /** Offers the defaults, and asks for each only if the user wants to change them. */
-export function askOptions(
-	ask: Ask,
-	say: Say,
-	provider: Provider,
-): OptionsPatch {
+export function askOptions(ask: Ask, say: Say): OptionsPatch {
 	say("These defaults suit most repos:");
 	say("  3 agents at once");
 	say("  No limit on items waiting for you");
 	say("  Desktop notifications, no webhook");
 	say("  No Copilot review");
-	if (provider === "codex") say("  Codex workers have no network access");
 	if (!confirm(ask, "Change any of these?", false)) return {};
 
 	const patch: OptionsPatch = {};
@@ -124,16 +119,6 @@ export function askOptions(
 		)
 	)
 		patch.review = { copilot: true } as Config["review"];
-
-	if (
-		provider === "codex" &&
-		confirm(
-			ask,
-			"Let Codex workers reach the network (package installs)?",
-			false,
-		)
-	)
-		patch.codex = { networkAccess: true };
 	return patch;
 }
 
