@@ -15,7 +15,14 @@ export type Spec = {
 	name: string;
 	description: string;
 	flags: Flag[];
+	/** Values for the first positional argument. */
+	values: string[];
 	subs: Spec[];
+};
+
+/** Positional values citty can't describe, by command path. */
+const VALUES: Record<string, string[]> = {
+	provider: ["claude", "codex"],
 };
 
 async function resolve<T>(
@@ -44,6 +51,7 @@ const VERSION: Flag = {
 export async function buildSpec(
 	cmd: CommandDef<ArgsDef>,
 	name?: string,
+	path: string[] = [],
 ): Promise<Spec> {
 	const meta = await resolve(cmd.meta);
 	const args = (await resolve(cmd.args)) ?? {};
@@ -63,9 +71,13 @@ export async function buildSpec(
 		name: name ?? meta?.name ?? "",
 		description: meta?.description ?? "",
 		flags,
+		values: VALUES[path.join(" ")] ?? [],
 		subs: await Promise.all(
 			Object.entries(subs).map(async ([key, sub]) =>
-				buildSpec((await resolve(sub)) as CommandDef<ArgsDef>, key),
+				buildSpec((await resolve(sub)) as CommandDef<ArgsDef>, key, [
+					...path,
+					key,
+				]),
 			),
 		),
 	};
@@ -102,6 +114,8 @@ function zsh(root: Spec): string {
 				? `${sq(excl)}{${names.join(",")}}${sq(spec)}`
 				: sq(names[0] + spec);
 		});
+		if (spec.values.length)
+			flags.push(sq(`1:value:(${spec.values.join(" ")})`));
 		if (!spec.subs.length)
 			return `${fn(path)}() {\n\t_arguments -s \\\n\t\t${flags.join(" \\\n\t\t")}\n}`;
 		const cmds = spec.subs.map((s) => sq(`${esc(s.name)}:${s.description}`));
@@ -144,7 +158,7 @@ function bash(root: Spec): string {
 		const flags = spec.flags
 			.flatMap((f) => [f.name, ...f.alias].map(dashed))
 			.join(" ");
-		return `\t${JSON.stringify(path.join(" "))}) subs=${sq(subs)}; flags=${sq(flags)} ;;`;
+		return `\t${JSON.stringify(path.join(" "))}) subs=${sq(subs)}; vals=${sq(spec.values.join(" "))}; flags=${sq(flags)} ;;`;
 	});
 	const valueCases = nodes.flatMap(([path, spec]) =>
 		spec.flags
@@ -168,7 +182,7 @@ ${specCases.join("\n")}
 
 _${n}() {
 	local cur=\${COMP_WORDS[COMP_CWORD]} prev=\${COMP_WORDS[COMP_CWORD-1]}
-	local cmdpath="" subs flags i
+	local cmdpath="" subs vals flags i
 	_${n}_spec ""
 	for ((i = 1; i < COMP_CWORD; i++)); do
 		if [[ " $subs " == *" \${COMP_WORDS[i]} "* ]]; then
@@ -179,7 +193,7 @@ _${n}() {
 	case "$cmdpath:$prev" in
 ${valueCases.join("\n")}
 	esac
-	COMPREPLY=($(compgen -W "$subs $flags" -- "$cur"))
+	COMPREPLY=($(compgen -W "$subs $vals $flags" -- "$cur"))
 }
 
 complete -F _${n} ${n}
@@ -201,6 +215,10 @@ function fish(root: Spec): string {
 					`complete -c ${n} -n ${sq(cond)} -a ${s.name} -d ${sq(s.description)}`,
 				);
 		}
+		if (spec.values.length)
+			lines.push(
+				`complete -c ${n} -n ${sq(seen.join("; and "))} -a ${sq(spec.values.join(" "))}`,
+			);
 		for (const f of spec.flags) {
 			const parts = [`complete -c ${n}`];
 			if (seen.length) parts.push(`-n ${sq(seen.join("; and "))}`);

@@ -17,13 +17,13 @@ kanbot runs agents with either Claude Code or Codex. Both use your subscription 
 kanbot init --provider claude   # or codex
 ```
 
-Or change `provider` in `.kanbot/config.yml`:
+To switch later:
 
-```yaml
-provider: codex
+```sh
+kanbot provider codex
 ```
 
-Restart the daemon after changing it. Agents and skills are shared, so nothing else changes.
+This sets `provider` in `.kanbot/config.yml` and checks the login. Commit and push it; the daemon switches after the push. Agents and skills are shared, so nothing else changes.
 
 ## Claude Code
 

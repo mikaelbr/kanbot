@@ -15,6 +15,14 @@ describe("completion", async () => {
 		expect(provider?.options).toEqual(["claude", "codex"]);
 	});
 
+	test("completes positional values", () => {
+		const provider = spec.subs.find((s) => s.name === "provider");
+		expect(provider?.values).toEqual(["claude", "codex"]);
+		expect(render("zsh", spec)).toContain("1:value:(claude codex)");
+		expect(render("bash", spec)).toContain("vals='claude codex'");
+		expect(render("fish", spec)).toContain("from provider' -a 'claude codex'");
+	});
+
 	const walk = (s: Spec): Spec[] => [s, ...s.subs.flatMap(walk)];
 	const nodes = walk(spec);
 

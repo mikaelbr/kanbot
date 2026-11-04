@@ -21,7 +21,7 @@ In a terminal, it walks you through setup. Press Enter to take the default:
 4. **Capabilities**: which of your skills fill `verify`, `review` and `preview`. Asked only if you have your own skills. See [Capabilities](./05-capabilities.md).
 5. **Board**: create one, link an existing one by URL, or skip. Adds the `project` scope to `gh` if needed, and offers to open the page where you turn on the board's workflows.
 
-Run again, it updates files and asks only about what isn't set up, like a missing board. Without a terminal, or with `--yes`, it asks nothing and uses defaults.
+Run again, it updates files and asks only about what isn't set up, like a missing board. `--provider` still switches the provider. Without a terminal, or with `--yes`, it asks nothing and uses defaults.
 
 | Flag                         | Default | Description                                         |
 | ---------------------------- | ------- | --------------------------------------------------- |
@@ -70,6 +70,15 @@ Use an app you already created, e.g. in another repo. Sets `identity` in config.
 | --------------- | ------------------------------------- |
 | `--id <n>`      | GitHub App ID.                        |
 | `--slug <slug>` | App slug, as in github.com/apps/slug. |
+
+## `kanbot provider`
+
+Show the agent provider. Pass `claude` or `codex` to switch: it updates `.kanbot/config.yml` and checks the login. Commit and push the config; the daemon switches after the push. See [Providers](./11-providers.md#choose-a-provider).
+
+```sh
+kanbot provider         # show it
+kanbot provider codex   # switch to Codex
+```
 
 ## `kanbot sync`
 

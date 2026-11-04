@@ -38,6 +38,7 @@ import {
 	printWorkflows,
 	setupBoard,
 } from "./board.ts";
+import { setProvider } from "./provider.ts";
 
 const GITIGNORE = [".kanbot/state.json", ".kanbot/logs/", ".kanbot/daemon.pid"];
 
@@ -132,6 +133,8 @@ export default defineCommand({
 			log.info(
 				`+ .kanbot/config.yml (${repo.nameWithOwner}, base ${repo.defaultBranchRef.name})`,
 			);
+		} else if (provider && (await setProvider(root, provider))) {
+			log.info(`~ .kanbot/config.yml (provider: ${provider})`);
 		}
 		await writeCodeowners(root);
 		await appendGitignore(root);

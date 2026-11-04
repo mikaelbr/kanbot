@@ -11,6 +11,7 @@ export const main = defineCommand({
 		init: () => import("./commands/init.ts").then((m) => m.default),
 		board: () => import("./commands/board.ts").then((m) => m.default),
 		app: () => import("./commands/app.ts").then((m) => m.default),
+		provider: () => import("./commands/provider.ts").then((m) => m.default),
 		upgrade: () => import("./commands/upgrade.ts").then((m) => m.default),
 		skills: () => import("./commands/skills.ts").then((m) => m.default),
 		sync: () => import("./commands/sync.ts").then((m) => m.default),

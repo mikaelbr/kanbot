@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { setProvider } from "../src/commands/provider.ts";
 import {
 	configPath,
 	configSchemaPath,
@@ -104,4 +105,15 @@ test("a bare name is short for { use }", async () => {
 	expect((await loadConfig(root)).capabilities).toEqual({
 		review: { use: "code-review", required: false },
 	});
+});
+
+test("setProvider switches provider and keeps comments", async () => {
+	await Bun.write(
+		configPath(root),
+		"repo: acme/app # mine\nprovider: claude\n",
+	);
+	expect(await setProvider(root, "codex")).toBe(true);
+	expect((await loadConfig(root)).provider).toBe("codex");
+	expect(await Bun.file(configPath(root)).text()).toContain("# mine");
+	expect(await setProvider(root, "codex")).toBe(false);
 });
