@@ -3,8 +3,8 @@ import { sync } from "../agents/sync.ts";
 import { type Config, loadConfig } from "../config.ts";
 import { UserError } from "../errors.ts";
 import { viewer } from "../github/api.ts";
-import { botClient } from "../github/app.ts";
-import { Gh } from "../github/gh.ts";
+import { botClient, missingReadPermissions } from "../github/app.ts";
+import { Gh, isApiRateLimit } from "../github/gh.ts";
 import { loadBoard, missingColumns } from "../github/project.ts";
 import { Trust } from "../github/trust.ts";
 import {
@@ -22,12 +22,14 @@ import { type Action, derive, type Job, schedule, wipFull } from "./derive.ts";
 import { Worktrees } from "./git.ts";
 import { acquireLock } from "./lock.ts";
 import { Notifier } from "./notify.ts";
-import { takeSnapshot } from "./snapshot.ts";
+import { SnapshotCache, takeSnapshot } from "./snapshot.ts";
 import { State } from "./state.ts";
 
 export type RunOptions = { once: boolean; dryRun: boolean };
 
 const RATE_LIMIT_PAUSE_MS = 30 * 60_000;
+/** Pause after a GitHub secondary rate limit, which has no reset time. */
+const SECONDARY_PAUSE_MS = 5 * 60_000;
 
 export function providerFor(config: Config): Provider {
 	return config.provider === "codex" ? codex : claude;
@@ -81,7 +83,10 @@ export async function runDaemon(root: string, opts: RunOptions) {
 		notify: new Notifier(config.notify),
 		state,
 	};
+	const reads = await readClient(config, gh, bot);
 	const trust = new Trust(gh);
+	const cache = new SnapshotCache();
+	let apiPausedUntil = 0;
 	const running = new Map<string, Promise<void>>();
 	let wake: () => void = () => {};
 	// kanbot-review PRs vanish from the snapshot when closed; clean up after them.
@@ -104,13 +109,17 @@ export async function runDaemon(root: string, opts: RunOptions) {
 
 	try {
 		while (!stopping) {
-			if (Date.now() < state.pausedUntil) {
+			if (Date.now() < apiPausedUntil) {
+				// Logged once when the pause started.
+			} else if (Date.now() < state.pausedUntil) {
 				log.info(
 					`Paused for rate limits until ${new Date(state.pausedUntil).toLocaleTimeString()}`,
 				);
 			} else {
 				await tick().catch((e) =>
-					log.error(`tick failed: ${e instanceof Error ? e.message : e}`),
+					isApiRateLimit(e)
+						? pauseApi()
+						: log.error(`tick failed: ${e instanceof Error ? e.message : e}`),
 				);
 			}
 			if (opts.once) break;
@@ -126,6 +135,22 @@ export async function runDaemon(root: string, opts: RunOptions) {
 		await Promise.allSettled(running.values());
 	} finally {
 		release();
+	}
+
+	/** Wait out GitHub's API rate limit instead of failing every tick. */
+	async function pauseApi() {
+		if (Date.now() < apiPausedUntil) return;
+		const resets = await Promise.all(
+			[...new Set([gh, reads])].map((c) =>
+				c.rateLimitReset().catch(() => null),
+			),
+		);
+		const reset = Math.max(...resets.map((r) => r ?? 0));
+		apiPausedUntil =
+			reset > Date.now() ? reset : Date.now() + SECONDARY_PAUSE_MS;
+		log.warn(
+			`GitHub API rate limit hit. Pausing until ${new Date(apiPausedUntil).toLocaleTimeString()}. Agents' \`gh\` calls share your limit; fewer workers or a higher pollSeconds help.`,
+		);
 	}
 
 	let rootSkipped: string | undefined;
@@ -165,7 +190,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			);
 		}
 		const config = deps.config;
-		const snapshot = await takeSnapshot(gh, board, trust);
+		const snapshot = await takeSnapshot(gh, board, trust, { reads, cache });
 		const { jobs, actions } = derive(snapshot, {
 			config,
 			running: new Set(running.keys()),
@@ -239,6 +264,9 @@ export async function runDaemon(root: string, opts: RunOptions) {
 						deps,
 					).catch(() => {});
 				}
+			} else if (isApiRateLimit(e)) {
+				log.warn(`${job.key}: ${msg}; retries after the pause`);
+				await pauseApi();
 			} else if (e instanceof NeedsHuman) {
 				log.warn(`${job.key}: needs human (${msg})`);
 			} else {
@@ -262,6 +290,24 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			wake();
 		}
 	}
+}
+
+/**
+ * Issue and PR reads go through the app when it can, so they don't spend the
+ * user's rate limit. The board stays on the user: apps can't read user projects.
+ */
+async function readClient(config: Config, gh: Gh, bot: Gh) {
+	const { app } = config.identity;
+	if (!bot.isBot || !app) return gh;
+	const missing = await missingReadPermissions(app, config.repo).catch(
+		() => null,
+	);
+	if (missing?.length === 0) return bot;
+	if (missing)
+		log.warn(
+			`The kanbot app can't read ${missing.join(", ")}, so reads use your rate limit. \`kanbot doctor\` shows the fix.`,
+		);
+	return gh;
 }
 
 function describeAction(a: Action) {

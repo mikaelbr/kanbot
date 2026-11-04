@@ -54,16 +54,12 @@ async function api<T>(
 	return (await res.json()) as T;
 }
 
-/**
- * Installation tokens for one repo, cached until shortly before they expire.
- * Scoped to that repo only.
- */
-export function appTokens(app: AppConfig, repo: string): TokenSource {
+type Installation = { id: number; permissions: Record<string, string> };
+
+function installationOf(app: AppConfig, repo: string) {
 	const keyFile = appKeyPath(app.id);
-	let cached: { token: string; expires: number } | null = null;
-	let installation: number | null = null;
+	let cached: Installation | null = null;
 	return async () => {
-		if (cached && Date.now() < cached.expires - RENEW_MS) return cached.token;
 		if (!existsSync(keyFile))
 			throw new UserError(`No private key for the kanbot app ${app.slug}.`, {
 				why: `Expected it at ${keyFile}.`,
@@ -71,20 +67,32 @@ export function appTokens(app: AppConfig, repo: string): TokenSource {
 				docs: "identity#app-mode",
 			});
 		const jwt = appJwt(app.id, await Bun.file(keyFile).text());
-		installation ??= await api<{ id: number }>(
+		cached ??= await api<Installation>(
 			`/repos/${repo}/installation`,
 			jwt,
-		)
-			.then((r) => r.id)
-			.catch((e) => {
-				throw new UserError(`The kanbot app ${app.slug} can't reach ${repo}.`, {
-					why: String(e),
-					fix: `Install it on the repo: https://github.com/apps/${app.slug}/installations/new`,
-					docs: "identity#app-mode",
-				});
+		).catch((e) => {
+			throw new UserError(`The kanbot app ${app.slug} can't reach ${repo}.`, {
+				why: String(e),
+				fix: `Install it on the repo: https://github.com/apps/${app.slug}/installations/new`,
+				docs: "identity#app-mode",
 			});
+		});
+		return { jwt, installation: cached };
+	};
+}
+
+/**
+ * Installation tokens for one repo, cached until shortly before they expire.
+ * Scoped to that repo only.
+ */
+export function appTokens(app: AppConfig, repo: string): TokenSource {
+	const install = installationOf(app, repo);
+	let cached: { token: string; expires: number } | null = null;
+	return async () => {
+		if (cached && Date.now() < cached.expires - RENEW_MS) return cached.token;
+		const { jwt, installation } = await install();
 		const res = await api<{ token: string; expires_at: string }>(
-			`/app/installations/${installation}/access_tokens`,
+			`/app/installations/${installation.id}/access_tokens`,
 			jwt,
 			"POST",
 			{ repositories: [repo.split("/")[1]] },
@@ -92,6 +100,15 @@ export function appTokens(app: AppConfig, repo: string): TokenSource {
 		cached = { token: res.token, expires: Date.parse(res.expires_at) };
 		return res.token;
 	};
+}
+
+/** Permissions the app needs to read board state for kanbot. */
+export const READ_PERMISSIONS = ["checks", "statuses"] as const;
+
+/** Read permissions the app's installation lacks, e.g. `checks`. */
+export async function missingReadPermissions(app: AppConfig, repo: string) {
+	const { installation } = await installationOf(app, repo)();
+	return READ_PERMISSIONS.filter((p) => !installation.permissions[p]);
 }
 
 /**
@@ -111,12 +128,14 @@ export function botClient(config: Config, user: Gh): Gh {
 
 // ---- manifest flow --------------------------------------------------------------
 
-/** Permissions the app needs to talk on issues and PRs. Nothing else. */
+/** Permissions the app needs to talk on issues and PRs and read CI. Nothing else. */
 export const APP_PERMISSIONS = {
 	issues: "write",
 	pull_requests: "write",
 	contents: "read",
 	metadata: "read",
+	checks: "read",
+	statuses: "read",
 } as const;
 
 export function appManifest(name: string, redirectUrl: string) {

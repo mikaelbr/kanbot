@@ -50,7 +50,7 @@ kanbot app create
 
 For a repo owned by an organization, the app is created in that organization. You need to be an owner there, or ask one to run it.
 
-The app asks for issues and pull requests (write), and contents and metadata (read). It has no webhook. kanbot asks GitHub for a token scoped to the one repo, valid for an hour.
+The app asks for issues and pull requests (write), and contents, metadata, checks and commit statuses (read). kanbot reads issues and PRs as the app, so they don't use your [API limit](./11-providers.md#github-api-limits). Older apps lack checks and statuses: add them in the app's settings on GitHub and accept the change on the installation. `kanbot doctor` warns until then. It has no webhook. kanbot asks GitHub for a token scoped to the one repo, valid for an hour.
 
 ### Config
 

@@ -93,7 +93,9 @@ export default defineCommand({
 				console.log("  Follow one: kanbot status -f, or kanbot logs <key> -f");
 		}
 
-		const snapshot = await takeSnapshot(gh, board, new Trust(gh), items);
+		const snapshot = await takeSnapshot(gh, board, new Trust(gh), {
+			listed: items,
+		});
 		const waiting = waitingOnHuman(snapshot, config);
 		if (waiting.length) {
 			const rows = waiting.map(({ item, why, url, since }) => {

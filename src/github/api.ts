@@ -4,16 +4,18 @@ import type { Gh } from "./gh.ts";
 
 const COMMENT = "id databaseId author { login } body createdAt";
 
+// Limits set GraphQL cost: nested connections multiply (PRs × threads ×
+// comments). Raising them can exhaust the 5000 points/hour budget.
 const PR_FIELDS = `
 	id number url title body state headRefName headRefOid mergeable createdAt
 	labels(first: 30) { nodes { name } }
-	comments(last: 100) { nodes { ${COMMENT} } }
-	reviews(last: 50) { nodes { ${COMMENT} } }
+	comments(last: 50) { nodes { ${COMMENT} } }
+	reviews(last: 30) { nodes { ${COMMENT} } }
 	latestReviews(last: 20) { nodes { author { login } state commit { oid } } }
-	reviewThreads(last: 100) {
+	reviewThreads(last: 50) {
 		nodes {
 			id isResolved path line
-			comments(last: 30) { nodes { ${COMMENT} } }
+			comments(last: 10) { nodes { ${COMMENT} } }
 		}
 	}
 	commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }`;
@@ -26,7 +28,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 			labels(first: 50) { nodes { name } }
 			comments(last: 100) { nodes { ${COMMENT} } }
 			blockedBy(first: 20) { nodes { number state repository { nameWithOwner } } }
-			closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
+			closedByPullRequestsReferences(first: 5, includeClosedPrs: true) {
 				nodes { ${PR_FIELDS} }
 			}
 		}
@@ -36,7 +38,7 @@ query($owner: String!, $name: String!, $number: Int!) {
 const LABELED_PRS_QUERY = `
 query($owner: String!, $name: String!, $label: String!) {
 	repository(owner: $owner, name: $name) {
-		pullRequests(labels: [$label], states: OPEN, first: 50) {
+		pullRequests(labels: [$label], states: OPEN, first: 20) {
 			nodes { isCrossRepository ${PR_FIELDS} }
 		}
 	}
@@ -132,6 +134,59 @@ function mapPR(p: any): PR {
 			null) as Checks,
 		mergeable: p.mergeable,
 	};
+}
+
+/** An issue or PR as GitHub's REST issue list returns it. */
+export type Updated = { number: number; updatedAt: string; pr: boolean };
+
+/**
+ * Issues and PRs updated since `since`, oldest first. REST, so it uses the
+ * core rate limit, not the GraphQL budget the snapshot spends.
+ */
+export async function updatedSince(gh: Gh, since: Date): Promise<Updated[]> {
+	type Raw = { number: number; updated_at: string; pull_request?: unknown };
+	const out: Updated[] = [];
+	for (let page = 1; ; page++) {
+		const rows = await gh.rest<Raw[]>(
+			gh.r(
+				`/issues?state=all&sort=updated&direction=asc&per_page=100&page=${page}&since=${since.toISOString()}`,
+			),
+		);
+		for (const r of rows)
+			out.push({
+				number: r.number,
+				updatedAt: r.updated_at,
+				pr: !!r.pull_request,
+			});
+		if (rows.length < 100) return out;
+	}
+}
+
+/** Issue numbers each PR closes, in one query. */
+export async function closingIssues(
+	gh: Gh,
+	prs: number[],
+): Promise<Map<number, number[]>> {
+	if (!prs.length) return new Map();
+	const fields = prs
+		.map(
+			(n) =>
+				`p${n}: pullRequest(number: ${n}) { closingIssuesReferences(first: 10) { nodes { number } } }`,
+		)
+		.join("\n");
+	// biome-ignore lint/suspicious/noExplicitAny: raw GraphQL shape
+	const data = await gh.query<any>(
+		`query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { ${fields} } }`,
+		{ owner: gh.owner, name: gh.name },
+	);
+	return new Map(
+		prs.map((n) => [
+			n,
+			(data.repository[`p${n}`]?.closingIssuesReferences.nodes ?? []).map(
+				(i: { number: number }) => i.number,
+			),
+		]),
+	);
 }
 
 // ---- writes ---------------------------------------------------------------

@@ -83,3 +83,9 @@ effort: high
 ## Rate limits
 
 When a job hits a usage limit or runs out of credits, the daemon pauses all work for 30 minutes, then retries. The first pause comments on the job's issue with the provider's message and sends a notification. No more comments until a job succeeds again. `kanbot status` shows the pause.
+
+### GitHub API limits
+
+GitHub allows 5000 GraphQL points per hour per account, shared with agents' `gh` calls and your own. Each tick, kanbot asks GitHub which issues and PRs changed and refetches only those, so an idle board costs almost nothing. PRs waiting on CI are rechecked every 2 minutes, and everything every 15.
+
+If the limit is hit anyway, the daemon pauses until GitHub resets it and logs when. It doesn't count as a job failure. To use less: raise `pollSeconds`, lower `concurrency`, or use [app mode](./12-identity.md#app-mode), where kanbot reads issues and PRs as the app, which has its own limit.

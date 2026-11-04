@@ -10,7 +10,11 @@ import { git } from "../daemon/git.ts";
 import { providerFor } from "../daemon/loop.ts";
 import { DOCS_URL, describeError } from "../errors.ts";
 import { copilotReviewRule } from "../github/api.ts";
-import { appKeyPath, appTokens } from "../github/app.ts";
+import {
+	appKeyPath,
+	appTokens,
+	missingReadPermissions,
+} from "../github/app.ts";
 import { Gh, run } from "../github/gh.ts";
 import {
 	boardWorkflows,
@@ -536,6 +540,18 @@ export default defineCommand({
 					try {
 						await appTokens(app, config.repo)();
 						add({ name: `kanbot app installed on ${config.repo}`, ok: true });
+						const missing = await missingReadPermissions(app, config.repo);
+						add({
+							name: "kanbot app reads CI status",
+							ok: !missing.length,
+							warn: missing.length > 0,
+							detail: missing.length
+								? `missing: ${missing.join(", ")}`
+								: undefined,
+							why: "kanbot reads issues and PRs as the app, off your rate limit. It needs Checks and Commit statuses (read). Until then, reads use your account.",
+							fix: `In the app's settings on GitHub, set Checks and Commit statuses to read. Then accept the change: https://github.com/apps/${app.slug}/installations/new`,
+							docs: "identity#app-mode",
+						});
 					} catch (e) {
 						add({
 							name: `kanbot app installed on ${config.repo}`,

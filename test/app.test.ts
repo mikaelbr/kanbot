@@ -23,13 +23,15 @@ test("app JWT is RS256-signed with the app id as issuer", () => {
 	expect(claims.iat).toBeLessThan(now / 1000);
 });
 
-test("manifest asks only for what kanbot needs to talk", () => {
+test("manifest asks only for what kanbot needs to talk and read CI", () => {
 	const m = appManifest("kanbot-acme", "http://localhost:1/callback");
 	expect(m.default_permissions).toEqual({
 		issues: "write",
 		pull_requests: "write",
 		contents: "read",
 		metadata: "read",
+		checks: "read",
+		statuses: "read",
 	});
 	expect(m.public).toBe(false);
 });

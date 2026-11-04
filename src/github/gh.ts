@@ -105,10 +105,32 @@ export class Gh {
 		return (out.trim() ? JSON.parse(out) : null) as T;
 	}
 
+	/**
+	 * When the exhausted core or GraphQL limit resets (ms). Null when neither
+	 * is exhausted, e.g. a secondary limit. The call itself is free.
+	 */
+	async rateLimitReset(): Promise<number | null> {
+		type Limit = { remaining: number; reset: number };
+		const { resources: r } = await this.rest<{
+			resources: { core: Limit; graphql: Limit };
+		}>("rate_limit");
+		const resets = [r.core, r.graphql]
+			.filter((l) => l.remaining === 0)
+			.map((l) => l.reset * 1000);
+		return resets.length ? Math.max(...resets) : null;
+	}
+
 	/** `repos/{owner}/{name}` + suffix */
 	r(suffix: string) {
 		return `repos/${this.repo}${suffix}`;
 	}
+}
+
+/** GitHub's primary or secondary API rate limit. */
+export function isApiRateLimit(e: unknown) {
+	return /API rate limit (already )?exceeded|secondary rate limit/i.test(
+		String(e),
+	);
 }
 
 export async function run(
