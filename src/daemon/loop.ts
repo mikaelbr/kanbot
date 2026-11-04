@@ -93,6 +93,7 @@ export async function runDaemon(root: string, opts: RunOptions) {
 	let prOnly = new Set<number>();
 	let wasFull = false;
 	let stopping = false;
+	let rootSkipped: string | undefined;
 
 	const stop = () => {
 		if (stopping) process.exit(1);
@@ -153,7 +154,6 @@ export async function runDaemon(root: string, opts: RunOptions) {
 		);
 	}
 
-	let rootSkipped: string | undefined;
 	/** Keep the checkout at origin/<base>; reload config and agents when it moves. */
 	async function updateRoot() {
 		const { moved, skipped } = await deps.worktrees.updateRoot();
