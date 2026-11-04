@@ -3,7 +3,7 @@
 name: acceptance-reviewer
 tier: column
 description: Second review pass on a PR branch. Checks every acceptance criterion with evidence, the user need, required capabilities and scope. Read-only.
-models: { claude: opus, codex: default }
+models: { claude: opus, codex: GPT-6.1-Sol }
 effort: high
 tools: [read, bash]
 skills: [project-conventions, project-memory, spec-review, review-findings]

@@ -74,7 +74,7 @@ It runs a short job in a throwaway worktree, then reports what worked. Read the 
 Set models per agent and provider in the agent's frontmatter. See [Agents](./06-agents.md#frontmatter).
 
 ```yaml
-models: { claude: opus, codex: default }
+models: { claude: opus, codex: GPT-6.1-Sol }
 effort: high
 ```
 

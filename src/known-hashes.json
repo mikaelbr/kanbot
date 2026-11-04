@@ -94,35 +94,47 @@
 		"8daaea63e23cf1e0d37821bfadaf60018a448de2"
 	],
 	".kanbot/agents/acceptance-reviewer.md": [
+		"a75b6ea429e07b8fa829255273c3bc2046b39287",
 		"e6b65950345c686b4d219026d8d2d185e9735c12"
 	],
 	".kanbot/agents/approach-designer.md": [
+		"29b6706de1a26727554f42b13e30c85d3964d854",
 		"7e5f8c16c4d4a4e261bccc5dc8b4fff2d3046a72"
 	],
 	".kanbot/agents/explorer.md": [
 		"4346bd34d438932f0a912ad0aad3d5f789e1e7dd",
+		"f475f55e968481cffc0ba9b008fb1d46725bd618",
 		"f85fe4782bdce4a691fa4ab41fb8195d52b70209"
 	],
 	".kanbot/agents/fixer.md": [
 		"109c8974fe2d70f5f514f33d97761740f589a6c4",
 		"16c16692f6d2ee29bc0e4d0ca4a1b3cfc4f1ba72",
 		"7c98cf1dc3e798e0e5856fd95a3d78d378884def",
-		"810871ec49fd7be56d111c7df176d22c66748a0f"
+		"810871ec49fd7be56d111c7df176d22c66748a0f",
+		"b2501c05aa4d84380b6c38633a81aae0d2c0a62a"
 	],
-	".kanbot/agents/implementer.md": ["f6000b529b1a8bed0def57af9bfa55c1ca5cd3b6"],
+	".kanbot/agents/implementer.md": [
+		"ae332034ff49477d5e65d8c2dbc8b78987a22f9e",
+		"f6000b529b1a8bed0def57af9bfa55c1ca5cd3b6"
+	],
 	".kanbot/agents/plan-critic.md": [
 		"3d1c38922a94712d0f3a725902e3df9cee87bcda",
+		"9a625f48630fdc522fd81135dbbed019279c1be6",
 		"cd6dd133f4611bd86fe27f8539a62a805e4df6c9"
 	],
 	".kanbot/agents/planner.md": [
 		"2283cf8bf6d27b8bbf721f97bb45cd40eaa6d39d",
+		"4380ba094ad19147873e887dd01ac46600bd4e92",
 		"6500bea6691685d2b74ea73095f11643e0fcc937",
 		"6def83eade7a3e8ca3bde6a3458c3b4921b3b3ac",
 		"a4a65d240ab4b23737f4d68d8765cca89cf08864",
 		"bdb111213cced70583157edad658247972dcbe45",
 		"dc50d048164ade2926b58dee48c3919c6b7d9558"
 	],
-	".kanbot/agents/reviewer.md": ["7ff1fdd21df4442d3b82784d3e6077195b32ba5b"],
+	".kanbot/agents/reviewer.md": [
+		"66bdd434d40a8be22a2c6c6f63dffa22f46efe85",
+		"7ff1fdd21df4442d3b82784d3e6077195b32ba5b"
+	],
 	"AGENTS.md": [
 		"0dd205961831f0082e74a3c03b79036e2114c072",
 		"3da9115cbf52b7b7d0feb8325503a8caf43ff2c7",

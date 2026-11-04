@@ -3,7 +3,7 @@
 name: approach-designer
 tier: sub
 description: Given a problem, the codebase context and a number N, produces N genuinely different solution approaches with tradeoffs and a comparison table. Use for issues labelled explore:N.
-models: { claude: opus, codex: default }
+models: { claude: opus, codex: GPT-6.1-Sol }
 effort: high
 tools: [read]
 skills: [approach-designer]
