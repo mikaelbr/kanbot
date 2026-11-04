@@ -3,8 +3,8 @@
 name: fixer
 tier: column
 description: Addresses review findings, human PR review comments, failing CI and merge conflicts on a PR branch, commits the fixes, and reports per item.
-models: { claude: sonnet, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: sonnet, codex: gpt-6.1-sol }
+effort: medium
 tools: [read, edit, bash]
 skills: [project-conventions, project-memory, review-findings, pr-description]
 subagents: [explorer]

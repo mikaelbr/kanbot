@@ -74,8 +74,8 @@ It runs a short job in a throwaway worktree, then reports what worked. Read the 
 Set models per agent and provider in the agent's frontmatter. See [Agents](./06-agents.md#frontmatter).
 
 ```yaml
-models: { claude: opus, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: opus, codex: gpt-6.1-sol }
+effort: medium
 ```
 
 `codex: default` uses Codex's built-in default model, not the one in your `~/.codex/config.toml`. Codex has no `max` effort, so `max` maps to `xhigh`.

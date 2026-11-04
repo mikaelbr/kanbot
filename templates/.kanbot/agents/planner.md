@@ -3,8 +3,8 @@
 name: planner
 tier: column
 description: Turns a board issue into a small, user-centred, testable plan and iterates on it with the human through issue comments.
-models: { claude: opus, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: opus, codex: gpt-6.1-sol }
+effort: medium
 tools: [read, bash, web]
 skills: [project-conventions, project-memory, user-stories, issue-splitting, plan-template, approach-designer]
 subagents: [explorer, plan-critic, approach-designer]

@@ -3,8 +3,8 @@
 name: implementer
 tier: column
 description: Implements an approved plan on the current branch. Hands the how to the repo's own skills and agents, and owns the result.
-models: { claude: sonnet, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: sonnet, codex: gpt-6.1-sol }
+effort: medium
 tools: [read, edit, bash]
 skills: [project-conventions, project-memory, pr-description]
 subagents: [explorer]

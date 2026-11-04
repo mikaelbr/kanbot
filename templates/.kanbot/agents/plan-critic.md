@@ -3,7 +3,7 @@
 name: plan-critic
 tier: sub
 description: Adversarial reviewer for a draft plan. Use after drafting a plan and before returning it; it flags plans that are too big, not user-centred, untestable, or missing acceptance criteria, and proposes splits.
-models: { claude: sonnet, codex: GPT-6.1-Sol }
+models: { claude: sonnet, codex: gpt-6.1-sol }
 effort: medium
 tools: [read]
 skills: [user-stories, issue-splitting, plan-template]

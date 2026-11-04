@@ -46,8 +46,8 @@ YAML frontmatter, then markdown instructions:
 name: implementer
 tier: column
 description: Implements an approved plan on the current branch.
-models: { claude: sonnet, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: sonnet, codex: gpt-6.1-sol }
+effort: medium
 tools: [read, edit, bash]
 skills: [project-conventions, project-memory, pr-description]
 subagents: [explorer]
@@ -64,7 +64,7 @@ You turn an approved plan into a committed change. ...
 | `name`        | yes      | Lowercase, dashes. Must match the filename.                         |
 | `tier`        | yes      | `column` or `sub`.                                                  |
 | `description` | yes      | When to use the agent. Callers read this.                           |
-| `models`      | no       | Model per provider: `{ claude: opus, codex: GPT-6.1-Sol }`.         |
+| `models`      | no       | Model per provider: `{ claude: opus, codex: gpt-6.1-sol }`.         |
 | `effort`      | no       | `low`, `medium`, `high`, `xhigh` or `max`.                          |
 | `tools`       | no       | Any of `read`, `edit`, `bash`, `web`. Default `[read]`.             |
 | `skills`      | no       | Skill names from `.agents/skills/`.                                 |

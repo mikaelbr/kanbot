@@ -3,7 +3,7 @@
 name: explorer
 tier: sub
 description: Read-only codebase mapper. Use before planning, implementing or reviewing to find the files a change touches, the conventions in use, existing utilities to reuse, and how to run the relevant tests. Give it the goal and the area; it returns a concise map.
-models: { claude: haiku, codex: GPT-6.1-Sol }
+models: { claude: haiku, codex: gpt-6-luna }
 effort: low
 tools: [read, bash]
 ---

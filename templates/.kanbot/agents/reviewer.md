@@ -3,8 +3,8 @@
 name: reviewer
 tier: column
 description: First review pass on a PR branch. Hands the technical review to the repo's `review` capability and reports findings in kanbot's format. Read-only.
-models: { claude: opus, codex: GPT-6.1-Sol }
-effort: high
+models: { claude: opus, codex: gpt-6.1-sol }
+effort: medium
 tools: [read, bash]
 skills: [project-conventions, project-memory, review-findings]
 subagents: [explorer]

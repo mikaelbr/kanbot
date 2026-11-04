@@ -25,7 +25,7 @@ export const probeAgent: AgentDef = {
 	tier: "column",
 	description:
 		"Checks that workers can edit files, write skills and commit, but not push.",
-	models: { claude: "haiku", codex: "GPT-6.1-Sol" },
+	models: { claude: "haiku", codex: "gpt-6-luna" },
 	effort: "low",
 	tools: ["read", "edit", "bash"],
 	skills: [],
