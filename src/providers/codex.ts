@@ -60,6 +60,22 @@ export function codexArgs(o: {
 	return cmd;
 }
 
+/** Message of the last `error` or `turn.failed` event, if any. */
+export function codexError(stdout: string): string | undefined {
+	for (const line of stdout.split("\n").reverse()) {
+		try {
+			const e = JSON.parse(line);
+			const msg =
+				e.type === "turn.failed"
+					? e.error?.message
+					: e.type === "error"
+						? e.message
+						: undefined;
+			if (typeof msg === "string" && msg) return msg;
+		} catch {}
+	}
+}
+
 /** Codex CLI headless (`codex exec`), using the logged-in ChatGPT plan. */
 export const codex: Provider = {
 	name: "codex",
@@ -89,10 +105,11 @@ export const codex: Provider = {
 
 			const last = Bun.file(lastFile);
 			if (res.code !== 0 || !(await last.exists())) {
-				const detail = (res.stderr || res.stdout).slice(-2000);
+				const detail =
+					codexError(res.stdout) ?? (res.stderr || res.stdout).slice(-2000);
 				return {
 					ok: false,
-					error: `codex exit ${res.code}: ${detail}`,
+					error: `codex: ${detail}`,
 					rateLimited: looksRateLimited(detail),
 				};
 			}

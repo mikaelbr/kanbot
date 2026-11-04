@@ -4,9 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseAgent } from "../src/agents/load.ts";
 import { claudeArgs } from "../src/providers/claude.ts";
-import { codexArgs } from "../src/providers/codex.ts";
+import { codexArgs, codexError } from "../src/providers/codex.ts";
 import { codexMcpArgs, readMcpServers } from "../src/providers/mcp.ts";
-import { spawnWorker, workerEnv } from "../src/providers/types.ts";
+import {
+	looksRateLimited,
+	spawnWorker,
+	workerEnv,
+} from "../src/providers/types.ts";
 
 const agent = parseAgent(
 	"---\nname: a\ntier: column\ndescription: x\ntools: [read, edit]\n---\nBody",
@@ -129,4 +133,19 @@ test("spawnWorker logs stderr lines as events as they come", async () => {
 	const lines = (await Bun.file(logFile).text()).trim().split("\n");
 	expect(lines).toContain('{"type":"kanbot.stderr","text":"ERROR no"}');
 	expect(lines.filter((l) => l.startsWith('{"type":"'))).toHaveLength(3);
+});
+
+test("codex error comes from its JSON events", () => {
+	const out = [
+		'{"type":"thread.started","thread_id":"x"}',
+		'{"type":"turn.started"}',
+		'{"type":"error","message":"Your workspace is out of credits. Add credits to continue."}',
+		'{"type":"turn.failed","error":{"message":"Your workspace is out of credits. Add credits to continue."}}',
+	].join("\n");
+	const msg = codexError(out);
+	expect(msg).toBe(
+		"Your workspace is out of credits. Add credits to continue.",
+	);
+	expect(looksRateLimited(msg ?? "")).toBe(true);
+	expect(codexError("not json")).toBeUndefined();
 });

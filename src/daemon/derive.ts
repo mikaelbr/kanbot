@@ -76,6 +76,7 @@ export type Action =
 	| { kind: "merge"; item: Item; pr: PR; by: string }
 	| { kind: "compare"; item: Item; prs: PR[] }
 	| { kind: "needsHuman"; number: number; why: string }
+	| { kind: "paused"; number: number; why: string; minutes: number }
 	| { kind: "openQuestions"; item: Item; questions: string[] }
 	| { kind: "waiting"; item: Item; blockers: string[] }
 	| { kind: "resetFailures"; prefix: string }

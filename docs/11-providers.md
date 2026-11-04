@@ -82,4 +82,4 @@ effort: high
 
 ## Rate limits
 
-When a job hits a usage limit, the daemon pauses and resumes later. `kanbot status` shows the pause.
+When a job hits a usage limit or runs out of credits, the daemon pauses all work for 30 minutes, then retries. The first pause comments on the job's issue with the provider's message and sends a notification. No more comments until a job succeeds again. `kanbot status` shows the pause.

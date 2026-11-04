@@ -27,8 +27,9 @@ export interface Provider {
 	run(input: RunInput): Promise<RunResult>;
 }
 
+// Out of credits too: it hits every job, so pause instead of failing each.
 const RATE_LIMIT =
-	/usage limit|rate limit|rate_limit|429|quota|limit reached|try again later/i;
+	/usage limit|rate limit|rate_limit|429|quota|limit reached|try again later|out of credits|credit balance/i;
 
 export function looksRateLimited(text: string) {
 	return RATE_LIMIT.test(text);

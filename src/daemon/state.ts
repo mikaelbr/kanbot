@@ -1,14 +1,19 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-type Data = { failures: Record<string, number>; pausedUntil: number };
+type Data = {
+	failures: Record<string, number>;
+	pausedUntil: number;
+	/** A pause was posted to GitHub and no job has succeeded since. */
+	pauseNoticed: boolean;
+};
 
 /**
  * The only local state: failure counts and a rate-limit pause. Everything else
  * is derived from GitHub on each tick, so deleting this file is always safe.
  */
 export class State {
-	private data: Data = { failures: {}, pausedUntil: 0 };
+	private data: Data = { failures: {}, pausedUntil: 0, pauseNoticed: false };
 	private readonly file: string;
 
 	constructor(root: string) {
@@ -37,8 +42,9 @@ export class State {
 	}
 
 	async succeed(key: string) {
-		if (!(key in this.data.failures)) return;
+		if (!(key in this.data.failures) && !this.data.pauseNoticed) return;
 		delete this.data.failures[key];
+		this.data.pauseNoticed = false;
 		await this.save();
 	}
 
@@ -53,8 +59,12 @@ export class State {
 		return this.data.pausedUntil;
 	}
 
+	/** Returns true on the first pause since the last success. */
 	async pause(ms: number) {
 		this.data.pausedUntil = Date.now() + ms;
+		const first = !this.data.pauseNoticed;
+		this.data.pauseNoticed = true;
 		await this.save();
+		return first;
 	}
 }

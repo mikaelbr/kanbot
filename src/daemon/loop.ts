@@ -225,9 +225,20 @@ export async function runDaemon(root: string, opts: RunOptions) {
 			const msg = e instanceof Error ? e.message : String(e);
 			if (e instanceof RateLimited) {
 				log.warn(
-					`${job.key}: rate limited; pausing all work for ${RATE_LIMIT_PAUSE_MS / 60_000} min`,
+					`${job.key}: ${msg}; pausing all work for ${RATE_LIMIT_PAUSE_MS / 60_000} min`,
 				);
-				await state.pause(RATE_LIMIT_PAUSE_MS);
+				// Tell GitHub once per outage, not on every retry.
+				if (await state.pause(RATE_LIMIT_PAUSE_MS)) {
+					await applyAction(
+						{
+							kind: "paused",
+							number: job.item.issue.number,
+							why: msg.slice(0, 500),
+							minutes: RATE_LIMIT_PAUSE_MS / 60_000,
+						},
+						deps,
+					).catch(() => {});
+				}
 			} else if (e instanceof NeedsHuman) {
 				log.warn(`${job.key}: needs human (${msg})`);
 			} else {
@@ -267,6 +278,8 @@ function describeAction(a: Action) {
 			return `post comparison on #${a.item.issue.number}`;
 		case "needsHuman":
 			return `needs-human #${a.number}`;
+		case "paused":
+			return `post pause on #${a.number}`;
 		case "openQuestions":
 			return `open questions on #${a.item.issue.number}`;
 		case "waiting":

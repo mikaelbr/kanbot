@@ -728,6 +728,14 @@ export async function applyAction(action: Action, deps: JobDeps) {
 			);
 			deps.notify.send(`Needs human: #${action.number}`, action.why);
 			return;
+		case "paused":
+			await postComment(
+				bot,
+				action.number,
+				`**kanbot is paused.** All agent work stopped:\n\n> ${action.why}\n\nIt retries every ${action.minutes} min. If credits or quota ran out, top them up with the provider. Nothing to do on this issue.\n${marker("paused")}`,
+			);
+			deps.notify.send("kanbot paused", action.why);
+			return;
 		case "resetFailures":
 			deps.state.resetFailures(action.prefix);
 			return;
